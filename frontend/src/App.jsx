@@ -1,7 +1,25 @@
+import { useMemo, useState } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 
+const initialForm = {
+  projectName: '',
+  squareMeters: '',
+  bedrooms: '2',
+  bathrooms: '1',
+  terrainType: 'urbano',
+  budget: '',
+  priority: 'sostenibilidad',
+  location: '',
+  climate: 'templado',
+  material: 'madera-reciclada',
+}
+
 function App() {
+  const [currentView, setCurrentView] = useState('home')
+  const [formData, setFormData] = useState(initialForm)
+  const [generatedProject, setGeneratedProject] = useState(null)
+
   const features = [
     {
       title: 'Diseño inteligente',
@@ -38,13 +56,83 @@ function App() {
     },
   ]
 
+  const handleChange = ({ target }) => {
+    const { name, value } = target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleGenerate = (event) => {
+    event.preventDefault()
+
+    const squareMeters = Number(formData.squareMeters || 0)
+    const budget = Number(formData.budget || 0)
+    const bedrooms = Number(formData.bedrooms || 0)
+    const bathrooms = Number(formData.bathrooms || 0)
+
+    const sustainabilityScore =
+      formData.priority === 'sostenibilidad'
+        ? 92
+        : formData.priority === 'eficiencia'
+          ? 84
+          : 76
+
+    const estimatedCost =
+      budget || Math.round(squareMeters * 850 + bedrooms * 3500 + bathrooms * 2200)
+
+    const estimatedSavings = Math.round(estimatedCost * 0.12)
+    const energyEfficiency =
+      formData.climate === 'calido' ? 'Alta ventilación cruzada' : 'Aislamiento térmico reforzado'
+
+    const generated = {
+      projectName: formData.projectName || 'Proyecto HabitatIA',
+      summary: `Vivienda modular de ${squareMeters} m² pensada para ${bedrooms} dormitorio(s) y ${bathrooms} baño(s).`,
+      modularType: squareMeters >= 90 ? 'Modelo familiar expandible' : 'Modelo compacto modular',
+      recommendedMaterial:
+        formData.material === 'hormigon-verde'
+          ? 'Hormigón verde + paneles aislantes'
+          : formData.material === 'acero-reciclado'
+            ? 'Acero reciclado + cerramientos livianos'
+            : 'Madera reciclada tratada + panelería modular',
+      estimatedCost,
+      estimatedSavings,
+      sustainabilityScore,
+      energyEfficiency,
+      carbonReduction: `${Math.max(18, Math.round(squareMeters * 0.35))}%`,
+      recommendedLayout:
+        bedrooms >= 3
+          ? 'Área social integrada + bloque privado + expansión futura lateral'
+          : 'Núcleo central eficiente + espacios flexibles multiuso',
+      recommendations: [
+        'Priorizar orientación solar y ventilación natural para reducir consumo energético.',
+        'Incorporar materiales de baja huella de carbono y aislación térmica adecuada.',
+        'Planificar módulos constructivos para permitir ampliaciones futuras sin rehacer la obra base.',
+      ],
+    }
+
+    setGeneratedProject(generated)
+    setCurrentView('generator')
+  }
+
+  const stats = useMemo(
+    () => [
+      { label: 'Diseños modulares', value: '100%' },
+      { label: 'Enfoque sostenible', value: 'Triple impacto' },
+      { label: 'Tecnología base', value: 'React + Node.js' },
+    ],
+    [],
+  )
+
   return (
     <div className="habitat-app">
       <nav className="navbar navbar-expand-lg navbar-dark habitat-navbar sticky-top">
         <div className="container">
-          <a className="navbar-brand fw-bold" href="#inicio">
+          <button
+            type="button"
+            className="navbar-brand fw-bold border-0 bg-transparent text-white"
+            onClick={() => setCurrentView('home')}
+          >
             HabitatIA
-          </a>
+          </button>
           <button
             className="navbar-toggler"
             type="button"
@@ -57,167 +145,405 @@ function App() {
             <span className="navbar-toggler-icon"></span>
           </button>
           <div className="collapse navbar-collapse" id="mainNavbar">
-            <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
+            <ul className="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-2">
               <li className="nav-item">
-                <a className="nav-link" href="#propuesta">
-                  Propuesta
-                </a>
+                <button className="nav-link btn btn-link" onClick={() => setCurrentView('home')}>
+                  Inicio
+                </button>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#impacto">
-                  Triple impacto
-                </a>
+                <button className="nav-link btn btn-link" onClick={() => setCurrentView('generator')}>
+                  Generador
+                </button>
               </li>
               <li className="nav-item">
-                <a className="nav-link" href="#equipo">
-                  Equipo
-                </a>
+                <button className="btn btn-success ms-lg-2" onClick={() => setCurrentView('generator')}>
+                  Probar demo
+                </button>
               </li>
             </ul>
           </div>
         </div>
       </nav>
 
-      <header id="inicio" className="hero-section">
-        <div className="container py-5">
-          <div className="row align-items-center min-vh-75 g-4">
-            <div className="col-lg-7 text-start">
-              <span className="badge habitat-badge mb-3">PropTech + IA + Sustentabilidad</span>
-              <h1 className="display-4 fw-bold text-white mb-4">
-                Diseñamos viviendas sostenibles y modulares con apoyo de inteligencia artificial.
-              </h1>
-              <p className="lead text-white-50 mb-4 hero-text">
-                HabitatIA es una plataforma web orientada a facilitar el acceso a diseños habitacionales eficientes,
-                optimizando materiales, costos e impacto ambiental desde el inicio del proyecto.
-              </p>
-              <div className="d-flex flex-wrap gap-3">
-                <a href="#propuesta" className="btn btn-success btn-lg px-4">
-                  Conocer la propuesta
-                </a>
-                <a href="#impacto" className="btn btn-outline-light btn-lg px-4">
-                  Ver triple impacto
-                </a>
-              </div>
-            </div>
-            <div className="col-lg-5">
-              <div className="hero-card shadow-lg">
-                <h2 className="h4 fw-bold mb-3">¿Qué resuelve HabitatIA?</h2>
-                <ul className="list-unstyled mb-0">
-                  <li className="mb-3">• Genera propuestas de viviendas según presupuesto y necesidades.</li>
-                  <li className="mb-3">• Sugiere materiales sostenibles para reducir la huella de carbono.</li>
-                  <li>• Calcula métricas iniciales de eficiencia energética y optimización de costos.</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main>
-        <section id="propuesta" className="py-5 section-light">
-          <div className="container">
-            <div className="text-center mb-5">
-              <span className="section-kicker">Nuestra propuesta</span>
-              <h2 className="section-title">Una plataforma pensada para planificar mejor</h2>
-              <p className="section-text mx-auto">
-                Combinamos criterios de diseño modular, construcción sostenible y automatización inteligente para
-                simplificar el desarrollo de soluciones habitacionales más accesibles.
-              </p>
-            </div>
-
-            <div className="row g-4">
-              {features.map((feature) => (
-                <div className="col-md-4" key={feature.title}>
-                  <div className="card feature-card h-100 border-0 shadow-sm">
-                    <div className="card-body p-4">
-                      <h3 className="h5 fw-bold mb-3">{feature.title}</h3>
-                      <p className="text-muted mb-0">{feature.description}</p>
-                    </div>
+      {currentView === 'home' ? (
+        <>
+          <header id="inicio" className="hero-section">
+            <div className="container py-5">
+              <div className="row align-items-center min-vh-75 g-4">
+                <div className="col-lg-7 text-start">
+                  <span className="badge habitat-badge mb-3">PropTech + IA + Sustentabilidad</span>
+                  <h1 className="display-4 fw-bold text-white mb-4">
+                    Diseñamos viviendas sostenibles y modulares con apoyo de inteligencia artificial.
+                  </h1>
+                  <p className="lead text-white-50 mb-4 hero-text">
+                    HabitatIA es una plataforma web orientada a facilitar el acceso a diseños habitacionales
+                    eficientes, optimizando materiales, costos e impacto ambiental desde el inicio del proyecto.
+                  </p>
+                  <div className="d-flex flex-wrap gap-3">
+                    <button className="btn btn-success btn-lg px-4" onClick={() => setCurrentView('generator')}>
+                      Crear propuesta
+                    </button>
+                    <a href="#impacto" className="btn btn-outline-light btn-lg px-4">
+                      Ver triple impacto
+                    </a>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="impacto" className="py-5 section-green">
-          <div className="container">
-            <div className="text-center mb-5">
-              <span className="section-kicker text-success-emphasis">Triple impacto</span>
-              <h2 className="section-title">Tecnología aplicada a una vivienda más digna y eficiente</h2>
-              <p className="section-text mx-auto">
-                HabitatIA busca generar valor real desde una mirada social, ambiental y económica.
-              </p>
-            </div>
-
-            <div className="row g-4">
-              {impacts.map((impact) => (
-                <div className="col-md-4" key={impact.title}>
-                  <div className="card impact-card h-100 border-0">
-                    <div className="card-body p-4">
-                      <h3 className="h5 fw-bold mb-3">{impact.title}</h3>
-                      <p className="mb-0 text-secondary">{impact.description}</p>
-                    </div>
+                <div className="col-lg-5">
+                  <div className="hero-card shadow-lg">
+                    <h2 className="h4 fw-bold mb-3">¿Qué resuelve HabitatIA?</h2>
+                    <ul className="list-unstyled mb-0">
+                      <li className="mb-3">• Genera propuestas de viviendas según presupuesto y necesidades.</li>
+                      <li className="mb-3">• Sugiere materiales sostenibles para reducir la huella de carbono.</li>
+                      <li>• Calcula métricas iniciales de eficiencia energética y optimización de costos.</li>
+                    </ul>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </header>
 
-        <section className="py-5 section-light">
-          <div className="container">
-            <div className="row g-4 align-items-center">
-              <div className="col-lg-6">
-                <h2 className="section-title text-start">Tecnologías base del proyecto</h2>
-                <p className="section-text text-start mx-0 mb-4">
-                  La plataforma será desarrollada con frontend en React + Bootstrap y backend en Node.js,
-                  dejando preparada la integración con servicios de inteligencia artificial y cloud computing.
-                </p>
-                <div className="d-flex flex-wrap gap-2">
-                  <span className="tech-pill">React</span>
-                  <span className="tech-pill">Bootstrap</span>
-                  <span className="tech-pill">Node.js</span>
-                  <span className="tech-pill">API REST</span>
-                  <span className="tech-pill">Cloud Computing</span>
-                  <span className="tech-pill">IA Generativa</span>
+          <main>
+            <section className="py-4 stats-strip">
+              <div className="container">
+                <div className="row g-3">
+                  {stats.map((stat) => (
+                    <div className="col-md-4" key={stat.label}>
+                      <div className="stat-card">
+                        <div className="stat-value">{stat.value}</div>
+                        <div className="stat-label">{stat.label}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="col-lg-6">
-                <div className="info-panel shadow-sm">
-                  <h3 className="h5 fw-bold mb-3">Objetivo del MVP</h3>
-                  <p className="mb-0 text-muted">
-                    Construir una primera versión capaz de presentar el producto, capturar requerimientos de una
-                    vivienda y devolver una propuesta inicial sostenible con métricas orientativas.
+            </section>
+
+            <section id="propuesta" className="py-5 section-light">
+              <div className="container">
+                <div className="text-center mb-5">
+                  <span className="section-kicker">Nuestra propuesta</span>
+                  <h2 className="section-title">Una plataforma pensada para planificar mejor</h2>
+                  <p className="section-text mx-auto">
+                    Combinamos criterios de diseño modular, construcción sostenible y automatización inteligente para
+                    simplificar el desarrollo de soluciones habitacionales más accesibles.
                   </p>
                 </div>
+
+                <div className="row g-4">
+                  {features.map((feature) => (
+                    <div className="col-md-4" key={feature.title}>
+                      <div className="card feature-card h-100 border-0 shadow-sm">
+                        <div className="card-body p-4">
+                          <h3 className="h5 fw-bold mb-3">{feature.title}</h3>
+                          <p className="text-muted mb-0">{feature.description}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            <section id="impacto" className="py-5 section-green">
+              <div className="container">
+                <div className="text-center mb-5">
+                  <span className="section-kicker text-success-emphasis">Triple impacto</span>
+                  <h2 className="section-title">Tecnología aplicada a una vivienda más digna y eficiente</h2>
+                  <p className="section-text mx-auto">
+                    HabitatIA busca generar valor real desde una mirada social, ambiental y económica.
+                  </p>
+                </div>
+
+                <div className="row g-4">
+                  {impacts.map((impact) => (
+                    <div className="col-md-4" key={impact.title}>
+                      <div className="card impact-card h-100 border-0">
+                        <div className="card-body p-4">
+                          <h3 className="h5 fw-bold mb-3">{impact.title}</h3>
+                          <p className="mb-0 text-secondary">{impact.description}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            <section className="py-5 section-light">
+              <div className="container">
+                <div className="row g-4 align-items-center">
+                  <div className="col-lg-6">
+                    <h2 className="section-title text-start">Tecnologías base del proyecto</h2>
+                    <p className="section-text text-start mx-0 mb-4">
+                      La plataforma fue planteada con frontend en React + Bootstrap y backend en Node.js, dejando
+                      preparada la integración con servicios de inteligencia artificial y cloud computing.
+                    </p>
+                    <div className="d-flex flex-wrap gap-2">
+                      <span className="tech-pill">React</span>
+                      <span className="tech-pill">Bootstrap</span>
+                      <span className="tech-pill">Node.js</span>
+                      <span className="tech-pill">API REST</span>
+                      <span className="tech-pill">Cloud Computing</span>
+                      <span className="tech-pill">IA Generativa</span>
+                    </div>
+                  </div>
+                  <div className="col-lg-6">
+                    <div className="info-panel shadow-sm">
+                      <h3 className="h5 fw-bold mb-3">Objetivo del MVP</h3>
+                      <p className="mb-0 text-muted">
+                        Construir una primera versión capaz de presentar el producto, capturar requerimientos de una
+                        vivienda y devolver una propuesta inicial sostenible con métricas orientativas.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section id="equipo" className="py-5 team-section">
+              <div className="container text-center">
+                <span className="section-kicker text-white-50">Equipo</span>
+                <h2 className="section-title text-white">Integrantes del proyecto</h2>
+                <div className="row g-4 justify-content-center mt-2">
+                  {[
+                    'Luca Picone',
+                    'Ignacio Sanguinetti',
+                    'Aquiles Luzuriaga',
+                    'Antonio Cocca',
+                    'Felipe Villares',
+                  ].map((member) => (
+                    <div className="col-sm-6 col-lg-4" key={member}>
+                      <div className="team-card">
+                        <p className="mb-0 fw-semibold">{member}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          </main>
+        </>
+      ) : (
+        <main className="generator-page py-5">
+          <div className="container">
+            <div className="row g-4 align-items-start">
+              <div className="col-lg-7">
+                <div className="generator-card shadow-sm">
+                  <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+                    <div>
+                      <span className="section-kicker">Generador de viviendas</span>
+                      <h1 className="section-title mb-2">Configurá tu proyecto</h1>
+                      <p className="text-muted mb-0">
+                        Ingresá los datos principales para simular una propuesta habitacional modular y sostenible.
+                      </p>
+                    </div>
+                    <button className="btn btn-outline-success" onClick={() => setCurrentView('home')}>
+                      Volver al inicio
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleGenerate}>
+                    <div className="row g-3">
+                      <div className="col-md-6">
+                        <label className="form-label">Nombre del proyecto</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="projectName"
+                          value={formData.projectName}
+                          onChange={handleChange}
+                          placeholder="Ej: Vivienda familiar zona sur"
+                        />
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label">Ubicación</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="location"
+                          value={formData.location}
+                          onChange={handleChange}
+                          placeholder="Ej: Córdoba, Argentina"
+                        />
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label">Metros cuadrados</label>
+                        <input
+                          type="number"
+                          min="20"
+                          className="form-control"
+                          name="squareMeters"
+                          value={formData.squareMeters}
+                          onChange={handleChange}
+                          placeholder="70"
+                          required
+                        />
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label">Dormitorios</label>
+                        <select className="form-select" name="bedrooms" value={formData.bedrooms} onChange={handleChange}>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
+                        </select>
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label">Baños</label>
+                        <select className="form-select" name="bathrooms" value={formData.bathrooms} onChange={handleChange}>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                        </select>
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label">Tipo de terreno</label>
+                        <select className="form-select" name="terrainType" value={formData.terrainType} onChange={handleChange}>
+                          <option value="urbano">Urbano</option>
+                          <option value="suburbano">Suburbano</option>
+                          <option value="rural">Rural</option>
+                          <option value="pendiente">Con pendiente</option>
+                        </select>
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label">Presupuesto estimado (USD)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          className="form-control"
+                          name="budget"
+                          value={formData.budget}
+                          onChange={handleChange}
+                          placeholder="60000"
+                        />
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label">Prioridad</label>
+                        <select className="form-select" name="priority" value={formData.priority} onChange={handleChange}>
+                          <option value="sostenibilidad">Mayor sostenibilidad</option>
+                          <option value="costo">Menor costo</option>
+                          <option value="eficiencia">Eficiencia energética</option>
+                        </select>
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label">Clima</label>
+                        <select className="form-select" name="climate" value={formData.climate} onChange={handleChange}>
+                          <option value="templado">Templado</option>
+                          <option value="calido">Cálido</option>
+                          <option value="frio">Frío</option>
+                          <option value="humedo">Húmedo</option>
+                        </select>
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label">Material preferido</label>
+                        <select className="form-select" name="material" value={formData.material} onChange={handleChange}>
+                          <option value="madera-reciclada">Madera reciclada</option>
+                          <option value="hormigon-verde">Hormigón verde</option>
+                          <option value="acero-reciclado">Acero reciclado</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="d-flex flex-wrap gap-3 mt-4">
+                      <button type="submit" className="btn btn-success btn-lg">
+                        Generar propuesta
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary btn-lg"
+                        onClick={() => {
+                          setFormData(initialForm)
+                          setGeneratedProject(null)
+                        }}
+                      >
+                        Limpiar formulario
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+              <div className="col-lg-5">
+                <div className="result-card shadow-sm">
+                  <h2 className="h4 fw-bold mb-3">Resultado estimado</h2>
+
+                  {generatedProject ? (
+                    <>
+                      <div className="result-highlight mb-3">
+                        <h3 className="h5 fw-bold mb-1">{generatedProject.projectName}</h3>
+                        <p className="mb-0 text-muted">{generatedProject.summary}</p>
+                      </div>
+
+                      <div className="row g-3 mb-3">
+                        <div className="col-6">
+                          <div className="metric-box">
+                            <span className="metric-label">Costo estimado</span>
+                            <strong>USD {generatedProject.estimatedCost.toLocaleString()}</strong>
+                          </div>
+                        </div>
+                        <div className="col-6">
+                          <div className="metric-box">
+                            <span className="metric-label">Ahorro potencial</span>
+                            <strong>USD {generatedProject.estimatedSavings.toLocaleString()}</strong>
+                          </div>
+                        </div>
+                        <div className="col-6">
+                          <div className="metric-box">
+                            <span className="metric-label">Índice sustentable</span>
+                            <strong>{generatedProject.sustainabilityScore}/100</strong>
+                          </div>
+                        </div>
+                        <div className="col-6">
+                          <div className="metric-box">
+                            <span className="metric-label">Reducción CO₂</span>
+                            <strong>{generatedProject.carbonReduction}</strong>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mb-3">
+                        <h3 className="h6 fw-bold">Tipo de solución</h3>
+                        <p className="mb-2 text-muted">{generatedProject.modularType}</p>
+                        <h3 className="h6 fw-bold">Material recomendado</h3>
+                        <p className="mb-2 text-muted">{generatedProject.recommendedMaterial}</p>
+                        <h3 className="h6 fw-bold">Estrategia energética</h3>
+                        <p className="mb-0 text-muted">{generatedProject.energyEfficiency}</p>
+                      </div>
+
+                      <div className="mb-3">
+                        <h3 className="h6 fw-bold">Distribución sugerida</h3>
+                        <p className="mb-0 text-muted">{generatedProject.recommendedLayout}</p>
+                      </div>
+
+                      <div>
+                        <h3 className="h6 fw-bold">Recomendaciones</h3>
+                        <ul className="result-list mb-0">
+                          {generatedProject.recommendations.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="empty-state">
+                      <p className="text-muted mb-3">
+                        Completá el formulario para generar una propuesta inicial de vivienda sostenible.
+                      </p>
+                      <ul className="result-list mb-0">
+                        <li>Estimación de costo de construcción</li>
+                        <li>Materiales sugeridos</li>
+                        <li>Métricas de sustentabilidad</li>
+                        <li>Diseño modular recomendado</li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </section>
-
-        <section id="equipo" className="py-5 team-section">
-          <div className="container text-center">
-            <span className="section-kicker text-white-50">Equipo</span>
-            <h2 className="section-title text-white">Integrantes del proyecto</h2>
-            <div className="row g-4 justify-content-center mt-2">
-              {[
-                'Luca Picone',
-                'Ignacio Sanguinetti',
-                'Aquiles Luzuriaga',
-                'Antonio Cocca',
-                'Felipe Villares',
-              ].map((member) => (
-                <div className="col-sm-6 col-lg-4" key={member}>
-                  <div className="team-card">
-                    <p className="mb-0 fw-semibold">{member}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
+        </main>
+      )}
     </div>
   )
 }
