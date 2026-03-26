@@ -47,5 +47,7 @@ http://localhost:5173
 - generación de propuesta
 - generación de prompt arquitectónico para render
 - generación de render vía backend
+- generación visual MVP con Puter.js para pruebas
 - fallback configurable de proveedores
-- arquitectura preparada para proveedor directo embebible en la web
+- configurador avanzado para casa/departamento
+- carrusel de ambientes con vista fullscreen

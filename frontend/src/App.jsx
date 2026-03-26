@@ -3,9 +3,14 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 import { generateProjectProposal } from './services/api'
 import { generateRender } from './services/renderApi'
+import { generateRenderWithPuter } from './services/puterRender'
+import EnvironmentCarousel from './components/EnvironmentCarousel'
+import ImageLightbox from './components/ImageLightbox'
+import { buildEnvironmentPrompt, getEnvironmentDefinitions } from './utils/environmentPrompts'
 
 const initialForm = {
   projectName: '',
+  propertyType: 'casa',
   squareMeters: '',
   bedrooms: '2',
   bathrooms: '1',
@@ -15,6 +20,12 @@ const initialForm = {
   location: '',
   climate: 'templado',
   material: 'madera-reciclada',
+  floors: '1',
+  hasSuiteBathroom: false,
+  hasPool: false,
+  hasGarage: false,
+  hasQuincho: false,
+  hasGrill: false,
 }
 
 function App() {
@@ -25,6 +36,7 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState('')
   const [imageLoadFailed, setImageLoadFailed] = useState(false)
+  const [lightboxItem, setLightboxItem] = useState(null)
 
   const features = [
     {
@@ -63,8 +75,41 @@ function App() {
   ]
 
   const handleChange = ({ target }) => {
-    const { name, value } = target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const { name, value, type, checked } = target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }))
+  }
+
+  const generateEnvironmentGallery = async (project) => {
+    const environments = getEnvironmentDefinitions(formData)
+    const images = []
+
+    for (const environment of environments) {
+      const prompt = buildEnvironmentPrompt(environment, project)
+
+      try {
+        const puterRender = await generateRenderWithPuter({
+          prompt,
+          negativePrompt: project.negativePrompt,
+        })
+
+        images.push({
+          ...environment,
+          imageUrl: puterRender.imageUrl,
+          provider: puterRender.provider,
+        })
+      } catch (_error) {
+        images.push({
+          ...environment,
+          imageUrl: null,
+          provider: 'fallback',
+        })
+      }
+    }
+
+    return images
   }
 
   const handleGenerate = async (event) => {
@@ -82,26 +127,43 @@ function App() {
         bedrooms: Number(formData.bedrooms || 0),
         bathrooms: Number(formData.bathrooms || 0),
         budget: Number(formData.budget || 0),
+        floors: Number(formData.floors || 1),
       }
 
       const generated = await generateProjectProposal(normalizedPayload)
 
       let renderResponse = null
+      let puterRender = null
 
       try {
-        renderResponse = await generateRender(normalizedPayload)
-      } catch (_renderError) {
-        renderResponse = null
+        puterRender = await generateRenderWithPuter({
+          prompt: generated.imagePrompt,
+          negativePrompt: generated.negativePrompt,
+        })
+      } catch (_puterError) {
+        puterRender = null
       }
+
+      if (!puterRender) {
+        try {
+          renderResponse = await generateRender(normalizedPayload)
+        } catch (_renderError) {
+          renderResponse = null
+        }
+      }
+
+      const environmentGallery = await generateEnvironmentGallery(generated)
 
       setGeneratedProject({
         ...generated,
         imageStatus: 'ready',
         imageDescription:
+          puterRender?.note ||
           renderResponse?.render?.note ||
           'Vista conceptual lista para usar como base de render o integración con proveedores externos.',
-        imageUrl: renderResponse?.render?.imageUrl || null,
-        renderProvider: renderResponse?.render?.provider || null,
+        imageUrl: puterRender?.imageUrl || renderResponse?.render?.imageUrl || null,
+        renderProvider: puterRender?.provider || renderResponse?.render?.provider || null,
+        environmentGallery,
       })
     } catch (error) {
       setGeneratedProject(null)
@@ -356,6 +418,13 @@ function App() {
                         />
                       </div>
                       <div className="col-md-6">
+                        <label className="form-label">Tipo de proyecto</label>
+                        <select className="form-select" name="propertyType" value={formData.propertyType} onChange={handleChange}>
+                          <option value="casa">Casa</option>
+                          <option value="departamento">Departamento</option>
+                        </select>
+                      </div>
+                      <div className="col-md-6">
                         <label className="form-label">Ubicación</label>
                         <input
                           type="text"
@@ -366,7 +435,7 @@ function App() {
                           placeholder="Ej: Córdoba, Argentina"
                         />
                       </div>
-                      <div className="col-md-4">
+                      <div className="col-md-6">
                         <label className="form-label">Metros cuadrados</label>
                         <input
                           type="number"
@@ -396,6 +465,16 @@ function App() {
                           <option value="3">3</option>
                         </select>
                       </div>
+                      {formData.propertyType === 'casa' ? (
+                        <div className="col-md-4">
+                          <label className="form-label">Cantidad de pisos</label>
+                          <select className="form-select" name="floors" value={formData.floors} onChange={handleChange}>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                          </select>
+                        </div>
+                      ) : null}
                       <div className="col-md-6">
                         <label className="form-label">Tipo de terreno</label>
                         <select className="form-select" name="terrainType" value={formData.terrainType} onChange={handleChange}>
@@ -443,6 +522,89 @@ function App() {
                         </select>
                       </div>
                     </div>
+
+                    {formData.propertyType === 'casa' ? (
+                      <div className="house-options-panel mt-4">
+                        <h3 className="h5 fw-bold mb-3">Detalles adicionales para casa</h3>
+                        <div className="row g-3">
+                          <div className="col-md-6 col-lg-4">
+                            <div className="form-check option-check">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id="hasSuiteBathroom"
+                                name="hasSuiteBathroom"
+                                checked={formData.hasSuiteBathroom}
+                                onChange={handleChange}
+                              />
+                              <label className="form-check-label" htmlFor="hasSuiteBathroom">
+                                Habitación principal con baño en suite
+                              </label>
+                            </div>
+                          </div>
+                          <div className="col-md-6 col-lg-4">
+                            <div className="form-check option-check">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id="hasPool"
+                                name="hasPool"
+                                checked={formData.hasPool}
+                                onChange={handleChange}
+                              />
+                              <label className="form-check-label" htmlFor="hasPool">
+                                Pileta
+                              </label>
+                            </div>
+                          </div>
+                          <div className="col-md-6 col-lg-4">
+                            <div className="form-check option-check">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id="hasGarage"
+                                name="hasGarage"
+                                checked={formData.hasGarage}
+                                onChange={handleChange}
+                              />
+                              <label className="form-check-label" htmlFor="hasGarage">
+                                Garage
+                              </label>
+                            </div>
+                          </div>
+                          <div className="col-md-6 col-lg-4">
+                            <div className="form-check option-check">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id="hasQuincho"
+                                name="hasQuincho"
+                                checked={formData.hasQuincho}
+                                onChange={handleChange}
+                              />
+                              <label className="form-check-label" htmlFor="hasQuincho">
+                                Quincho
+                              </label>
+                            </div>
+                          </div>
+                          <div className="col-md-6 col-lg-4">
+                            <div className="form-check option-check">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id="hasGrill"
+                                name="hasGrill"
+                                checked={formData.hasGrill}
+                                onChange={handleChange}
+                              />
+                              <label className="form-check-label" htmlFor="hasGrill">
+                                Parrilla
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : null}
 
                     {formError ? <div className="alert alert-danger mt-4 mb-0">{formError}</div> : null}
 
@@ -543,7 +705,7 @@ function App() {
                   )}
                 </div>
 
-                <div className="result-card shadow-sm image-card">
+                <div className="result-card shadow-sm image-card mb-4">
                   <div className="d-flex justify-content-between align-items-center mb-3 gap-3 flex-wrap">
                     <h2 className="h4 fw-bold mb-0">Visualización conceptual</h2>
                     {generatedProject ? <span className="image-badge">Modo demo IA</span> : null}
@@ -627,9 +789,30 @@ function App() {
                 </div>
               </div>
             </div>
+
+            {generatedProject?.environmentGallery?.length ? (
+              <section className="environment-section mt-4">
+                <div className="result-card shadow-sm">
+                  <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <div>
+                      <span className="section-kicker">Galería generada</span>
+                      <h2 className="section-title mb-0">Ambientes del proyecto</h2>
+                    </div>
+                    <span className="text-muted small">Click en una imagen para verla en pantalla completa</span>
+                  </div>
+
+                  <EnvironmentCarousel
+                    items={generatedProject.environmentGallery.filter((item) => item.imageUrl)}
+                    onOpen={(item) => setLightboxItem(item)}
+                  />
+                </div>
+              </section>
+            ) : null}
           </div>
         </main>
       )}
+
+      <ImageLightbox item={lightboxItem} onClose={() => setLightboxItem(null)} />
     </div>
   )
 }
