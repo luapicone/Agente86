@@ -4,9 +4,11 @@ import './App.css'
 import { generateProjectProposal } from './services/api'
 import { generateRender } from './services/renderApi'
 import { generateRenderWithPuter } from './services/puterRender'
+import { fetchMarketplaceMaterials } from './services/marketplaceApi'
 import EnvironmentCarousel from './components/EnvironmentCarousel'
 import ImageLightbox from './components/ImageLightbox'
 import ProjectChatbot from './components/ProjectChatbot'
+import ArchitectMarketplace from './components/ArchitectMarketplace'
 import {
   buildEnvironmentPrompt,
   buildMasterHousePrompt,
@@ -25,6 +27,7 @@ function App() {
   const [formError, setFormError] = useState('')
   const [imageLoadFailed, setImageLoadFailed] = useState(false)
   const [lightboxItem, setLightboxItem] = useState(null)
+  const [marketplaceItems, setMarketplaceItems] = useState([])
 
   const features = [
     {
@@ -140,6 +143,8 @@ function App() {
       }
 
       const environmentGallery = await generateEnvironmentGallery(generated, normalizedPayload, masterPrompt)
+      const marketplaceResponse = await fetchMarketplaceMaterials().catch(() => ({ items: [] }))
+      setMarketplaceItems(marketplaceResponse.items || [])
 
       setGeneratedProject({
         ...generated,
@@ -449,7 +454,7 @@ function App() {
                         </ul>
                       </div>
 
-                      <div>
+                      <div className="mb-3">
                         <h3 className="h6 fw-bold">Recomendaciones</h3>
                         <ul className="result-list mb-0">
                           {generatedProject.recommendations.map((item) => (
@@ -459,6 +464,80 @@ function App() {
                           <li>Priorizar los espacios más necesarios para la familia según el presupuesto real.</li>
                         </ul>
                       </div>
+
+                      {generatedProject.materialEstimate ? (
+                        <div className="material-estimate-box">
+                          <h3 className="h6 fw-bold mb-3">Materiales optimizados para la obra</h3>
+                          <div className="table-responsive">
+                            <table className="table table-sm align-middle material-table">
+                              <thead>
+                                <tr>
+                                  <th>Material</th>
+                                  <th>Cantidad</th>
+                                  <th>Precio base</th>
+                                  <th>Oferta arquitecto</th>
+                                  <th>Ahorro</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {generatedProject.materialEstimate.materials.map((material) => (
+                                  <tr key={material.key}>
+                                    <td>{material.name}</td>
+                                    <td>{material.quantity} {material.unit}</td>
+                                    <td>USD {material.baseTotal.toLocaleString()}</td>
+                                    <td>
+                                      {material.architectOffer ? (
+                                        <div>
+                                          <div>{material.architectOffer.architect}</div>
+                                          <small>
+                                            {material.architectOffer.applicableQuantity} {material.unit} a USD {material.architectOffer.discountPrice}
+                                          </small>
+                                        </div>
+                                      ) : (
+                                        '—'
+                                      )}
+                                    </td>
+                                    <td>USD {material.architectSavings.toLocaleString()}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          <div className="row g-3 mt-2">
+                            <div className="col-md-6">
+                              <div className="metric-box">
+                                <span className="metric-label">Total materiales</span>
+                                <strong>USD {generatedProject.materialEstimate.totals.optimizedMaterialTotal.toLocaleString()}</strong>
+                              </div>
+                            </div>
+                            <div className="col-md-6">
+                              <div className="metric-box">
+                                <span className="metric-label">Descuento por compra a arquitectos</span>
+                                <strong>USD {generatedProject.materialEstimate.totals.architectDiscountTotal.toLocaleString()}</strong>
+                              </div>
+                            </div>
+                            <div className="col-md-6">
+                              <div className="metric-box">
+                                <span className="metric-label">Total descontado</span>
+                                <strong>USD {generatedProject.materialEstimate.totals.discountedMaterialTotal.toLocaleString()}</strong>
+                              </div>
+                            </div>
+                            <div className="col-md-6">
+                              <div className="metric-box">
+                                <span className="metric-label">Presupuesto final de referencia</span>
+                                <strong>USD {generatedProject.materialEstimate.totals.estimatedConstructionBudget.toLocaleString()}</strong>
+                              </div>
+                            </div>
+                            <div className="col-12">
+                              <div className="metric-box">
+                                <span className="metric-label">Diferencia estimada a favor</span>
+                                <strong>USD {generatedProject.materialEstimate.totals.finalDifference.toLocaleString()}</strong>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
                     </>
                   ) : (
                     <div className="empty-state">
@@ -581,6 +660,8 @@ function App() {
                 </div>
               </section>
             ) : null}
+
+            <ArchitectMarketplace items={marketplaceItems} />
           </div>
         </main>
       )}

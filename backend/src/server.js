@@ -4,6 +4,7 @@ require('dotenv').config()
 
 const projectRoutes = require('./routes/projectRoutes')
 const renderRoutes = require('./routes/renderRoutes')
+const marketplaceRoutes = require('./routes/marketplaceRoutes')
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -17,6 +18,7 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/projects', projectRoutes)
 app.use('/api/renders', renderRoutes)
+app.use('/api/marketplace', marketplaceRoutes)
 
 app.listen(PORT, () => {
   console.log(`HabitatIA backend running on port ${PORT}`)

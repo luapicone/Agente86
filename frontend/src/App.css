@@ -473,17 +473,6 @@
   text-align: left;
 }
 
-.environment-chip {
-  display: inline-flex;
-  margin-bottom: 0.75rem;
-  padding: 0.35rem 0.65rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
 .carousel-caption-custom h3 {
   margin: 0 0 0.4rem;
   font-size: 1.3rem;
@@ -708,6 +697,37 @@
   border-top: 1px solid #e0ebe2;
   display: flex;
   justify-content: flex-end;
+}
+
+.material-estimate-box {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dfeadf;
+}
+
+.material-table th {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  color: #5f6e63;
+}
+
+.marketplace-section .marketplace-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbf8 100%);
+  border: 1px solid #dde8df;
+  border-radius: 1rem;
+  padding: 1rem;
+  height: 100%;
+}
+
+.marketplace-card h3 {
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.marketplace-architect {
+  color: #2c6b48;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
 }
 
 @media (max-width: 991px) {

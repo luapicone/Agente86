@@ -35,11 +35,6 @@ function EnvironmentCarousel({ items, onOpen }) {
       <div className="rounded-4 overflow-hidden shadow-sm environment-frame">
         <button type="button" className="environment-slide-button" onClick={() => onOpen(currentItem)}>
           <img src={currentItem.imageUrl} className="d-block w-100 environment-image" alt={currentItem.title} />
-          <div className="carousel-caption-custom">
-            <span className="environment-chip">{currentItem.environmentLabel}</span>
-            <h3>{currentItem.title}</h3>
-            <p>{currentItem.description}</p>
-          </div>
         </button>
       </div>
 
