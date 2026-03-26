@@ -3,7 +3,6 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 import { generateProjectProposal } from './services/api'
 import { generateRender } from './services/renderApi'
-import { generateRenderWithPuter } from './services/puterRender'
 
 const initialForm = {
   projectName: '',
@@ -88,34 +87,21 @@ function App() {
       const generated = await generateProjectProposal(normalizedPayload)
 
       let renderResponse = null
-      let puterRender = null
 
       try {
-        puterRender = await generateRenderWithPuter({
-          prompt: generated.imagePrompt,
-          negativePrompt: generated.negativePrompt,
-        })
-      } catch (_puterError) {
-        puterRender = null
-      }
-
-      if (!puterRender) {
-        try {
-          renderResponse = await generateRender(normalizedPayload)
-        } catch (_renderError) {
-          renderResponse = null
-        }
+        renderResponse = await generateRender(normalizedPayload)
+      } catch (_renderError) {
+        renderResponse = null
       }
 
       setGeneratedProject({
         ...generated,
         imageStatus: 'ready',
         imageDescription:
-          puterRender?.note ||
           renderResponse?.render?.note ||
           'Vista conceptual lista para usar como base de render o integración con proveedores externos.',
-        imageUrl: puterRender?.imageUrl || renderResponse?.render?.imageUrl || null,
-        renderProvider: puterRender?.provider || renderResponse?.render?.provider || null,
+        imageUrl: renderResponse?.render?.imageUrl || null,
+        renderProvider: renderResponse?.render?.provider || null,
       })
     } catch (error) {
       setGeneratedProject(null)

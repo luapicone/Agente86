@@ -49,11 +49,12 @@ Payload esperado:
 Orden configurable por `.env`:
 
 ```env
-RENDER_PROVIDER_ORDER=huggingface,replicate,together,pollinations,mock
+RENDER_PROVIDER_ORDER=deepai,huggingface,replicate,together,pollinations,mock
 ```
 
 Proveedores soportados actualmente:
 
+- `deepai`
 - `huggingface`
 - `replicate`
 - `together`
@@ -62,10 +63,9 @@ Proveedores soportados actualmente:
 
 Fallback recomendado backend:
 
-1. Hugging Face
-2. Replicate
-3. Together
-4. Pollinations
-5. Mock
-
-Además, el frontend intenta primero una generación gratuita en cliente con **Puter.js** antes de recurrir al backend.
+1. DeepAI
+2. Hugging Face
+3. Replicate
+4. Together
+5. Pollinations
+6. Mock

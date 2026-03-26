@@ -1,3 +1,4 @@
+const { generateWithDeepAI } = require('./renderProviders/deepAiProvider')
 const { generateWithHuggingFace } = require('./renderProviders/huggingFaceProvider')
 const { generateWithReplicate } = require('./renderProviders/replicateProvider')
 const { generateWithTogether } = require('./renderProviders/togetherProvider')
@@ -6,6 +7,7 @@ const { generateWithMock } = require('./renderProviders/mockProvider')
 const { validateImageUrl } = require('./renderValidationService')
 
 const providerHandlers = {
+  deepai: generateWithDeepAI,
   huggingface: generateWithHuggingFace,
   replicate: generateWithReplicate,
   together: generateWithTogether,
