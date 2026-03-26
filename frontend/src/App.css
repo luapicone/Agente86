@@ -417,6 +417,10 @@
   object-fit: cover;
 }
 
+.environment-frame {
+  position: relative;
+}
+
 .environment-slide-button {
   border: 0;
   background: transparent;
@@ -455,6 +459,32 @@
 .carousel-caption-custom p {
   margin: 0;
   color: rgba(255, 255, 255, 0.85);
+}
+
+.environment-carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.environment-counter {
+  font-weight: 700;
+  color: #23412f;
+}
+
+.environment-indicators {
+  position: static;
+  margin: 0 0 1rem;
+}
+
+.environment-indicators button {
+  background-color: #a6c8ae;
+}
+
+.environment-indicators button.active {
+  background-color: #14532d;
 }
 
 .lightbox-overlay {

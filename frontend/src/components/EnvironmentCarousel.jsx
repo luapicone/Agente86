@@ -1,64 +1,60 @@
+import { useState } from 'react'
+
 function EnvironmentCarousel({ items, onOpen }) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+
   if (!items?.length) {
     return null
   }
 
+  const currentItem = items[currentIndex]
+
+  const goPrevious = () => {
+    setCurrentIndex((prev) => (prev === 0 ? items.length - 1 : prev - 1))
+  }
+
+  const goNext = () => {
+    setCurrentIndex((prev) => (prev === items.length - 1 ? 0 : prev + 1))
+  }
+
   return (
-    <div id="environmentCarousel" className="carousel slide environment-carousel" data-bs-ride="false">
-      <div className="carousel-indicators">
+    <div className="environment-carousel-manual">
+      <div className="carousel-indicators environment-indicators">
         {items.map((item, index) => (
           <button
             key={item.id}
             type="button"
-            data-bs-target="#environmentCarousel"
-            data-bs-slide-to={index}
-            className={index === 0 ? 'active' : ''}
-            aria-current={index === 0 ? 'true' : undefined}
+            className={index === currentIndex ? 'active' : ''}
+            aria-current={index === currentIndex ? 'true' : undefined}
             aria-label={`Slide ${index + 1}`}
+            onClick={() => setCurrentIndex(index)}
           ></button>
         ))}
       </div>
 
-      <div className="carousel-inner rounded-4 overflow-hidden shadow-sm">
-        {items.map((item, index) => (
-          <div key={item.id} className={`carousel-item ${index === 0 ? 'active' : ''}`}>
-            <button
-              type="button"
-              className="environment-slide-button"
-              onClick={() => onOpen(item)}
-            >
-              <img src={item.imageUrl} className="d-block w-100 environment-image" alt={item.title} />
-              <div className="carousel-caption-custom">
-                <span className="environment-chip">{item.environmentLabel}</span>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </div>
-            </button>
+      <div className="rounded-4 overflow-hidden shadow-sm environment-frame">
+        <button type="button" className="environment-slide-button" onClick={() => onOpen(currentItem)}>
+          <img src={currentItem.imageUrl} className="d-block w-100 environment-image" alt={currentItem.title} />
+          <div className="carousel-caption-custom">
+            <span className="environment-chip">{currentItem.environmentLabel}</span>
+            <h3>{currentItem.title}</h3>
+            <p>{currentItem.description}</p>
           </div>
-        ))}
+        </button>
       </div>
 
       {items.length > 1 ? (
-        <>
-          <button
-            className="carousel-control-prev"
-            type="button"
-            data-bs-target="#environmentCarousel"
-            data-bs-slide="prev"
-          >
-            <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span className="visually-hidden">Previous</span>
+        <div className="environment-carousel-controls">
+          <button className="btn btn-outline-success" type="button" onClick={goPrevious}>
+            Anterior
           </button>
-          <button
-            className="carousel-control-next"
-            type="button"
-            data-bs-target="#environmentCarousel"
-            data-bs-slide="next"
-          >
-            <span className="carousel-control-next-icon" aria-hidden="true"></span>
-            <span className="visually-hidden">Next</span>
+          <span className="environment-counter">
+            {currentIndex + 1} / {items.length}
+          </span>
+          <button className="btn btn-success" type="button" onClick={goNext}>
+            Siguiente
           </button>
-        </>
+        </div>
       ) : null}
     </div>
   )
