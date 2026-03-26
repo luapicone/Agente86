@@ -6,40 +6,19 @@ import { generateRender } from './services/renderApi'
 import { generateRenderWithPuter } from './services/puterRender'
 import EnvironmentCarousel from './components/EnvironmentCarousel'
 import ImageLightbox from './components/ImageLightbox'
+import ProjectChatbot from './components/ProjectChatbot'
 import {
   buildEnvironmentPrompt,
   expandEnvironmentViews,
   getEnvironmentDefinitions,
 } from './utils/environmentPrompts'
 
-const initialForm = {
-  projectName: '',
-  propertyType: 'casa',
-  squareMeters: '',
-  bedrooms: '2',
-  bathrooms: '1',
-  terrainType: 'urbano',
-  budget: '',
-  priority: 'costo',
-  location: '',
-  climate: 'templado',
-  material: 'madera-reciclada',
-  familyMembers: '4',
-  hasLand: 'si',
-  urgency: 'media',
-  qualityLevel: 'bajo',
-  floors: '1',
-  hasSuiteBathroom: false,
-  hasPool: false,
-  hasGarage: false,
-  hasQuincho: false,
-  hasGrill: false,
-}
+const initialAnswers = {}
 
 function App() {
   const [currentView, setCurrentView] = useState('home')
-  const [formData, setFormData] = useState(initialForm)
   const [generatedProject, setGeneratedProject] = useState(null)
+  const [chatAnswers, setChatAnswers] = useState(initialAnswers)
   const [isGeneratingImage, setIsGeneratingImage] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState('')
@@ -82,23 +61,15 @@ function App() {
     },
   ]
 
-  const handleChange = ({ target }) => {
-    const { name, value, type, checked } = target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }))
-  }
-
-  const generateEnvironmentGallery = async (project) => {
-    const environments = getEnvironmentDefinitions(formData)
+  const generateEnvironmentGallery = async (project, answers) => {
+    const environments = getEnvironmentDefinitions(answers)
     const images = []
 
     for (const environment of environments) {
       const views = expandEnvironmentViews(environment)
 
       for (const view of views) {
-        const prompt = buildEnvironmentPrompt(view, project, formData)
+        const prompt = buildEnvironmentPrompt(view, project, answers)
 
         try {
           const puterRender = await generateRenderWithPuter({
@@ -126,22 +97,22 @@ function App() {
     return images
   }
 
-  const handleGenerate = async (event) => {
-    event.preventDefault()
+  const handleGenerateFromChat = async (answers) => {
     setFormError('')
     setImageLoadFailed(false)
     setIsSubmitting(true)
     setIsGeneratingImage(true)
     setCurrentView('generator')
+    setChatAnswers(answers)
 
     try {
       const normalizedPayload = {
-        ...formData,
-        squareMeters: Number(formData.squareMeters || 0),
-        bedrooms: Number(formData.bedrooms || 0),
-        bathrooms: Number(formData.bathrooms || 0),
-        budget: Number(formData.budget || 0),
-        floors: Number(formData.floors || 1),
+        ...answers,
+        squareMeters: Number(answers.squareMeters || 0),
+        bedrooms: Number(answers.bedrooms || 0),
+        bathrooms: Number(answers.bathrooms || 0),
+        budget: Number(answers.budget || 0),
+        floors: Number(answers.floors || 1),
       }
 
       const generated = await generateProjectProposal(normalizedPayload)
@@ -166,7 +137,7 @@ function App() {
         }
       }
 
-      const environmentGallery = await generateEnvironmentGallery(generated)
+      const environmentGallery = await generateEnvironmentGallery(generated, normalizedPayload)
 
       setGeneratedProject({
         ...generated,
@@ -213,7 +184,7 @@ function App() {
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#mainNavbar"
-            aria-controls="mainNavbar"
+            aria-controls="#mainNavbar"
             aria-expanded="false"
             aria-label="Toggle navigation"
           >
@@ -228,12 +199,12 @@ function App() {
               </li>
               <li className="nav-item">
                 <button className="nav-link btn btn-link" onClick={() => setCurrentView('generator')}>
-                  Generador
+                  Configurador
                 </button>
               </li>
               <li className="nav-item">
                 <button className="btn btn-success ms-lg-2" onClick={() => setCurrentView('generator')}>
-                  Probar demo
+                  Empezar ahora
                 </button>
               </li>
             </ul>
@@ -257,7 +228,7 @@ function App() {
                   </p>
                   <div className="d-flex flex-wrap gap-3">
                     <button className="btn btn-success btn-lg px-4" onClick={() => setCurrentView('generator')}>
-                      Crear propuesta
+                      Iniciar conversación
                     </button>
                     <a href="#impacto" className="btn btn-outline-light btn-lg px-4">
                       Ver triple impacto
@@ -349,7 +320,7 @@ function App() {
               <div className="container">
                 <div className="row g-4 align-items-center">
                   <div className="col-lg-6">
-                    <h2 className="section-title text-start">Tecnologías base del proyecto</h2>
+                    <h2 className="section-title text-start">Tecnología base del proyecto</h2>
                     <p className="section-text text-start mx-0 mb-4">
                       La plataforma fue pensada para dar una primera orientación clara sobre qué vivienda conviene,
                       cuánto podría costar y cómo se podría construir de forma progresiva.
@@ -404,277 +375,8 @@ function App() {
           <div className="container">
             <div className="row g-4 align-items-start">
               <div className="col-lg-7">
-                <div className="generator-card shadow-sm">
-                  <div className="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
-                    <div>
-                      <span className="section-kicker">Generador de viviendas</span>
-                      <h1 className="section-title mb-2">Configurá tu proyecto</h1>
-                      <p className="text-muted mb-0">
-                        Completá estos datos para obtener una propuesta de vivienda accesible según las necesidades de tu familia.
-                      </p>
-                    </div>
-                    <button className="btn btn-outline-success" onClick={() => setCurrentView('home')}>
-                      Volver al inicio
-                    </button>
-                  </div>
-
-                  <form onSubmit={handleGenerate}>
-                    <div className="row g-3">
-                      <div className="col-md-6">
-                        <label className="form-label">Nombre del proyecto</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="projectName"
-                          value={formData.projectName}
-                          onChange={handleChange}
-                          placeholder="Ej: Vivienda familiar zona sur"
-                        />
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Tipo de proyecto</label>
-                        <select className="form-select" name="propertyType" value={formData.propertyType} onChange={handleChange}>
-                          <option value="casa">Casa</option>
-                          <option value="departamento">Departamento</option>
-                        </select>
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Ubicación</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="location"
-                          value={formData.location}
-                          onChange={handleChange}
-                          placeholder="Ej: Córdoba, Argentina"
-                        />
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Metros cuadrados</label>
-                        <input
-                          type="number"
-                          min="20"
-                          className="form-control"
-                          name="squareMeters"
-                          value={formData.squareMeters}
-                          onChange={handleChange}
-                          placeholder="70"
-                          required
-                        />
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label">Dormitorios</label>
-                        <select className="form-select" name="bedrooms" value={formData.bedrooms} onChange={handleChange}>
-                          <option value="1">1</option>
-                          <option value="2">2</option>
-                          <option value="3">3</option>
-                          <option value="4">4</option>
-                        </select>
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label">Baños</label>
-                        <select className="form-select" name="bathrooms" value={formData.bathrooms} onChange={handleChange}>
-                          <option value="1">1</option>
-                          <option value="2">2</option>
-                          <option value="3">3</option>
-                        </select>
-                      </div>
-                      {formData.propertyType === 'casa' ? (
-                        <div className="col-md-4">
-                          <label className="form-label">Cantidad de pisos</label>
-                          <select className="form-select" name="floors" value={formData.floors} onChange={handleChange}>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                          </select>
-                        </div>
-                      ) : null}
-                      <div className="col-md-6">
-                        <label className="form-label">Tipo de terreno</label>
-                        <select className="form-select" name="terrainType" value={formData.terrainType} onChange={handleChange}>
-                          <option value="urbano">Urbano</option>
-                          <option value="suburbano">Suburbano</option>
-                          <option value="rural">Rural</option>
-                          <option value="pendiente">Con pendiente</option>
-                        </select>
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Presupuesto máximo disponible (USD)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-control"
-                          name="budget"
-                          value={formData.budget}
-                          onChange={handleChange}
-                          placeholder="60000"
-                        />
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label">Cantidad de personas en la familia</label>
-                        <select className="form-select" name="familyMembers" value={formData.familyMembers} onChange={handleChange}>
-                          <option value="1">1</option>
-                          <option value="2">2</option>
-                          <option value="3">3</option>
-                          <option value="4">4</option>
-                          <option value="5">5</option>
-                          <option value="6">6 o más</option>
-                        </select>
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label">¿Ya tiene terreno?</label>
-                        <select className="form-select" name="hasLand" value={formData.hasLand} onChange={handleChange}>
-                          <option value="si">Sí</option>
-                          <option value="no">No</option>
-                        </select>
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label">Urgencia de la solución</label>
-                        <select className="form-select" name="urgency" value={formData.urgency} onChange={handleChange}>
-                          <option value="alta">Alta</option>
-                          <option value="media">Media</option>
-                          <option value="baja">Baja</option>
-                        </select>
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label">Prioridad</label>
-                        <select className="form-select" name="priority" value={formData.priority} onChange={handleChange}>
-                          <option value="costo">Menor costo</option>
-                          <option value="eficiencia">Menor gasto de mantenimiento</option>
-                          <option value="sostenibilidad">Construcción más sostenible</option>
-                        </select>
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label">Nivel de calidad buscado</label>
-                        <select className="form-select" name="qualityLevel" value={formData.qualityLevel} onChange={handleChange}>
-                          <option value="bajo">Bajo</option>
-                          <option value="medio">Medio</option>
-                          <option value="alto">Alto</option>
-                        </select>
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label">Clima</label>
-                        <select className="form-select" name="climate" value={formData.climate} onChange={handleChange}>
-                          <option value="templado">Templado</option>
-                          <option value="calido">Cálido</option>
-                          <option value="frio">Frío</option>
-                          <option value="humedo">Húmedo</option>
-                        </select>
-                      </div>
-                      <div className="col-md-4">
-                        <label className="form-label">Material preferido</label>
-                        <select className="form-select" name="material" value={formData.material} onChange={handleChange}>
-                          <option value="madera-reciclada">Madera reciclada</option>
-                          <option value="hormigon-verde">Hormigón verde</option>
-                          <option value="acero-reciclado">Acero reciclado</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {formData.propertyType === 'casa' ? (
-                      <div className="house-options-panel mt-4">
-                        <h3 className="h5 fw-bold mb-3">Detalles adicionales para casa</h3>
-                        <div className="row g-3">
-                          <div className="col-md-6 col-lg-4">
-                            <div className="form-check option-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                id="hasSuiteBathroom"
-                                name="hasSuiteBathroom"
-                                checked={formData.hasSuiteBathroom}
-                                onChange={handleChange}
-                              />
-                              <label className="form-check-label" htmlFor="hasSuiteBathroom">
-                                Habitación principal con baño en suite
-                              </label>
-                            </div>
-                          </div>
-                          <div className="col-md-6 col-lg-4">
-                            <div className="form-check option-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                id="hasPool"
-                                name="hasPool"
-                                checked={formData.hasPool}
-                                onChange={handleChange}
-                              />
-                              <label className="form-check-label" htmlFor="hasPool">
-                                Pileta
-                              </label>
-                            </div>
-                          </div>
-                          <div className="col-md-6 col-lg-4">
-                            <div className="form-check option-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                id="hasGarage"
-                                name="hasGarage"
-                                checked={formData.hasGarage}
-                                onChange={handleChange}
-                              />
-                              <label className="form-check-label" htmlFor="hasGarage">
-                                Garage
-                              </label>
-                            </div>
-                          </div>
-                          <div className="col-md-6 col-lg-4">
-                            <div className="form-check option-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                id="hasQuincho"
-                                name="hasQuincho"
-                                checked={formData.hasQuincho}
-                                onChange={handleChange}
-                              />
-                              <label className="form-check-label" htmlFor="hasQuincho">
-                                Quincho
-                              </label>
-                            </div>
-                          </div>
-                          <div className="col-md-6 col-lg-4">
-                            <div className="form-check option-check">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                id="hasGrill"
-                                name="hasGrill"
-                                checked={formData.hasGrill}
-                                onChange={handleChange}
-                              />
-                              <label className="form-check-label" htmlFor="hasGrill">
-                                Parrilla
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {formError ? <div className="alert alert-danger mt-4 mb-0">{formError}</div> : null}
-
-                    <div className="d-flex flex-wrap gap-3 mt-4">
-                      <button type="submit" className="btn btn-success btn-lg" disabled={isSubmitting}>
-                        {isSubmitting ? 'Generando...' : 'Generar propuesta'}
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary btn-lg"
-                        onClick={() => {
-                          setFormData(initialForm)
-                          setGeneratedProject(null)
-                          setFormError('')
-                          setImageLoadFailed(false)
-                        }}
-                      >
-                        Limpiar formulario
-                      </button>
-                    </div>
-                  </form>
-                </div>
+                <ProjectChatbot initialAnswers={initialAnswers} onComplete={handleGenerateFromChat} isSubmitting={isSubmitting} />
+                {formError ? <div className="alert alert-danger mt-4">{formError}</div> : null}
               </div>
 
               <div className="col-lg-5">
@@ -734,10 +436,10 @@ function App() {
                         <ul className="result-list mb-0">
                           <li>Tipo: {generatedProject.propertyType}</li>
                           {generatedProject.propertyType === 'Casa' ? <li>Pisos: {generatedProject.floors}</li> : null}
-                          <li>Familia estimada: {formData.familyMembers} integrante(s)</li>
-                          <li>Terreno disponible: {formData.hasLand === 'si' ? 'Sí' : 'No'}</li>
-                          <li>Urgencia: {formData.urgency}</li>
-                          <li>Nivel de calidad: {formData.qualityLevel}</li>
+                          <li>Familia estimada: {chatAnswers.familyMembers} integrante(s)</li>
+                          <li>Terreno disponible: {chatAnswers.hasLand === 'si' ? 'Sí' : 'No'}</li>
+                          <li>Urgencia: {chatAnswers.urgency}</li>
+                          <li>Nivel de calidad: {chatAnswers.qualityLevel}</li>
                           {generatedProject.selectedFeatures?.map((feature) => (
                             <li key={feature}>{feature}</li>
                           ))}
@@ -758,7 +460,7 @@ function App() {
                   ) : (
                     <div className="empty-state">
                       <p className="text-muted mb-3">
-                        Completá el formulario para generar una propuesta inicial de vivienda sostenible.
+                        Cuando termines de responder el chat, acá vas a ver la propuesta general del proyecto.
                       </p>
                       <ul className="result-list mb-0">
                         <li>Estimación de costo de construcción</li>
@@ -850,8 +552,7 @@ function App() {
                   ) : (
                     <div className="empty-state">
                       <p className="text-muted mb-0">
-                        Al generar la propuesta, acá se mostrará una visualización conceptual de la vivienda según
-                        los parámetros ingresados por el usuario.
+                        Una vez generada la propuesta, acá vas a ver la imagen principal de la vivienda.
                       </p>
                     </div>
                   )}
