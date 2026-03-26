@@ -1,5 +1,6 @@
 const { buildImagePrompt } = require('./imagePromptService')
 const { estimateMaterials } = require('./materialEstimationService')
+const { generateConceptFloorPlan } = require('./floorPlanService')
 
 const MATERIAL_LABELS = {
   'madera-reciclada': 'Madera reciclada tratada + panelería modular',
@@ -78,6 +79,7 @@ function buildProjectProposal(payload = {}) {
 
   const imagePromptData = buildImagePrompt(payload, projectData)
   const materialEstimation = estimateMaterials(payload)
+  const conceptFloorPlan = generateConceptFloorPlan(payload)
 
   return {
     ...projectData,
@@ -85,6 +87,7 @@ function buildProjectProposal(payload = {}) {
     negativePrompt: imagePromptData.negativePrompt,
     imageStyle: imagePromptData.styleLabel,
     materialEstimate: materialEstimation,
+    conceptFloorPlan,
     renderProviders: ['deepai', 'huggingface', 'pollinations', 'replicate'],
   }
 }

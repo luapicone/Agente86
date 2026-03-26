@@ -730,6 +730,33 @@
   margin-bottom: 0.8rem;
 }
 
+.floorplan-canvas {
+  position: relative;
+  width: 100%;
+  min-height: 520px;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #f8fbf8 0%, #eef4ef 100%);
+  border: 1px solid #dce7dd;
+  overflow: hidden;
+}
+
+.floorplan-room {
+  position: absolute;
+  background: rgba(45, 139, 89, 0.12);
+  border: 2px solid #2d8b59;
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #1f3528;
+  font-size: 0.85rem;
+}
+
+.floorplan-room strong {
+  font-size: 0.88rem;
+}
+
 @media (max-width: 991px) {
   .section-title {
     font-size: 1.8rem;

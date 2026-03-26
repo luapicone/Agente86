@@ -49,6 +49,16 @@ const architectListings = [
     price: 14,
     discountPrice: 10.5,
   },
+  {
+    id: 'mat-006',
+    materialKey: 'cubierta',
+    materialName: 'Panel de cubierta liviana',
+    architect: 'Arq. Reuso Norte',
+    stock: 90,
+    unit: 'm2',
+    price: 18,
+    discountPrice: 14.2,
+  },
 ]
 
 function getMarketplaceListings() {

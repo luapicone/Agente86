@@ -9,6 +9,7 @@ import EnvironmentCarousel from './components/EnvironmentCarousel'
 import ImageLightbox from './components/ImageLightbox'
 import ProjectChatbot from './components/ProjectChatbot'
 import ArchitectMarketplace from './components/ArchitectMarketplace'
+import ConceptFloorPlan from './components/ConceptFloorPlan'
 import {
   buildEnvironmentPrompt,
   buildMasterHousePrompt,
@@ -641,6 +642,8 @@ function App() {
                 </div>
               </div>
             </div>
+
+            {generatedProject?.conceptFloorPlan ? <ConceptFloorPlan plan={generatedProject.conceptFloorPlan} /> : null}
 
             {generatedProject?.environmentGallery?.length ? (
               <section className="environment-section mt-4">
