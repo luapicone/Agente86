@@ -29,6 +29,7 @@ function EnvironmentCarousel({ items, onOpen }) {
             >
               <img src={item.imageUrl} className="d-block w-100 environment-image" alt={item.title} />
               <div className="carousel-caption-custom">
+                <span className="environment-chip">{item.environmentLabel}</span>
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
               </div>

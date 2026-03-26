@@ -6,7 +6,11 @@ import { generateRender } from './services/renderApi'
 import { generateRenderWithPuter } from './services/puterRender'
 import EnvironmentCarousel from './components/EnvironmentCarousel'
 import ImageLightbox from './components/ImageLightbox'
-import { buildEnvironmentPrompt, getEnvironmentDefinitions } from './utils/environmentPrompts'
+import {
+  buildEnvironmentPrompt,
+  expandEnvironmentViews,
+  getEnvironmentDefinitions,
+} from './utils/environmentPrompts'
 
 const initialForm = {
   projectName: '',
@@ -87,25 +91,31 @@ function App() {
     const images = []
 
     for (const environment of environments) {
-      const prompt = buildEnvironmentPrompt(environment, project)
+      const views = expandEnvironmentViews(environment)
 
-      try {
-        const puterRender = await generateRenderWithPuter({
-          prompt,
-          negativePrompt: project.negativePrompt,
-        })
+      for (const view of views) {
+        const prompt = buildEnvironmentPrompt(view, project)
 
-        images.push({
-          ...environment,
-          imageUrl: puterRender.imageUrl,
-          provider: puterRender.provider,
-        })
-      } catch (_error) {
-        images.push({
-          ...environment,
-          imageUrl: null,
-          provider: 'fallback',
-        })
+        try {
+          const puterRender = await generateRenderWithPuter({
+            prompt,
+            negativePrompt: project.negativePrompt,
+          })
+
+          images.push({
+            ...view,
+            environmentLabel: environment.title,
+            imageUrl: puterRender.imageUrl,
+            provider: puterRender.provider,
+          })
+        } catch (_error) {
+          images.push({
+            ...view,
+            environmentLabel: environment.title,
+            imageUrl: null,
+            provider: 'fallback',
+          })
+        }
       }
     }
 
@@ -679,6 +689,17 @@ function App() {
                       <div className="mb-3">
                         <h3 className="h6 fw-bold">Distribución sugerida</h3>
                         <p className="mb-0 text-muted">{generatedProject.recommendedLayout}</p>
+                      </div>
+
+                      <div className="mb-3">
+                        <h3 className="h6 fw-bold">Configuración elegida</h3>
+                        <ul className="result-list mb-0">
+                          <li>Tipo: {generatedProject.propertyType}</li>
+                          {generatedProject.propertyType === 'Casa' ? <li>Pisos: {generatedProject.floors}</li> : null}
+                          {generatedProject.selectedFeatures?.map((feature) => (
+                            <li key={feature}>{feature}</li>
+                          ))}
+                        </ul>
                       </div>
 
                       <div>

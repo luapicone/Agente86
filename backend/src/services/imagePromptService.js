@@ -17,6 +17,23 @@ const CLIMATE_DESCRIPTIONS = {
   humedo: 'humid climate with elevated ventilation, resistant materials and breathable facades',
 }
 
+function buildExtraHouseFeatures(payload = {}) {
+  if (payload.propertyType !== 'casa') {
+    return 'apartment layout optimized for vertical building living'
+  }
+
+  const extras = [
+    `${Number(payload.floors || 1)} floor house`,
+    payload.hasSuiteBathroom ? 'master bedroom with ensuite bathroom' : null,
+    payload.hasPool ? 'swimming pool integrated with outdoor area' : null,
+    payload.hasGarage ? 'covered garage for vehicles' : null,
+    payload.hasQuincho ? 'quincho / covered social barbecue area' : null,
+    payload.hasGrill ? 'dedicated outdoor grill area' : null,
+  ].filter(Boolean)
+
+  return extras.join(', ')
+}
+
 function buildImagePrompt(payload = {}, projectData = {}) {
   const squareMeters = Number(payload.squareMeters || 0)
   const bedrooms = Number(payload.bedrooms || 0)
@@ -24,9 +41,11 @@ function buildImagePrompt(payload = {}, projectData = {}) {
   const material = MATERIAL_DESCRIPTIONS[payload.material] || 'sustainable modular construction'
   const priority = PRIORITY_DESCRIPTIONS[payload.priority] || 'focused on sustainable living'
   const climate = CLIMATE_DESCRIPTIONS[payload.climate] || 'temperate climate with natural lighting'
+  const propertyType = payload.propertyType === 'departamento' ? 'apartment' : 'house'
+  const extras = buildExtraHouseFeatures(payload)
 
   const prompt = [
-    'Photorealistic architectural render of a sustainable modular house',
+    `Photorealistic architectural render of a sustainable modular ${propertyType}`,
     `${squareMeters} square meters`,
     `${bedrooms} bedrooms`,
     `${bathrooms} bathrooms`,
@@ -34,6 +53,7 @@ function buildImagePrompt(payload = {}, projectData = {}) {
     climate,
     material,
     priority,
+    extras,
     'contemporary architecture, realistic exterior visualization, high detail, natural lighting, clean composition, landscaping, architectural presentation render',
   ].join(', ')
 

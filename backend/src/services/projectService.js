@@ -24,20 +24,31 @@ function buildProjectProposal(payload = {}) {
   const bedrooms = Number(payload.bedrooms || 0)
   const bathrooms = Number(payload.bathrooms || 0)
   const budget = Number(payload.budget || 0)
+  const floors = Number(payload.floors || 1)
+  const propertyType = payload.propertyType === 'departamento' ? 'Departamento' : 'Casa'
 
   if (!squareMeters || squareMeters < 20) {
     throw new Error('Los metros cuadrados deben ser mayores o iguales a 20.')
   }
 
   const estimatedCost =
-    budget || Math.round(squareMeters * 850 + bedrooms * 3500 + bathrooms * 2200)
+    budget || Math.round(squareMeters * 850 + bedrooms * 3500 + bathrooms * 2200 + floors * 1800)
 
   const sustainabilityScore = PRIORITY_SCORES[payload.priority] || 80
   const carbonReduction = `${Math.max(18, Math.round(squareMeters * 0.35))}%`
 
+  const houseExtras = []
+  if (payload.propertyType === 'casa') {
+    if (payload.hasSuiteBathroom) houseExtras.push('Dormitorio principal con baño en suite')
+    if (payload.hasPool) houseExtras.push('Pileta')
+    if (payload.hasGarage) houseExtras.push('Garage')
+    if (payload.hasQuincho) houseExtras.push('Quincho')
+    if (payload.hasGrill) houseExtras.push('Parrilla')
+  }
+
   const projectData = {
     projectName: payload.projectName || 'Proyecto HabitatIA',
-    summary: `Vivienda modular de ${squareMeters} m² pensada para ${bedrooms} dormitorio(s) y ${bathrooms} baño(s).`,
+    summary: `${propertyType} modular de ${squareMeters} m² pensada para ${bedrooms} dormitorio(s), ${bathrooms} baño(s) y ${payload.propertyType === 'casa' ? `${floors} piso(s)` : 'tipología en edificio'}.`,
     modularType: squareMeters >= 90 ? 'Modelo familiar expandible' : 'Modelo compacto modular',
     recommendedMaterial:
       MATERIAL_LABELS[payload.material] || 'Madera reciclada tratada + panelería modular',
@@ -47,6 +58,9 @@ function buildProjectProposal(payload = {}) {
     energyEfficiency:
       CLIMATE_STRATEGIES[payload.climate] || 'Aislamiento balanceado + ventilación natural cruzada',
     carbonReduction,
+    propertyType,
+    floors,
+    selectedFeatures: houseExtras,
     recommendedLayout:
       bedrooms >= 3
         ? 'Área social integrada + bloque privado + expansión futura lateral'
@@ -65,11 +79,7 @@ function buildProjectProposal(payload = {}) {
     imagePrompt: imagePromptData.prompt,
     negativePrompt: imagePromptData.negativePrompt,
     imageStyle: imagePromptData.styleLabel,
-    renderProviders: [
-      'huggingface',
-      'pollinations',
-      'replicate',
-    ],
+    renderProviders: ['deepai', 'huggingface', 'pollinations', 'replicate'],
   }
 }
 
