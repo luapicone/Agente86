@@ -1,72 +1,52 @@
-const architectListings = [
-  {
-    id: 'mat-001',
-    materialKey: 'cemento',
-    materialName: 'Cemento Portland x bolsa 50kg',
-    architect: 'Estudio Verde Sur',
-    stock: 40,
-    unit: 'bolsa',
-    price: 8,
-    discountPrice: 6.5,
-  },
-  {
-    id: 'mat-002',
-    materialKey: 'ladrillo',
-    materialName: 'Ladrillo hueco 18x18x33',
-    architect: 'Arq. Módulo Urbano',
-    stock: 1200,
-    unit: 'unidad',
-    price: 0.95,
-    discountPrice: 0.68,
-  },
-  {
-    id: 'mat-003',
-    materialKey: 'hierro',
-    materialName: 'Hierro de construcción 8mm',
-    architect: 'Constructora Habitat Social',
-    stock: 180,
-    unit: 'barra',
-    price: 12,
-    discountPrice: 9.8,
-  },
-  {
-    id: 'mat-004',
-    materialKey: 'abertura',
-    materialName: 'Ventana aluminio línea simple',
-    architect: 'Arq. Reuso Norte',
-    stock: 8,
-    unit: 'unidad',
-    price: 110,
-    discountPrice: 84,
-  },
-  {
-    id: 'mat-005',
-    materialKey: 'ceramica',
-    materialName: 'Cerámica piso pared 45x45',
-    architect: 'Estudio Verde Sur',
-    stock: 120,
-    unit: 'm2',
-    price: 14,
-    discountPrice: 10.5,
-  },
-  {
-    id: 'mat-006',
-    materialKey: 'cubierta',
-    materialName: 'Panel de cubierta liviana',
-    architect: 'Arq. Reuso Norte',
-    stock: 90,
-    unit: 'm2',
-    price: 18,
-    discountPrice: 14.2,
-  },
-]
+const fs = require('fs')
+const path = require('path')
 
-function getMarketplaceListings() {
-  return architectListings
+const DATA_PATH = path.join(__dirname, '..', '..', 'data', 'marketplace-materials.json')
+
+function readListings() {
+  const raw = fs.readFileSync(DATA_PATH, 'utf8')
+  return JSON.parse(raw)
 }
 
-function getBestArchitectOffer(materialKey, neededQuantity) {
-  const matches = architectListings.filter((item) => item.materialKey === materialKey && item.stock > 0)
+function writeListings(listings) {
+  fs.writeFileSync(DATA_PATH, JSON.stringify(listings, null, 2))
+}
+
+function getMarketplaceListings(filters = {}) {
+  const listings = readListings()
+
+  return listings.filter((item) => {
+    const matchesLocation = filters.location
+      ? item.location?.toLowerCase().includes(filters.location.toLowerCase())
+      : true
+    const matchesMaterial = filters.materialKey ? item.materialKey === filters.materialKey : true
+
+    return matchesLocation && matchesMaterial
+  })
+}
+
+function createMarketplaceListing(payload = {}) {
+  const listings = readListings()
+
+  const newItem = {
+    id: `mat-${Date.now()}`,
+    materialKey: payload.materialKey,
+    materialName: payload.materialName,
+    architect: payload.architect,
+    stock: Number(payload.stock || 0),
+    unit: payload.unit,
+    price: Number(payload.price || 0),
+    discountPrice: Number(payload.discountPrice || 0),
+    location: payload.location || 'Sin ubicación',
+  }
+
+  listings.push(newItem)
+  writeListings(listings)
+  return newItem
+}
+
+function getBestArchitectOffer(materialKey, neededQuantity, location) {
+  const matches = getMarketplaceListings({ materialKey, location }).filter((item) => item.stock > 0)
 
   if (!matches.length) {
     return null
@@ -83,5 +63,6 @@ function getBestArchitectOffer(materialKey, neededQuantity) {
 
 module.exports = {
   getMarketplaceListings,
+  createMarketplaceListing,
   getBestArchitectOffer,
 }

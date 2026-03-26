@@ -77,7 +77,7 @@ function estimateMaterials(payload = {}) {
     const baseTotal = round(material.quantity * material.unitPrice)
     optimizedTotal += baseTotal
 
-    const architectOffer = getBestArchitectOffer(material.key, material.quantity)
+    const architectOffer = getBestArchitectOffer(material.key, material.quantity, payload.location)
 
     if (!architectOffer) {
       return {

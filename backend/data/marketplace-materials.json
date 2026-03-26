@@ -1,0 +1,68 @@
+[
+  {
+    "id": "mat-001",
+    "materialKey": "cemento",
+    "materialName": "Cemento Portland x bolsa 50kg",
+    "architect": "Estudio Verde Sur",
+    "stock": 40,
+    "unit": "bolsa",
+    "price": 8,
+    "discountPrice": 6.5,
+    "location": "Córdoba"
+  },
+  {
+    "id": "mat-002",
+    "materialKey": "ladrillo",
+    "materialName": "Ladrillo hueco 18x18x33",
+    "architect": "Arq. Módulo Urbano",
+    "stock": 1200,
+    "unit": "unidad",
+    "price": 0.95,
+    "discountPrice": 0.68,
+    "location": "Rosario"
+  },
+  {
+    "id": "mat-003",
+    "materialKey": "hierro",
+    "materialName": "Hierro de construcción 8mm",
+    "architect": "Constructora Habitat Social",
+    "stock": 180,
+    "unit": "barra",
+    "price": 12,
+    "discountPrice": 9.8,
+    "location": "Buenos Aires"
+  },
+  {
+    "id": "mat-004",
+    "materialKey": "abertura",
+    "materialName": "Ventana aluminio línea simple",
+    "architect": "Arq. Reuso Norte",
+    "stock": 8,
+    "unit": "unidad",
+    "price": 110,
+    "discountPrice": 84,
+    "location": "Mendoza"
+  },
+  {
+    "id": "mat-005",
+    "materialKey": "ceramica",
+    "materialName": "Cerámica piso pared 45x45",
+    "architect": "Estudio Verde Sur",
+    "stock": 120,
+    "unit": "m2",
+    "price": 14,
+    "discountPrice": 10.5,
+    "location": "Córdoba"
+  },
+  {
+    "id": "mat-006",
+    "materialKey": "cubierta",
+    "materialName": "Panel de cubierta liviana",
+    "architect": "Arq. Reuso Norte",
+    "stock": 90,
+    "unit": "m2",
+    "price": 18,
+    "discountPrice": 14.2,
+    "location": "Mendoza"
+  }
+]

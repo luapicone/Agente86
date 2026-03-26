@@ -4,7 +4,7 @@ import './App.css'
 import { generateProjectProposal } from './services/api'
 import { generateRender } from './services/renderApi'
 import { generateRenderWithPuter } from './services/puterRender'
-import { fetchMarketplaceMaterials } from './services/marketplaceApi'
+import { createMarketplaceMaterial, fetchMarketplaceMaterials } from './services/marketplaceApi'
 import EnvironmentCarousel from './components/EnvironmentCarousel'
 import ImageLightbox from './components/ImageLightbox'
 import ProjectChatbot from './components/ProjectChatbot'
@@ -145,7 +145,7 @@ function App() {
       }
 
       const environmentGallery = await generateEnvironmentGallery(generated, normalizedPayload, masterPrompt)
-      const marketplaceResponse = await fetchMarketplaceMaterials().catch(() => ({ items: [] }))
+      const marketplaceResponse = await fetchMarketplaceMaterials(normalizedPayload.location).catch(() => ({ items: [] }))
       setMarketplaceItems(marketplaceResponse.items || [])
 
       setGeneratedProject({
@@ -166,6 +166,16 @@ function App() {
     } finally {
       setIsSubmitting(false)
       setIsGeneratingImage(false)
+    }
+  }
+
+  const handlePublishMarketplaceMaterial = async (payload) => {
+    try {
+      await createMarketplaceMaterial(payload)
+      const refreshed = await fetchMarketplaceMaterials(chatAnswers.location).catch(() => ({ items: [] }))
+      setMarketplaceItems(refreshed.items || [])
+    } catch (_error) {
+      // no-op MVP
     }
   }
 
@@ -593,7 +603,7 @@ function App() {
               </section>
             ) : null}
 
-            <ArchitectMarketplace items={marketplaceItems} />
+            <ArchitectMarketplace items={marketplaceItems} onPublish={handlePublishMarketplaceMaterial} />
           </div>
         </main>
       )}
