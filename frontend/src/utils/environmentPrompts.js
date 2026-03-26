@@ -22,99 +22,114 @@ function buildProjectDesignBrief(formData, project) {
     `${project.projectName}`,
     `${project.propertyType}`,
     `${floorsText}`,
-    `${formData.squareMeters} square meters`,
+    `${formData.squareMeters} square meters total built area`,
     `${formData.bedrooms} bedrooms`,
     `${formData.bathrooms} bathrooms`,
     `material palette: ${project.recommendedMaterial}`,
     `architectural language: contemporary sustainable architecture`,
     QUALITY_VISUAL_GUIDANCE[formData.qualityLevel] || QUALITY_VISUAL_GUIDANCE.bajo,
-    `same house model, same structure, same materials, same lighting conditions, same design language across all renders`,
+    `same exact house model, same colors, same facade materials, same windows, same doors, same interior finishes, same design language across all renders`,
+    `maintain visual continuity and consistency between all scenes`,
     extras.join(', '),
   ]
     .filter(Boolean)
     .join(', ')
 }
 
+export function buildMasterHousePrompt(formData, project) {
+  const designBrief = buildProjectDesignBrief(formData, project)
+
+  return [
+    designBrief,
+    'master reference render of the full house',
+    'generate the full architectural concept of the house as a single coherent project',
+    'this image defines the colors, materials, architectural language, proportions and overall identity for all future room renders',
+    'ultra realistic architectural photography',
+    'photorealistic render, natural light, realistic materials, realistic shadows, realistic proportions',
+    'not illustration, not sketch, not cartoon, not hand-drawn',
+  ].join(', ')
+}
+
 const baseEnvironments = {
   exterior: {
     title: 'Fachada principal',
-    description: 'Main exterior facade of the project, clearly showing the full house volume and architectural identity.',
+    description: 'Main exterior facade of the same house project, clearly showing the full house volume and architectural identity.',
     views: [
-      'front elevation view showing the complete facade',
-      'angled exterior perspective from street level',
-      'wide exterior shot showing facade, access and landscaping',
+      'front elevation view showing the complete facade of the same house',
+      'angled exterior perspective from street level of the same house',
+      'wide exterior shot showing facade, access and landscaping of the same house',
     ],
   },
   living: {
     title: 'Living comedor',
-    description: 'Main living and dining room interior, open social space with furniture, lighting and circulation.',
+    description: 'Main living and dining room interior of the same house, open social space with furniture, lighting and circulation.',
     views: [
-      'wide interior shot of the living room and dining area',
-      'interior perspective from seating area toward dining area',
+      'wide interior shot of the living room and dining area of the same house',
+      'interior perspective from seating area toward dining area of the same house',
     ],
   },
   kitchen: {
     title: 'Cocina',
-    description: 'Kitchen interior only, showing counters, cabinetry, appliances and work surfaces.',
+    description: 'Kitchen interior of the same house only, showing counters, cabinetry, appliances and work surfaces.',
     views: [
-      'main kitchen perspective showing cabinets and countertop',
-      'secondary angle showing island, sink or cooking area',
+      'main kitchen perspective of the same house showing cabinets and countertop',
+      'secondary angle of the same house kitchen showing island, sink or cooking area',
     ],
   },
   bedroom: {
     title: 'Dormitorio principal',
-    description: 'Master bedroom interior only, showing bed, side tables, textures and calm residential atmosphere.',
+    description: 'Master bedroom interior of the same house only, showing bed, side tables, textures and calm residential atmosphere.',
     views: [
-      'main perspective of the master bedroom centered on the bed',
-      'secondary perspective showing windows, circulation and furniture',
+      'main perspective of the master bedroom of the same house centered on the bed',
+      'secondary perspective of the same house bedroom showing windows, circulation and furniture',
     ],
   },
   bathroom: {
     title: 'Baño',
-    description: 'Bathroom interior only, showing vanity, mirror, shower or bathtub and realistic finishes.',
+    description: 'Bathroom interior of the same house only, showing vanity, mirror, shower or bathtub and realistic finishes.',
     views: [
-      'main bathroom shot showing vanity and mirror',
-      'secondary bathroom shot showing shower, bathtub or enclosure',
+      'main bathroom shot of the same house showing vanity and mirror',
+      'secondary bathroom shot of the same house showing shower, bathtub or enclosure',
     ],
   },
   backyard: {
     title: 'Patio / jardín',
-    description: 'Backyard or garden exterior space integrated to the house architecture.',
+    description: 'Backyard or garden exterior space of the same house integrated to the architecture.',
     views: [
-      'wide backyard shot showing lawn, vegetation and relation with the house',
-      'outdoor perspective showing patio expansion and recreational area',
+      'wide backyard shot of the same house showing lawn, vegetation and relation with the house',
+      'outdoor perspective of the same house showing patio expansion and recreational area',
     ],
   },
   pool: {
     title: 'Pileta',
-    description: 'Swimming pool area only, clearly visible and integrated with the exterior design.',
+    description: 'Swimming pool area of the same house only, clearly visible and integrated with the exterior design.',
     views: [
-      'main pool perspective showing water, deck and surrounding architecture',
-      'secondary angle from the pool area toward the house',
+      'main pool perspective of the same house showing water, deck and surrounding architecture',
+      'secondary angle from the pool area toward the same house',
     ],
   },
   garage: {
     title: 'Garage',
-    description: 'Garage or car access area only, showing vehicle space and architectural integration.',
+    description: 'Garage or car access area of the same house only, showing vehicle space and architectural integration.',
     views: [
-      'garage exterior or semi-covered access shot',
-      'garage interior angle showing parking and circulation space',
+      'garage exterior or semi-covered access shot of the same house',
+      'garage interior angle of the same house showing parking and circulation space',
     ],
   },
   quincho: {
     title: 'Quincho',
-    description: 'Quincho or covered social area only, designed for gatherings and outdoor living.',
+    description: 'Quincho or covered social area of the same house only, designed for gatherings and outdoor living.',
     views: [
-      'main quincho perspective with table, seating and roofed area',
-      'secondary angle showing relationship with backyard or grill area',
+      'main quincho perspective of the same house with table, seating and roofed area',
+      'secondary angle of the same house quincho showing relationship with backyard or grill area',
     ],
   },
   grill: {
     title: 'Parrilla',
-    description: 'Built-in barbecue grill area only, showing fire zone, counter and social use context.',
+    description: 'Built-in barbecue grill area of the same house only, showing fire zone, counter and social use context.',
     views: [
-      'main barbecue grill shot centered on the grill and support counter',
-      'secondary angle showing grill integrated into outdoor social area',
+      'main barbecue grill shot of the same house centered on the grill and support counter',
+      'secondary angle of the same house grill integrated into outdoor social area',
     ],
   },
 }
@@ -150,14 +165,17 @@ export function expandEnvironmentViews(environment) {
   }))
 }
 
-export function buildEnvironmentPrompt(environmentView, project, formData) {
+export function buildEnvironmentPrompt(environmentView, project, formData, masterPrompt) {
   const designBrief = buildProjectDesignBrief(formData, project)
 
   return [
     designBrief,
+    `Master architectural concept reference: ${masterPrompt}`,
     `Specific environment to render: ${environmentView.title}`,
     environmentView.description,
     `Camera instruction: ${environmentView.view}`,
+    'this environment must belong to the exact same house defined in the master reference render',
+    'preserve the same materials, same colors, same level of quality, same architecture and same visual identity',
     'ultra realistic architectural photography',
     'photorealistic interior design render',
     'physically accurate materials',

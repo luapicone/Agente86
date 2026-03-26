@@ -9,6 +9,7 @@ import ImageLightbox from './components/ImageLightbox'
 import ProjectChatbot from './components/ProjectChatbot'
 import {
   buildEnvironmentPrompt,
+  buildMasterHousePrompt,
   expandEnvironmentViews,
   getEnvironmentDefinitions,
 } from './utils/environmentPrompts'
@@ -61,7 +62,7 @@ function App() {
     },
   ]
 
-  const generateEnvironmentGallery = async (project, answers) => {
+  const generateEnvironmentGallery = async (project, answers, masterPrompt) => {
     const environments = getEnvironmentDefinitions(answers)
     const images = []
 
@@ -69,7 +70,7 @@ function App() {
       const views = expandEnvironmentViews(environment)
 
       for (const view of views) {
-        const prompt = buildEnvironmentPrompt(view, project, answers)
+        const prompt = buildEnvironmentPrompt(view, project, answers, masterPrompt)
 
         try {
           const puterRender = await generateRenderWithPuter({
@@ -119,10 +120,11 @@ function App() {
 
       let renderResponse = null
       let puterRender = null
+      const masterPrompt = buildMasterHousePrompt(normalizedPayload, generated)
 
       try {
         puterRender = await generateRenderWithPuter({
-          prompt: generated.imagePrompt,
+          prompt: masterPrompt,
           negativePrompt: generated.negativePrompt,
         })
       } catch (_puterError) {
@@ -137,7 +139,7 @@ function App() {
         }
       }
 
-      const environmentGallery = await generateEnvironmentGallery(generated, normalizedPayload)
+      const environmentGallery = await generateEnvironmentGallery(generated, normalizedPayload, masterPrompt)
 
       setGeneratedProject({
         ...generated,
@@ -148,6 +150,7 @@ function App() {
           'Vista conceptual lista para usar como base de render o integración con proveedores externos.',
         imageUrl: puterRender?.imageUrl || renderResponse?.render?.imageUrl || null,
         renderProvider: puterRender?.provider || renderResponse?.render?.provider || null,
+        masterPrompt,
         environmentGallery,
       })
     } catch (error) {

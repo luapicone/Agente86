@@ -1,9 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { formatAnswerLabel, getVisibleQuestions } from '../utils/chatFlow'
 
 function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
   const [answers, setAnswers] = useState(initialAnswers)
   const [draft, setDraft] = useState('')
+
+  useEffect(() => {
+    setAnswers(initialAnswers)
+  }, [initialAnswers])
 
   const questions = useMemo(() => getVisibleQuestions(answers), [answers])
   const currentQuestion = questions.find((question) => answers[question.key] === undefined)
