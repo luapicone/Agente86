@@ -1,12 +1,13 @@
 .habitat-app {
   min-height: 100vh;
-  background: #f4f8f2;
-  color: #1f2937;
+  background: #edf3ee;
+  color: #1f2e25;
 }
 
 .habitat-navbar {
-  background: rgba(10, 31, 24, 0.92);
+  background: linear-gradient(90deg, rgba(10, 31, 24, 0.96) 0%, rgba(20, 61, 43, 0.96) 100%);
   backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(182, 216, 190, 0.16);
 }
 
 .navbar .nav-link,
@@ -19,15 +20,37 @@
 }
 
 .hero-section {
-  background: linear-gradient(135deg, #0b3b2e 0%, #14532d 45%, #1f7a4d 100%);
+  background:
+    linear-gradient(120deg, rgba(8, 32, 23, 0.88) 0%, rgba(20, 85, 54, 0.82) 48%, rgba(55, 128, 84, 0.78) 100%),
+    radial-gradient(circle at top right, rgba(205, 255, 219, 0.22), transparent 36%),
+    #0b2f22;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.hero-section .container {
+  position: relative;
+  z-index: 1;
 }
 
 .habitat-badge {
-  background: rgba(255, 255, 255, 0.14);
-  color: #e8fff1;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(189, 255, 212, 0.14);
+  color: #e7fff0;
+  border: 1px solid rgba(189, 255, 212, 0.22);
   padding: 0.65rem 0.9rem;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
 }
 
 .hero-text {
@@ -37,14 +60,16 @@
 .hero-card,
 .generator-card,
 .result-card {
-  background: rgba(255, 255, 255, 0.96);
-  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 1.1rem;
   padding: 2rem;
-  color: #1f2937;
+  color: #1f2e25;
+  border: 1px solid #d6e6d9;
+  box-shadow: 0 24px 60px rgba(13, 45, 31, 0.08);
 }
 
 .stats-strip {
-  background: #eef7ef;
+  background: linear-gradient(180deg, #ecf5ee 0%, #e6f0e8 100%);
 }
 
 .stat-card {
@@ -52,53 +77,54 @@
   border-radius: 1rem;
   padding: 1.25rem;
   text-align: center;
-  box-shadow: 0 0.5rem 1.5rem rgba(18, 44, 31, 0.06);
+  border: 1px solid #dbe9de;
+  box-shadow: 0 0.5rem 1.25rem rgba(18, 44, 31, 0.05);
 }
 
 .stat-value {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  color: #14532d;
+  color: #165136;
 }
 
 .stat-label {
-  color: #5b6470;
+  color: #627166;
   margin-top: 0.25rem;
 }
 
 .section-light {
-  background: #f4f8f2;
+  background: #edf3ee;
 }
 
 .section-green {
-  background: #e8f4ea;
+  background: linear-gradient(180deg, #e4efe6 0%, #dcebdd 100%);
 }
 
 .team-section {
-  background: #0f2f24;
+  background: linear-gradient(180deg, #102d22 0%, #16392b 100%);
 }
 
 .section-kicker {
   display: inline-block;
   margin-bottom: 0.75rem;
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 0.82rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #2f855a;
+  letter-spacing: 0.12em;
+  color: #2b7a4f;
 }
 
 .section-title {
   font-size: 2.2rem;
-  font-weight: 700;
-  color: #122c1f;
+  font-weight: 800;
+  color: #163526;
   margin-bottom: 1rem;
 }
 
 .section-text {
   max-width: 760px;
-  color: #5b6470;
-  font-size: 1.05rem;
+  color: #5f6e63;
+  font-size: 1.04rem;
 }
 
 .feature-card,
@@ -109,16 +135,14 @@
   border-radius: 1rem;
 }
 
-.feature-card {
-  background: #ffffff;
-}
-
-.impact-card {
-  background: #ffffffd9;
+.feature-card,
+.impact-card,
+.info-panel {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbf9 100%);
+  border: 1px solid #dce9de;
 }
 
 .info-panel {
-  background: #ffffff;
   padding: 2rem;
 }
 
@@ -127,21 +151,22 @@
   align-items: center;
   padding: 0.6rem 0.95rem;
   border-radius: 999px;
-  background: #dff3e5;
-  color: #14532d;
-  font-weight: 600;
-  font-size: 0.95rem;
+  background: #deefe2;
+  color: #155136;
+  font-weight: 700;
+  font-size: 0.92rem;
+  border: 1px solid #cfe3d3;
 }
 
 .team-card {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
   padding: 1rem 1.25rem;
   border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 .generator-page {
-  background: linear-gradient(180deg, #eef7ef 0%, #f8fbf8 100%);
+  background: linear-gradient(180deg, #edf3ee 0%, #f7faf7 100%);
   min-height: calc(100vh - 72px);
 }
 
@@ -151,34 +176,36 @@
 }
 
 .form-label {
-  font-weight: 600;
+  font-weight: 700;
   color: #23412f;
+  font-size: 0.95rem;
 }
 
 .form-control,
 .form-select {
-  border-radius: 0.8rem;
-  min-height: 48px;
-  border-color: #d8e4da;
+  border-radius: 0.85rem;
+  min-height: 50px;
+  border-color: #d5e4d8;
+  background: #fbfdfb;
 }
 
 .form-control:focus,
 .form-select:focus {
   border-color: #2f855a;
-  box-shadow: 0 0 0 0.2rem rgba(47, 133, 90, 0.15);
+  box-shadow: 0 0 0 0.2rem rgba(47, 133, 90, 0.12);
 }
 
 .house-options-panel {
   margin-top: 1.5rem;
   padding: 1.5rem;
   border-radius: 1rem;
-  background: #f7faf7;
-  border: 1px solid #e2ece3;
+  background: linear-gradient(180deg, #f7faf7 0%, #f1f7f2 100%);
+  border: 1px solid #deeadf;
 }
 
 .option-check {
   background: #fff;
-  border: 1px solid #e2ece3;
+  border: 1px solid #e0eade;
   border-radius: 0.9rem;
   padding: 1rem 1rem 1rem 2.4rem;
   min-height: 100%;
@@ -187,12 +214,13 @@
 .result-highlight {
   padding: 1rem;
   border-radius: 1rem;
-  background: #eef7ef;
+  background: linear-gradient(180deg, #eef7ef 0%, #e8f3e9 100%);
+  border: 1px solid #d9e8dc;
 }
 
 .metric-box {
-  background: #f7faf7;
-  border: 1px solid #e2ece3;
+  background: linear-gradient(180deg, #f8fbf8 0%, #f2f7f3 100%);
+  border: 1px solid #deeadf;
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -200,13 +228,15 @@
 }
 
 .metric-label {
-  font-size: 0.85rem;
-  color: #5b6470;
+  font-size: 0.82rem;
+  color: #627166;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .result-list {
   padding-left: 1.1rem;
-  color: #5b6470;
+  color: #5c6b61;
 }
 
 .result-list li + li {
@@ -226,16 +256,17 @@
   align-items: center;
   padding: 0.45rem 0.8rem;
   border-radius: 999px;
-  background: #dff3e5;
+  background: #dff1e4;
   color: #14532d;
-  font-weight: 700;
-  font-size: 0.8rem;
+  font-weight: 800;
+  font-size: 0.78rem;
+  border: 1px solid #cfe4d5;
 }
 
 .image-preview-box {
   border-radius: 1rem;
-  background: #f7faf7;
-  border: 1px solid #e2ece3;
+  background: linear-gradient(180deg, #f8fbf8 0%, #f1f7f2 100%);
+  border: 1px solid #deeadf;
   padding: 1rem;
 }
 
@@ -252,8 +283,8 @@
   border-radius: 999px;
   background: #14532d;
   color: #fff;
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.76rem;
+  font-weight: 700;
 }
 
 .preview-tag-light {
@@ -262,8 +293,8 @@
 }
 
 .preview-tag-provider {
-  background: #e6eefc;
-  color: #214b9b;
+  background: #e4ecff;
+  color: #234a94;
 }
 
 .preview-tag-warning {
@@ -419,6 +450,8 @@
 
 .environment-frame {
   position: relative;
+  border: 1px solid #dce9de;
+  background: #fff;
 }
 
 .environment-slide-button {
@@ -435,7 +468,7 @@
   right: 0;
   bottom: 0;
   padding: 1.5rem;
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.75) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(8, 18, 13, 0.84) 100%);
   color: #fff;
   text-align: left;
 }
@@ -470,7 +503,7 @@
 }
 
 .environment-counter {
-  font-weight: 700;
+  font-weight: 800;
   color: #23412f;
 }
 
@@ -534,6 +567,28 @@
   margin: 0 0 0.4rem;
 }
 
+.btn-success {
+  background: linear-gradient(180deg, #2d8b59 0%, #1f7246 100%);
+  border-color: #1f7246;
+  box-shadow: 0 12px 22px rgba(31, 114, 70, 0.16);
+}
+
+.btn-success:hover,
+.btn-success:focus {
+  background: linear-gradient(180deg, #24794c 0%, #1a633d 100%);
+  border-color: #1a633d;
+}
+
+.btn-outline-success {
+  border-color: #2d8b59;
+  color: #1d6b42;
+}
+
+.btn-outline-success:hover {
+  background: #2d8b59;
+  border-color: #2d8b59;
+}
+
 @media (max-width: 991px) {
   .section-title {
     font-size: 1.8rem;
@@ -557,8 +612,13 @@
   }
 
   .hero-section .btn,
-  .generator-card .btn {
+  .generator-card .btn,
+  .environment-carousel-controls .btn {
     width: 100%;
+  }
+
+  .environment-carousel-controls {
+    flex-direction: column;
   }
 
   .lightbox-overlay {
