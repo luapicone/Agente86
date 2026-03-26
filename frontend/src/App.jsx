@@ -20,10 +20,13 @@ const initialForm = {
   bathrooms: '1',
   terrainType: 'urbano',
   budget: '',
-  priority: 'sostenibilidad',
+  priority: 'costo',
   location: '',
   climate: 'templado',
   material: 'madera-reciclada',
+  familyMembers: '4',
+  hasLand: 'si',
+  urgency: 'media',
   floors: '1',
   hasSuiteBathroom: false,
   hasPool: false,
@@ -44,19 +47,19 @@ function App() {
 
   const features = [
     {
-      title: 'Diseño inteligente',
+      title: 'Vivienda accesible',
       description:
-        'Generación de propuestas habitacionales modulares en base a superficie, presupuesto y necesidades familiares.',
+        'Propuestas pensadas para familias que necesitan una solución habitacional posible de construir y ampliar.',
     },
     {
-      title: 'Construcción sostenible',
+      title: 'Menor costo de obra',
       description:
-        'Selección de materiales ecológicos y estrategias para reducir impacto ambiental y consumo energético.',
+        'Estimaciones orientadas a reducir materiales innecesarios y aprovechar mejor el presupuesto disponible.',
     },
     {
-      title: 'Optimización de costos',
+      title: 'Diseño para crecer',
       description:
-        'Estimaciones iniciales para minimizar desperdicios y mejorar la viabilidad económica del proyecto.',
+        'Opciones modulares que permiten arrancar con lo esencial y ampliar la vivienda en el futuro.',
     },
   ]
 
@@ -64,17 +67,17 @@ function App() {
     {
       title: 'Impacto social',
       description:
-        'Acerca soluciones habitacionales accesibles y de calidad a familias de ingresos medios y bajos.',
+        'Apunta a acercar una vivienda digna y funcional a familias que hoy tienen presupuestos ajustados.',
     },
     {
       title: 'Impacto ambiental',
       description:
-        'Promueve eficiencia energética y uso responsable de materiales reciclables o de bajo impacto.',
+        'Promueve materiales y estrategias que ayudan a ahorrar energía y reducir desperdicios.',
     },
     {
       title: 'Impacto económico',
       description:
-        'Reduce errores de planificación y optimiza el presupuesto desde las primeras etapas del proyecto.',
+        'Ayuda a tomar decisiones más claras para construir con menos errores y menos gasto innecesario.',
     },
   ]
 
@@ -245,11 +248,11 @@ function App() {
                 <div className="col-lg-7 text-start">
                   <span className="badge habitat-badge mb-3">PropTech + IA + Sustentabilidad</span>
                   <h1 className="display-4 fw-bold text-white mb-4">
-                    Diseñamos viviendas sostenibles y modulares con apoyo de inteligencia artificial.
+                    Pensamos viviendas accesibles para familias que necesitan construir con bajo presupuesto.
                   </h1>
                   <p className="lead text-white-50 mb-4 hero-text">
-                    HabitatIA es una plataforma web orientada a facilitar el acceso a diseños habitacionales
-                    eficientes, optimizando materiales, costos e impacto ambiental desde el inicio del proyecto.
+                    HabitatIA ayuda a planificar una vivienda simple, funcional y sostenible, priorizando el costo,
+                    el aprovechamiento de materiales y la posibilidad de crecer por etapas.
                   </p>
                   <div className="d-flex flex-wrap gap-3">
                     <button className="btn btn-success btn-lg px-4" onClick={() => setCurrentView('generator')}>
@@ -262,11 +265,11 @@ function App() {
                 </div>
                 <div className="col-lg-5">
                   <div className="hero-card shadow-lg">
-                    <h2 className="h4 fw-bold mb-3">¿Qué resuelve HabitatIA?</h2>
+                    <h2 className="h4 fw-bold mb-3">¿Para qué sirve HabitatIA?</h2>
                     <ul className="list-unstyled mb-0">
-                      <li className="mb-3">• Genera propuestas de viviendas según presupuesto y necesidades.</li>
-                      <li className="mb-3">• Sugiere materiales sostenibles para reducir la huella de carbono.</li>
-                      <li>• Calcula métricas iniciales de eficiencia energética y optimización de costos.</li>
+                      <li className="mb-3">• Ayuda a pensar una vivienda posible según el dinero disponible.</li>
+                      <li className="mb-3">• Sugiere opciones para construir por etapas y crecer más adelante.</li>
+                      <li>• Orienta sobre materiales, espacios y decisiones básicas para gastar mejor.</li>
                     </ul>
                   </div>
                 </div>
@@ -294,10 +297,10 @@ function App() {
               <div className="container">
                 <div className="text-center mb-5">
                   <span className="section-kicker">Nuestra propuesta</span>
-                  <h2 className="section-title">Una plataforma pensada para planificar mejor</h2>
+                  <h2 className="section-title">Una herramienta pensada para viviendas posibles y reales</h2>
                   <p className="section-text mx-auto">
-                    Combinamos criterios de diseño modular, construcción sostenible y automatización inteligente para
-                    simplificar el desarrollo de soluciones habitacionales más accesibles.
+                    Combinamos planificación simple, criterios de ahorro y diseño modular para acercar soluciones
+                    habitacionales a familias que necesitan construir con recursos limitados.
                   </p>
                 </div>
 
@@ -320,9 +323,9 @@ function App() {
               <div className="container">
                 <div className="text-center mb-5">
                   <span className="section-kicker text-success-emphasis">Triple impacto</span>
-                  <h2 className="section-title">Tecnología aplicada a una vivienda más digna y eficiente</h2>
+                  <h2 className="section-title">Tecnología aplicada a una vivienda digna, accesible y eficiente</h2>
                   <p className="section-text mx-auto">
-                    HabitatIA busca generar valor real desde una mirada social, ambiental y económica.
+                    HabitatIA busca que más familias puedan proyectar una casa posible de construir y mejorar con el tiempo.
                   </p>
                 </div>
 
@@ -347,8 +350,8 @@ function App() {
                   <div className="col-lg-6">
                     <h2 className="section-title text-start">Tecnologías base del proyecto</h2>
                     <p className="section-text text-start mx-0 mb-4">
-                      La plataforma fue planteada con frontend en React + Bootstrap y backend en Node.js, dejando
-                      preparada la integración con servicios de inteligencia artificial y cloud computing.
+                      La plataforma fue pensada para dar una primera orientación clara sobre qué vivienda conviene,
+                      cuánto podría costar y cómo se podría construir de forma progresiva.
                     </p>
                     <div className="d-flex flex-wrap gap-2">
                       <span className="tech-pill">React</span>
@@ -363,8 +366,8 @@ function App() {
                     <div className="info-panel shadow-sm">
                       <h3 className="h5 fw-bold mb-3">Objetivo del MVP</h3>
                       <p className="mb-0 text-muted">
-                        Construir una primera versión capaz de presentar el producto, capturar requerimientos de una
-                        vivienda y devolver una propuesta inicial sostenible con métricas orientativas.
+                        Construir una primera versión capaz de orientar a una familia sobre una vivienda accesible,
+                        priorizando costo, funcionalidad y posibilidad de ampliación futura.
                       </p>
                     </div>
                   </div>
@@ -406,7 +409,7 @@ function App() {
                       <span className="section-kicker">Generador de viviendas</span>
                       <h1 className="section-title mb-2">Configurá tu proyecto</h1>
                       <p className="text-muted mb-0">
-                        Ingresá los datos principales para simular una propuesta habitacional modular y sostenible.
+                        Completá estos datos para obtener una propuesta de vivienda accesible según las necesidades de tu familia.
                       </p>
                     </div>
                     <button className="btn btn-outline-success" onClick={() => setCurrentView('home')}>
@@ -495,7 +498,7 @@ function App() {
                         </select>
                       </div>
                       <div className="col-md-6">
-                        <label className="form-label">Presupuesto estimado (USD)</label>
+                        <label className="form-label">Presupuesto máximo disponible (USD)</label>
                         <input
                           type="number"
                           min="0"
@@ -507,11 +510,37 @@ function App() {
                         />
                       </div>
                       <div className="col-md-4">
+                        <label className="form-label">Cantidad de personas en la familia</label>
+                        <select className="form-select" name="familyMembers" value={formData.familyMembers} onChange={handleChange}>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
+                          <option value="5">5</option>
+                          <option value="6">6 o más</option>
+                        </select>
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label">¿Ya tiene terreno?</label>
+                        <select className="form-select" name="hasLand" value={formData.hasLand} onChange={handleChange}>
+                          <option value="si">Sí</option>
+                          <option value="no">No</option>
+                        </select>
+                      </div>
+                      <div className="col-md-4">
+                        <label className="form-label">Urgencia de la solución</label>
+                        <select className="form-select" name="urgency" value={formData.urgency} onChange={handleChange}>
+                          <option value="alta">Alta</option>
+                          <option value="media">Media</option>
+                          <option value="baja">Baja</option>
+                        </select>
+                      </div>
+                      <div className="col-md-4">
                         <label className="form-label">Prioridad</label>
                         <select className="form-select" name="priority" value={formData.priority} onChange={handleChange}>
-                          <option value="sostenibilidad">Mayor sostenibilidad</option>
                           <option value="costo">Menor costo</option>
-                          <option value="eficiencia">Eficiencia energética</option>
+                          <option value="eficiencia">Menor gasto de mantenimiento</option>
+                          <option value="sostenibilidad">Construcción más sostenible</option>
                         </select>
                       </div>
                       <div className="col-md-4">
@@ -696,6 +725,9 @@ function App() {
                         <ul className="result-list mb-0">
                           <li>Tipo: {generatedProject.propertyType}</li>
                           {generatedProject.propertyType === 'Casa' ? <li>Pisos: {generatedProject.floors}</li> : null}
+                          <li>Familia estimada: {formData.familyMembers} integrante(s)</li>
+                          <li>Terreno disponible: {formData.hasLand === 'si' ? 'Sí' : 'No'}</li>
+                          <li>Urgencia: {formData.urgency}</li>
                           {generatedProject.selectedFeatures?.map((feature) => (
                             <li key={feature}>{feature}</li>
                           ))}
@@ -708,6 +740,8 @@ function App() {
                           {generatedProject.recommendations.map((item) => (
                             <li key={item}>{item}</li>
                           ))}
+                          <li>Evaluar construcción por etapas para empezar con lo esencial y ampliar después.</li>
+                          <li>Priorizar los espacios más necesarios para la familia según el presupuesto real.</li>
                         </ul>
                       </div>
                     </>
