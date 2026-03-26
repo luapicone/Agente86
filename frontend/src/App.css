@@ -1,0 +1,130 @@
+.habitat-app {
+  min-height: 100vh;
+  background: #f4f8f2;
+  color: #1f2937;
+}
+
+.habitat-navbar {
+  background: rgba(10, 31, 24, 0.92);
+  backdrop-filter: blur(10px);
+}
+
+.min-vh-75 {
+  min-height: 75vh;
+}
+
+.hero-section {
+  background: linear-gradient(135deg, #0b3b2e 0%, #14532d 45%, #1f7a4d 100%);
+}
+
+.habitat-badge {
+  background: rgba(255, 255, 255, 0.14);
+  color: #e8fff1;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.65rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+.hero-text {
+  max-width: 700px;
+}
+
+.hero-card {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 1.25rem;
+  padding: 2rem;
+  color: #1f2937;
+}
+
+.section-light {
+  background: #f4f8f2;
+}
+
+.section-green {
+  background: #e8f4ea;
+}
+
+.team-section {
+  background: #0f2f24;
+}
+
+.section-kicker {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #2f855a;
+}
+
+.section-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #122c1f;
+  margin-bottom: 1rem;
+}
+
+.section-text {
+  max-width: 760px;
+  color: #5b6470;
+  font-size: 1.05rem;
+}
+
+.feature-card,
+.impact-card,
+.info-panel,
+.team-card {
+  border-radius: 1rem;
+}
+
+.feature-card {
+  background: #ffffff;
+}
+
+.impact-card {
+  background: #ffffffd9;
+}
+
+.info-panel {
+  background: #ffffff;
+  padding: 2rem;
+}
+
+.tech-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.6rem 0.95rem;
+  border-radius: 999px;
+  background: #dff3e5;
+  color: #14532d;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.team-card {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+@media (max-width: 991px) {
+  .section-title {
+    font-size: 1.8rem;
+  }
+
+  .hero-card {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .section-title {
+    font-size: 1.6rem;
+  }
+
+  .hero-section .btn {
+    width: 100%;
+  }
+}
