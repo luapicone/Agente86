@@ -19,6 +19,7 @@ function App() {
   const [currentView, setCurrentView] = useState('home')
   const [formData, setFormData] = useState(initialForm)
   const [generatedProject, setGeneratedProject] = useState(null)
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false)
 
   const features = [
     {
@@ -102,6 +103,13 @@ function App() {
         bedrooms >= 3
           ? 'Área social integrada + bloque privado + expansión futura lateral'
           : 'Núcleo central eficiente + espacios flexibles multiuso',
+      imagePrompt: `Render conceptual de vivienda ${squareMeters >= 90 ? 'modular familiar expandible' : 'modular compacta'} en ${formData.terrainType}, ubicada en clima ${formData.climate}, construida con ${formData.material} y enfoque ${formData.priority}.`,
+      imageStyle:
+        formData.priority === 'sostenibilidad'
+          ? 'Estilo eco-moderno con vegetación integrada, iluminación natural y materiales reciclables visibles.'
+          : formData.priority === 'eficiencia'
+            ? 'Estilo arquitectónico técnico con énfasis en eficiencia térmica, paneles y envolvente inteligente.'
+            : 'Estilo moderno funcional, modular y de bajo costo con estética simple y limpia.',
       recommendations: [
         'Priorizar orientación solar y ventilación natural para reducir consumo energético.',
         'Incorporar materiales de baja huella de carbono y aislación térmica adecuada.',
@@ -110,7 +118,22 @@ function App() {
     }
 
     setGeneratedProject(generated)
+    setIsGeneratingImage(true)
     setCurrentView('generator')
+
+    setTimeout(() => {
+      setGeneratedProject((prev) =>
+        prev
+          ? {
+              ...prev,
+              imageStatus: 'ready',
+              imageDescription:
+                'Vista conceptual generada para presentar una propuesta arquitectónica inicial del proyecto.',
+            }
+          : prev,
+      )
+      setIsGeneratingImage(false)
+    }, 1400)
   }
 
   const stats = useMemo(
@@ -465,7 +488,7 @@ function App() {
               </div>
 
               <div className="col-lg-5">
-                <div className="result-card shadow-sm">
+                <div className="result-card shadow-sm mb-4">
                   <h2 className="h4 fw-bold mb-3">Resultado estimado</h2>
 
                   {generatedProject ? (
@@ -536,6 +559,65 @@ function App() {
                         <li>Métricas de sustentabilidad</li>
                         <li>Diseño modular recomendado</li>
                       </ul>
+                    </div>
+                  )}
+                </div>
+
+                <div className="result-card shadow-sm image-card">
+                  <div className="d-flex justify-content-between align-items-center mb-3 gap-3 flex-wrap">
+                    <h2 className="h4 fw-bold mb-0">Visualización conceptual</h2>
+                    {generatedProject ? <span className="image-badge">Modo demo IA</span> : null}
+                  </div>
+
+                  {generatedProject ? (
+                    <>
+                      <div className="image-preview-box mb-3">
+                        {isGeneratingImage ? (
+                          <div className="image-loading-state">
+                            <div className="spinner-border text-success mb-3" role="status" />
+                            <p className="mb-0 fw-semibold">Generando visualización conceptual...</p>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="image-preview-header mb-3">
+                              <span className="preview-tag">Render conceptual</span>
+                              <span className="preview-tag preview-tag-light">{generatedProject.modularType}</span>
+                            </div>
+                            <div className="image-scene">
+                              <div className="scene-sky"></div>
+                              <div className="scene-sun"></div>
+                              <div className="scene-ground"></div>
+                              <div className="scene-house-body"></div>
+                              <div className="scene-house-roof"></div>
+                              <div className="scene-house-door"></div>
+                              <div className="scene-house-window window-left"></div>
+                              <div className="scene-house-window window-right"></div>
+                              <div className="scene-tree tree-left"></div>
+                              <div className="scene-tree tree-right"></div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      <div className="mb-3">
+                        <h3 className="h6 fw-bold">Prompt generado</h3>
+                        <p className="text-muted mb-2">{generatedProject.imagePrompt}</p>
+                        <h3 className="h6 fw-bold">Estilo visual</h3>
+                        <p className="text-muted mb-0">{generatedProject.imageStyle}</p>
+                      </div>
+
+                      {!isGeneratingImage && generatedProject.imageDescription ? (
+                        <div className="result-highlight mb-0">
+                          <p className="mb-0 text-muted">{generatedProject.imageDescription}</p>
+                        </div>
+                      ) : null}
+                    </>
+                  ) : (
+                    <div className="empty-state">
+                      <p className="text-muted mb-0">
+                        Al generar la propuesta, acá se mostrará una visualización conceptual de la vivienda según
+                        los parámetros ingresados por el usuario.
+                      </p>
                     </div>
                   )}
                 </div>
