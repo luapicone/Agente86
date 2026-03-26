@@ -60,10 +60,12 @@ Proveedores soportados actualmente:
 - `pollinations`
 - `mock`
 
-Fallback recomendado:
+Fallback recomendado backend:
 
 1. Hugging Face
 2. Replicate
 3. Together
 4. Pollinations
 5. Mock
+
+Además, el frontend intenta primero una generación gratuita en cliente con **Puter.js** antes de recurrir al backend.

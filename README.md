@@ -46,5 +46,6 @@ http://localhost:5173
 - integración frontend → backend
 - generación de propuesta
 - generación de prompt arquitectónico para render
+- generación de render en frontend con Puter.js como proveedor gratuito
 - generación de render vía backend
-- fallback configurable de proveedores (`pollinations` + `mock` por ahora)
+- fallback configurable de proveedores
