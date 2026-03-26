@@ -1,3 +1,9 @@
+const QUALITY_VISUAL_GUIDANCE = {
+  bajo: 'humble affordable house, modest finishes, simpler construction details, realistic low-income housing, dignified but slightly precarious appearance',
+  medio: 'moderate construction quality, simple but solid finishes, affordable middle-quality house',
+  alto: 'higher quality finishes, more refined construction, better materials and detailing',
+}
+
 function buildProjectDesignBrief(formData, project) {
   const propertyType = formData.propertyType === 'departamento' ? 'apartment' : 'house'
   const floorsText = formData.propertyType === 'casa' ? `${formData.floors} floors` : 'single apartment unit'
@@ -21,6 +27,7 @@ function buildProjectDesignBrief(formData, project) {
     `${formData.bathrooms} bathrooms`,
     `material palette: ${project.recommendedMaterial}`,
     `architectural language: contemporary sustainable architecture`,
+    QUALITY_VISUAL_GUIDANCE[formData.qualityLevel] || QUALITY_VISUAL_GUIDANCE.bajo,
     `same house model, same structure, same materials, same lighting conditions, same design language across all renders`,
     extras.join(', '),
   ]

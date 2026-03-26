@@ -46,9 +46,11 @@ function buildProjectProposal(payload = {}) {
     if (payload.hasGrill) houseExtras.push('Parrilla')
   }
 
+  const qualityLevel = payload.qualityLevel || 'bajo'
+
   const projectData = {
     projectName: payload.projectName || 'Proyecto HabitatIA',
-    summary: `${propertyType} modular de ${squareMeters} m² pensada para ${bedrooms} dormitorio(s), ${bathrooms} baño(s) y ${payload.propertyType === 'casa' ? `${floors} piso(s)` : 'tipología en edificio'}.`,
+    summary: `${propertyType} modular de ${squareMeters} m² pensada para ${bedrooms} dormitorio(s), ${bathrooms} baño(s), ${payload.propertyType === 'casa' ? `${floors} piso(s)` : 'tipología en edificio'} y nivel de calidad ${qualityLevel}.`,
     modularType: squareMeters >= 90 ? 'Modelo familiar expandible' : 'Modelo compacto modular',
     recommendedMaterial:
       MATERIAL_LABELS[payload.material] || 'Madera reciclada tratada + panelería modular',
@@ -60,6 +62,7 @@ function buildProjectProposal(payload = {}) {
     carbonReduction,
     propertyType,
     floors,
+    qualityLevel,
     selectedFeatures: houseExtras,
     recommendedLayout:
       bedrooms >= 3

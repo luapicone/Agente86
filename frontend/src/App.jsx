@@ -27,6 +27,7 @@ const initialForm = {
   familyMembers: '4',
   hasLand: 'si',
   urgency: 'media',
+  qualityLevel: 'bajo',
   floors: '1',
   hasSuiteBathroom: false,
   hasPool: false,
@@ -544,6 +545,14 @@ function App() {
                         </select>
                       </div>
                       <div className="col-md-4">
+                        <label className="form-label">Nivel de calidad buscado</label>
+                        <select className="form-select" name="qualityLevel" value={formData.qualityLevel} onChange={handleChange}>
+                          <option value="bajo">Bajo</option>
+                          <option value="medio">Medio</option>
+                          <option value="alto">Alto</option>
+                        </select>
+                      </div>
+                      <div className="col-md-4">
                         <label className="form-label">Clima</label>
                         <select className="form-select" name="climate" value={formData.climate} onChange={handleChange}>
                           <option value="templado">Templado</option>
@@ -728,6 +737,7 @@ function App() {
                           <li>Familia estimada: {formData.familyMembers} integrante(s)</li>
                           <li>Terreno disponible: {formData.hasLand === 'si' ? 'Sí' : 'No'}</li>
                           <li>Urgencia: {formData.urgency}</li>
+                          <li>Nivel de calidad: {formData.qualityLevel}</li>
                           {generatedProject.selectedFeatures?.map((feature) => (
                             <li key={feature}>{feature}</li>
                           ))}

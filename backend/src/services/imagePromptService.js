@@ -17,6 +17,12 @@ const CLIMATE_DESCRIPTIONS = {
   humedo: 'humid climate with elevated ventilation, resistant materials and breathable facades',
 }
 
+const QUALITY_DESCRIPTIONS = {
+  bajo: 'low-cost construction, modest finishes, simple geometry, practical spaces, realistic affordable materials, slightly precarious but dignified housing',
+  medio: 'balanced construction quality, functional finishes, solid materials, modest but well resolved architecture',
+  alto: 'high construction quality, refined finishes, better materials, more complete architectural detailing',
+}
+
 function buildExtraHouseFeatures(payload = {}) {
   if (payload.propertyType !== 'casa') {
     return 'apartment layout optimized for vertical building living'
@@ -43,6 +49,7 @@ function buildImagePrompt(payload = {}, projectData = {}) {
   const climate = CLIMATE_DESCRIPTIONS[payload.climate] || 'temperate climate with natural lighting'
   const propertyType = payload.propertyType === 'departamento' ? 'apartment' : 'house'
   const extras = buildExtraHouseFeatures(payload)
+  const quality = QUALITY_DESCRIPTIONS[payload.qualityLevel] || QUALITY_DESCRIPTIONS.bajo
 
   const prompt = [
     `Photorealistic architectural render of a sustainable modular ${propertyType}`,
@@ -53,6 +60,7 @@ function buildImagePrompt(payload = {}, projectData = {}) {
     climate,
     material,
     priority,
+    quality,
     extras,
     'contemporary architecture, realistic exterior visualization, high detail, natural lighting, clean composition, landscaping, architectural presentation render',
   ].join(', ')
