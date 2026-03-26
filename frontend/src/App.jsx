@@ -10,6 +10,7 @@ import ImageLightbox from './components/ImageLightbox'
 import ProjectChatbot from './components/ProjectChatbot'
 import ArchitectMarketplace from './components/ArchitectMarketplace'
 import ConceptFloorPlan from './components/ConceptFloorPlan'
+import { downloadProjectPdf } from './components/ProjectPdfSummary'
 import {
   buildEnvironmentPrompt,
   buildMasterHousePrompt,
@@ -382,13 +383,13 @@ function App() {
       ) : (
         <main className="generator-page py-5">
           <div className="container">
-            <div className="row g-4 align-items-start">
-              <div className="col-lg-7">
+            <div className="row g-4 align-items-start compact-top-layout">
+              <div className="col-lg-5">
                 <ProjectChatbot initialAnswers={initialAnswers} onComplete={handleGenerateFromChat} isSubmitting={isSubmitting} />
                 {formError ? <div className="alert alert-danger mt-4">{formError}</div> : null}
               </div>
 
-              <div className="col-lg-5">
+              <div className="col-lg-7">
                 <div className="result-card shadow-sm mb-4">
                   <h2 className="h4 fw-bold mb-3">Resultado estimado</h2>
 
@@ -555,91 +556,19 @@ function App() {
                   )}
                 </div>
 
-                <div className="result-card shadow-sm image-card mb-4">
-                  <div className="d-flex justify-content-between align-items-center mb-3 gap-3 flex-wrap">
-                    <h2 className="h4 fw-bold mb-0">Visualización conceptual</h2>
-                    {generatedProject ? <span className="image-badge">Modo demo IA</span> : null}
-                  </div>
-
-                  {generatedProject ? (
-                    <>
-                      <div className="image-preview-box mb-3">
-                        {isGeneratingImage ? (
-                          <div className="image-loading-state">
-                            <div className="spinner-border text-success mb-3" role="status" />
-                            <p className="mb-0 fw-semibold">Generando visualización conceptual...</p>
-                          </div>
-                        ) : generatedProject.imageUrl && !imageLoadFailed ? (
-                          <>
-                            <div className="image-preview-header mb-3">
-                              <span className="preview-tag">Render generado</span>
-                              <span className="preview-tag preview-tag-light">{generatedProject.modularType}</span>
-                              {generatedProject.renderProvider ? (
-                                <span className="preview-tag preview-tag-provider">{generatedProject.renderProvider}</span>
-                              ) : null}
-                            </div>
-                            <img
-                              src={generatedProject.imageUrl}
-                              alt="Render conceptual de la vivienda propuesta"
-                              className="generated-render-image"
-                              onError={() => setImageLoadFailed(true)}
-                            />
-                          </>
-                        ) : (
-                          <>
-                            <div className="image-preview-header mb-3">
-                              <span className="preview-tag">Render conceptual</span>
-                              <span className="preview-tag preview-tag-light">{generatedProject.modularType}</span>
-                              {imageLoadFailed ? <span className="preview-tag preview-tag-warning">fallback visual</span> : null}
-                            </div>
-                            {imageLoadFailed ? (
-                              <div className="render-warning-box mb-3">
-                                No se pudo visualizar la imagen remota del proveedor. Se muestra una vista conceptual de respaldo.
-                              </div>
-                            ) : null}
-                            <div className="image-scene">
-                              <div className="scene-sky"></div>
-                              <div className="scene-sun"></div>
-                              <div className="scene-ground"></div>
-                              <div className="scene-house-body"></div>
-                              <div className="scene-house-roof"></div>
-                              <div className="scene-house-door"></div>
-                              <div className="scene-house-window window-left"></div>
-                              <div className="scene-house-window window-right"></div>
-                              <div className="scene-tree tree-left"></div>
-                              <div className="scene-tree tree-right"></div>
-                            </div>
-                          </>
-                        )}
+                {generatedProject ? (
+                  <div className="result-card shadow-sm mb-4">
+                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                      <div>
+                        <h2 className="h4 fw-bold mb-1">Resumen descargable</h2>
+                        <p className="text-muted mb-0">Descargá o imprimí un resumen del proyecto con materiales y plano.</p>
                       </div>
-
-                      <div className="mb-3">
-                        <h3 className="h6 fw-bold">Prompt generado</h3>
-                        <p className="text-muted mb-2">{generatedProject.imagePrompt}</p>
-                        <h3 className="h6 fw-bold">Modelo arquitectónico común</h3>
-                        <p className="text-muted mb-2">
-                          Todas las imágenes deben mantener la misma casa, mismos materiales, misma lógica espacial y mismo lenguaje visual.
-                        </p>
-                        <h3 className="h6 fw-bold">Estilo visual</h3>
-                        <p className="text-muted mb-2">{generatedProject.imageStyle}</p>
-                        <h3 className="h6 fw-bold">Negative prompt</h3>
-                        <p className="text-muted mb-0">{generatedProject.negativePrompt}</p>
-                      </div>
-
-                      {!isGeneratingImage && generatedProject.imageDescription ? (
-                        <div className="result-highlight mb-0">
-                          <p className="mb-0 text-muted">{generatedProject.imageDescription}</p>
-                        </div>
-                      ) : null}
-                    </>
-                  ) : (
-                    <div className="empty-state">
-                      <p className="text-muted mb-0">
-                        Una vez generada la propuesta, acá vas a ver la imagen principal de la vivienda.
-                      </p>
+                      <button className="btn btn-success" onClick={() => downloadProjectPdf(generatedProject, chatAnswers)}>
+                        Descargar resumen PDF
+                      </button>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ) : null}
               </div>
             </div>
 
