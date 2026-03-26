@@ -3,6 +3,7 @@ const { generateWithReplicate } = require('./renderProviders/replicateProvider')
 const { generateWithTogether } = require('./renderProviders/togetherProvider')
 const { generateWithPollinations } = require('./renderProviders/pollinationsProvider')
 const { generateWithMock } = require('./renderProviders/mockProvider')
+const { validateImageUrl } = require('./renderValidationService')
 
 const providerHandlers = {
   huggingface: generateWithHuggingFace,
@@ -35,10 +36,24 @@ async function generateRenderImage(payload) {
 
     try {
       const result = await handler(payload)
+
+      if (result.imageUrl) {
+        const isValidImage = await validateImageUrl(result.imageUrl)
+
+        if (!isValidImage) {
+          errors.push({
+            provider: providerName,
+            message: 'El proveedor devolvió una URL de imagen no válida o inaccesible.',
+          })
+          continue
+        }
+      }
+
       return {
         success: true,
         providerUsed: providerName,
         providersTried: providers,
+        errors,
         ...result,
       }
     } catch (error) {
