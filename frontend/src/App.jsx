@@ -24,6 +24,7 @@ function App() {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState('')
+  const [imageLoadFailed, setImageLoadFailed] = useState(false)
 
   const features = [
     {
@@ -69,6 +70,7 @@ function App() {
   const handleGenerate = async (event) => {
     event.preventDefault()
     setFormError('')
+    setImageLoadFailed(false)
     setIsSubmitting(true)
     setIsGeneratingImage(true)
     setCurrentView('generator')
@@ -455,6 +457,7 @@ function App() {
                           setFormData(initialForm)
                           setGeneratedProject(null)
                           setFormError('')
+                          setImageLoadFailed(false)
                         }}
                       >
                         Limpiar formulario
@@ -554,7 +557,7 @@ function App() {
                             <div className="spinner-border text-success mb-3" role="status" />
                             <p className="mb-0 fw-semibold">Generando visualización conceptual...</p>
                           </div>
-                        ) : generatedProject.imageUrl ? (
+                        ) : generatedProject.imageUrl && !imageLoadFailed ? (
                           <>
                             <div className="image-preview-header mb-3">
                               <span className="preview-tag">Render generado</span>
@@ -567,6 +570,7 @@ function App() {
                               src={generatedProject.imageUrl}
                               alt="Render conceptual de la vivienda propuesta"
                               className="generated-render-image"
+                              onError={() => setImageLoadFailed(true)}
                             />
                           </>
                         ) : (
@@ -574,7 +578,13 @@ function App() {
                             <div className="image-preview-header mb-3">
                               <span className="preview-tag">Render conceptual</span>
                               <span className="preview-tag preview-tag-light">{generatedProject.modularType}</span>
+                              {imageLoadFailed ? <span className="preview-tag preview-tag-warning">fallback visual</span> : null}
                             </div>
+                            {imageLoadFailed ? (
+                              <div className="render-warning-box mb-3">
+                                No se pudo visualizar la imagen remota del proveedor. Se muestra una vista conceptual de respaldo.
+                              </div>
+                            ) : null}
                             <div className="image-scene">
                               <div className="scene-sky"></div>
                               <div className="scene-sun"></div>

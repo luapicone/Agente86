@@ -250,6 +250,11 @@
   color: #214b9b;
 }
 
+.preview-tag-warning {
+  background: #fff2cc;
+  color: #8a6116;
+}
+
 .image-loading-state {
   min-height: 280px;
   display: flex;
@@ -274,6 +279,15 @@
   border-radius: 1rem;
   border: 1px solid #e2ece3;
   display: block;
+}
+
+.render-warning-box {
+  background: #fff9e8;
+  color: #7a5a14;
+  border: 1px solid #f1dfab;
+  border-radius: 0.85rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
 }
 
 .scene-sky {
