@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 import { generateProjectProposal } from './services/api'
+import { generateRender } from './services/renderApi'
 
 const initialForm = {
   projectName: '',
@@ -73,19 +74,32 @@ function App() {
     setCurrentView('generator')
 
     try {
-      const generated = await generateProjectProposal({
+      const normalizedPayload = {
         ...formData,
         squareMeters: Number(formData.squareMeters || 0),
         bedrooms: Number(formData.bedrooms || 0),
         bathrooms: Number(formData.bathrooms || 0),
         budget: Number(formData.budget || 0),
-      })
+      }
+
+      const generated = await generateProjectProposal(normalizedPayload)
+
+      let renderResponse = null
+
+      try {
+        renderResponse = await generateRender(normalizedPayload)
+      } catch (renderError) {
+        renderResponse = null
+      }
 
       setGeneratedProject({
         ...generated,
         imageStatus: 'ready',
         imageDescription:
+          renderResponse?.render?.note ||
           'Vista conceptual lista para usar como base de render o integración con proveedores externos.',
+        imageUrl: renderResponse?.render?.imageUrl || null,
+        renderProvider: renderResponse?.render?.provider || null,
       })
     } catch (error) {
       setGeneratedProject(null)
@@ -540,6 +554,21 @@ function App() {
                             <div className="spinner-border text-success mb-3" role="status" />
                             <p className="mb-0 fw-semibold">Generando visualización conceptual...</p>
                           </div>
+                        ) : generatedProject.imageUrl ? (
+                          <>
+                            <div className="image-preview-header mb-3">
+                              <span className="preview-tag">Render generado</span>
+                              <span className="preview-tag preview-tag-light">{generatedProject.modularType}</span>
+                              {generatedProject.renderProvider ? (
+                                <span className="preview-tag preview-tag-provider">{generatedProject.renderProvider}</span>
+                              ) : null}
+                            </div>
+                            <img
+                              src={generatedProject.imageUrl}
+                              alt="Render conceptual de la vivienda propuesta"
+                              className="generated-render-image"
+                            />
+                          </>
                         ) : (
                           <>
                             <div className="image-preview-header mb-3">

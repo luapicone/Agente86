@@ -23,6 +23,12 @@ GET /api/health
 POST /api/projects/generate
 ```
 
+### Generación de render con fallback
+
+```http
+POST /api/renders/generate
+```
+
 Payload esperado:
 
 ```json
@@ -37,3 +43,14 @@ Payload esperado:
   "material": "madera-reciclada"
 }
 ```
+
+## Fallback actual
+
+Orden configurable por `.env`:
+
+```env
+RENDER_PROVIDER_ORDER=pollinations,mock
+```
+
+- `pollinations`: genera una URL gratuita pública
+- `mock`: fallback interno si no hay proveedor visual disponible

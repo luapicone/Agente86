@@ -46,4 +46,5 @@ http://localhost:5173
 - integración frontend → backend
 - generación de propuesta
 - generación de prompt arquitectónico para render
-- estructura preparada para integrar proveedores de imagen con fallback
+- generación de render vía backend
+- fallback configurable de proveedores (`pollinations` + `mock` por ahora)
