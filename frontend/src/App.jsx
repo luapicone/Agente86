@@ -94,7 +94,7 @@ function App() {
       const views = expandEnvironmentViews(environment)
 
       for (const view of views) {
-        const prompt = buildEnvironmentPrompt(view, project)
+        const prompt = buildEnvironmentPrompt(view, project, formData)
 
         try {
           const puterRender = await generateRenderWithPuter({
@@ -787,6 +787,10 @@ function App() {
                       <div className="mb-3">
                         <h3 className="h6 fw-bold">Prompt generado</h3>
                         <p className="text-muted mb-2">{generatedProject.imagePrompt}</p>
+                        <h3 className="h6 fw-bold">Modelo arquitectónico común</h3>
+                        <p className="text-muted mb-2">
+                          Todas las imágenes deben mantener la misma casa, mismos materiales, misma lógica espacial y mismo lenguaje visual.
+                        </p>
                         <h3 className="h6 fw-bold">Estilo visual</h3>
                         <p className="text-muted mb-2">{generatedProject.imageStyle}</p>
                         <h3 className="h6 fw-bold">Negative prompt</h3>
