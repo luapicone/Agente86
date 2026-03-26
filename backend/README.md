@@ -49,8 +49,21 @@ Payload esperado:
 Orden configurable por `.env`:
 
 ```env
-RENDER_PROVIDER_ORDER=pollinations,mock
+RENDER_PROVIDER_ORDER=huggingface,replicate,together,pollinations,mock
 ```
 
-- `pollinations`: genera una URL gratuita pública
-- `mock`: fallback interno si no hay proveedor visual disponible
+Proveedores soportados actualmente:
+
+- `huggingface`
+- `replicate`
+- `together`
+- `pollinations`
+- `mock`
+
+Fallback recomendado:
+
+1. Hugging Face
+2. Replicate
+3. Together
+4. Pollinations
+5. Mock

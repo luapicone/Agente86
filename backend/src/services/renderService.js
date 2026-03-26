@@ -1,7 +1,13 @@
+const { generateWithHuggingFace } = require('./renderProviders/huggingFaceProvider')
+const { generateWithReplicate } = require('./renderProviders/replicateProvider')
+const { generateWithTogether } = require('./renderProviders/togetherProvider')
 const { generateWithPollinations } = require('./renderProviders/pollinationsProvider')
 const { generateWithMock } = require('./renderProviders/mockProvider')
 
 const providerHandlers = {
+  huggingface: generateWithHuggingFace,
+  replicate: generateWithReplicate,
+  together: generateWithTogether,
   pollinations: generateWithPollinations,
   mock: generateWithMock,
 }
