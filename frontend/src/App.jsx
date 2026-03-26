@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
+import { generateProjectProposal } from './services/api'
 
 const initialForm = {
   projectName: '',
@@ -20,6 +21,8 @@ function App() {
   const [formData, setFormData] = useState(initialForm)
   const [generatedProject, setGeneratedProject] = useState(null)
   const [isGeneratingImage, setIsGeneratingImage] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formError, setFormError] = useState('')
 
   const features = [
     {
@@ -62,78 +65,35 @@ function App() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleGenerate = (event) => {
+  const handleGenerate = async (event) => {
     event.preventDefault()
-
-    const squareMeters = Number(formData.squareMeters || 0)
-    const budget = Number(formData.budget || 0)
-    const bedrooms = Number(formData.bedrooms || 0)
-    const bathrooms = Number(formData.bathrooms || 0)
-
-    const sustainabilityScore =
-      formData.priority === 'sostenibilidad'
-        ? 92
-        : formData.priority === 'eficiencia'
-          ? 84
-          : 76
-
-    const estimatedCost =
-      budget || Math.round(squareMeters * 850 + bedrooms * 3500 + bathrooms * 2200)
-
-    const estimatedSavings = Math.round(estimatedCost * 0.12)
-    const energyEfficiency =
-      formData.climate === 'calido' ? 'Alta ventilación cruzada' : 'Aislamiento térmico reforzado'
-
-    const generated = {
-      projectName: formData.projectName || 'Proyecto HabitatIA',
-      summary: `Vivienda modular de ${squareMeters} m² pensada para ${bedrooms} dormitorio(s) y ${bathrooms} baño(s).`,
-      modularType: squareMeters >= 90 ? 'Modelo familiar expandible' : 'Modelo compacto modular',
-      recommendedMaterial:
-        formData.material === 'hormigon-verde'
-          ? 'Hormigón verde + paneles aislantes'
-          : formData.material === 'acero-reciclado'
-            ? 'Acero reciclado + cerramientos livianos'
-            : 'Madera reciclada tratada + panelería modular',
-      estimatedCost,
-      estimatedSavings,
-      sustainabilityScore,
-      energyEfficiency,
-      carbonReduction: `${Math.max(18, Math.round(squareMeters * 0.35))}%`,
-      recommendedLayout:
-        bedrooms >= 3
-          ? 'Área social integrada + bloque privado + expansión futura lateral'
-          : 'Núcleo central eficiente + espacios flexibles multiuso',
-      imagePrompt: `Render conceptual de vivienda ${squareMeters >= 90 ? 'modular familiar expandible' : 'modular compacta'} en ${formData.terrainType}, ubicada en clima ${formData.climate}, construida con ${formData.material} y enfoque ${formData.priority}.`,
-      imageStyle:
-        formData.priority === 'sostenibilidad'
-          ? 'Estilo eco-moderno con vegetación integrada, iluminación natural y materiales reciclables visibles.'
-          : formData.priority === 'eficiencia'
-            ? 'Estilo arquitectónico técnico con énfasis en eficiencia térmica, paneles y envolvente inteligente.'
-            : 'Estilo moderno funcional, modular y de bajo costo con estética simple y limpia.',
-      recommendations: [
-        'Priorizar orientación solar y ventilación natural para reducir consumo energético.',
-        'Incorporar materiales de baja huella de carbono y aislación térmica adecuada.',
-        'Planificar módulos constructivos para permitir ampliaciones futuras sin rehacer la obra base.',
-      ],
-    }
-
-    setGeneratedProject(generated)
+    setFormError('')
+    setIsSubmitting(true)
     setIsGeneratingImage(true)
     setCurrentView('generator')
 
-    setTimeout(() => {
-      setGeneratedProject((prev) =>
-        prev
-          ? {
-              ...prev,
-              imageStatus: 'ready',
-              imageDescription:
-                'Vista conceptual generada para presentar una propuesta arquitectónica inicial del proyecto.',
-            }
-          : prev,
-      )
+    try {
+      const generated = await generateProjectProposal({
+        ...formData,
+        squareMeters: Number(formData.squareMeters || 0),
+        bedrooms: Number(formData.bedrooms || 0),
+        bathrooms: Number(formData.bathrooms || 0),
+        budget: Number(formData.budget || 0),
+      })
+
+      setGeneratedProject({
+        ...generated,
+        imageStatus: 'ready',
+        imageDescription:
+          'Vista conceptual lista para usar como base de render o integración con proveedores externos.',
+      })
+    } catch (error) {
+      setGeneratedProject(null)
+      setFormError(error.message)
+    } finally {
+      setIsSubmitting(false)
       setIsGeneratingImage(false)
-    }, 1400)
+    }
   }
 
   const stats = useMemo(
@@ -468,9 +428,11 @@ function App() {
                       </div>
                     </div>
 
+                    {formError ? <div className="alert alert-danger mt-4 mb-0">{formError}</div> : null}
+
                     <div className="d-flex flex-wrap gap-3 mt-4">
-                      <button type="submit" className="btn btn-success btn-lg">
-                        Generar propuesta
+                      <button type="submit" className="btn btn-success btn-lg" disabled={isSubmitting}>
+                        {isSubmitting ? 'Generando...' : 'Generar propuesta'}
                       </button>
                       <button
                         type="button"
@@ -478,6 +440,7 @@ function App() {
                         onClick={() => {
                           setFormData(initialForm)
                           setGeneratedProject(null)
+                          setFormError('')
                         }}
                       >
                         Limpiar formulario
@@ -603,7 +566,9 @@ function App() {
                         <h3 className="h6 fw-bold">Prompt generado</h3>
                         <p className="text-muted mb-2">{generatedProject.imagePrompt}</p>
                         <h3 className="h6 fw-bold">Estilo visual</h3>
-                        <p className="text-muted mb-0">{generatedProject.imageStyle}</p>
+                        <p className="text-muted mb-2">{generatedProject.imageStyle}</p>
+                        <h3 className="h6 fw-bold">Negative prompt</h3>
+                        <p className="text-muted mb-0">{generatedProject.negativePrompt}</p>
                       </div>
 
                       {!isGeneratingImage && generatedProject.imageDescription ? (

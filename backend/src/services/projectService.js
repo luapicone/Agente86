@@ -1,3 +1,5 @@
+const { buildImagePrompt } = require('./imagePromptService')
+
 const MATERIAL_LABELS = {
   'madera-reciclada': 'Madera reciclada tratada + panelería modular',
   'hormigon-verde': 'Hormigón verde + paneles aislantes',
@@ -33,7 +35,7 @@ function buildProjectProposal(payload = {}) {
   const sustainabilityScore = PRIORITY_SCORES[payload.priority] || 80
   const carbonReduction = `${Math.max(18, Math.round(squareMeters * 0.35))}%`
 
-  return {
+  const projectData = {
     projectName: payload.projectName || 'Proyecto HabitatIA',
     summary: `Vivienda modular de ${squareMeters} m² pensada para ${bedrooms} dormitorio(s) y ${bathrooms} baño(s).`,
     modularType: squareMeters >= 90 ? 'Modelo familiar expandible' : 'Modelo compacto modular',
@@ -53,6 +55,20 @@ function buildProjectProposal(payload = {}) {
       'Priorizar orientación solar y ventilación natural para reducir consumo energético.',
       'Incorporar materiales de baja huella de carbono y aislación térmica adecuada.',
       'Planificar módulos constructivos para permitir ampliaciones futuras sin rehacer la obra base.',
+    ],
+  }
+
+  const imagePromptData = buildImagePrompt(payload, projectData)
+
+  return {
+    ...projectData,
+    imagePrompt: imagePromptData.prompt,
+    negativePrompt: imagePromptData.negativePrompt,
+    imageStyle: imagePromptData.styleLabel,
+    renderProviders: [
+      'huggingface',
+      'pollinations',
+      'replicate',
     ],
   }
 }
