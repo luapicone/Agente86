@@ -29,8 +29,25 @@ function buildProjectProposal(payload = {}) {
   const floors = Number(payload.floors || 1)
   const propertyType = payload.propertyType === 'departamento' ? 'Departamento' : 'Casa'
 
-  if (!squareMeters || squareMeters < 20) {
-    throw new Error('Los metros cuadrados deben ser mayores o iguales a 20.')
+  const validationErrors = []
+
+  if (!payload.projectName) validationErrors.push('Falta el nombre del proyecto.')
+  if (!payload.propertyType) validationErrors.push('Falta el tipo de vivienda.')
+  if (!payload.familyMembers) validationErrors.push('Falta la cantidad de integrantes.')
+  if (!bedrooms) validationErrors.push('Falta la cantidad de dormitorios.')
+  if (!bathrooms) validationErrors.push('Falta la cantidad de baños.')
+  if (!squareMeters || squareMeters < 20) validationErrors.push('Los metros cuadrados deben ser mayores o iguales a 20.')
+  if (!payload.priority) validationErrors.push('Falta la prioridad del proyecto.')
+  if (!payload.qualityLevel) validationErrors.push('Falta el nivel de calidad.')
+  if (!payload.location) validationErrors.push('Falta la ubicación del proyecto.')
+  if (!payload.climate) validationErrors.push('Falta el clima.')
+  if (!payload.terrainType) validationErrors.push('Falta el tipo de terreno.')
+  if (!payload.material) validationErrors.push('Falta el material preferido.')
+
+  if (validationErrors.length) {
+    const error = new Error(validationErrors[0])
+    error.details = validationErrors
+    throw error
   }
 
   const estimatedCost =

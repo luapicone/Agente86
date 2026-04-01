@@ -11,7 +11,8 @@ export async function generateProjectProposal(payload) {
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({}))
-    throw new Error(errorBody.error || errorBody.message || 'No se pudo generar la propuesta.')
+    const details = Array.isArray(errorBody.details) ? ` ${errorBody.details.join(' ')}` : ''
+    throw new Error((errorBody.error || errorBody.message || 'No se pudo generar la propuesta.') + details)
   }
 
   return response.json()
