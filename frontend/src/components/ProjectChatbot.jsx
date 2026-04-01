@@ -11,6 +11,7 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
 
   const questions = useMemo(() => getVisibleQuestions(answers), [answers])
   const currentQuestion = questions.find((question) => answers[question.key] === undefined)
+  const canGenerate = !currentQuestion && questions.length >= 10
   const answeredQuestions = questions.filter((question) => answers[question.key] !== undefined)
   const progress = Math.round((answeredQuestions.length / questions.length) * 100)
 
@@ -88,13 +89,13 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
             <div className="message message-bot current-question">
               <div className="message-bubble">{currentQuestion.question}</div>
             </div>
-          ) : (
+          ) : canGenerate ? (
             <div className="message message-bot">
               <div className="message-bubble">
                 Ya tengo toda la información necesaria. Si querés, generamos la propuesta ahora.
               </div>
             </div>
-          )}
+          ) : null}
         </div>
 
         {currentQuestion ? (
@@ -127,13 +128,13 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
               </form>
             )}
           </div>
-        ) : (
+        ) : canGenerate ? (
           <div className="chat-complete-panel">
             <button className="btn btn-success btn-lg" onClick={() => onComplete(normalizedAnswers)} disabled={isSubmitting}>
               {isSubmitting ? 'Generando proyecto...' : 'Generar proyecto'}
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   )
