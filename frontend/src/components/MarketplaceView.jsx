@@ -19,6 +19,7 @@ const initialForm = {
 function MarketplaceView() {
   const [mode, setMode] = useState('chooser')
   const [items, setItems] = useState([])
+  const [cart, setCart] = useState([])
   const [filters, setFilters] = useState({
     search: '',
     materialKey: '',
@@ -103,10 +104,59 @@ function MarketplaceView() {
     }
   }
 
+  const addToCart = (item) => {
+    setCart((prev) => {
+      const existing = prev.find((entry) => entry.id === item.id)
+
+      if (existing) {
+        return prev.map((entry) =>
+          entry.id === item.id
+            ? { ...entry, quantity: Math.min(entry.quantity + 1, Number(item.stock)) }
+            : entry,
+        )
+      }
+
+      return [
+        ...prev,
+        {
+          id: item.id,
+          materialName: item.materialName,
+          architect: item.architect,
+          price: Number(item.discountPrice),
+          quantity: 1,
+          stock: Number(item.stock),
+          unit: item.unit,
+        },
+      ]
+    })
+  }
+
+  const updateCartQuantity = (id, quantity) => {
+    setCart((prev) =>
+      prev
+        .map((entry) => {
+          if (entry.id !== id) return entry
+          const safeQuantity = Math.max(1, Math.min(Number(quantity || 1), entry.stock))
+          return { ...entry, quantity: safeQuantity }
+        })
+        .filter((entry) => entry.quantity > 0),
+    )
+  }
+
+  const removeFromCart = (id) => {
+    setCart((prev) => prev.filter((entry) => entry.id !== id))
+  }
+
   const activeFiltersCount = useMemo(
     () => Object.values(filters).filter((value) => value && value !== 'recent').length,
     [filters],
   )
+
+  const cartTotals = useMemo(() => {
+    const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+    const total = cart.reduce((sum, item) => sum + item.quantity * item.price, 0)
+    return { itemCount, total }
+  }, [cart])
 
   return (
     <main className="marketplace-page py-5">
@@ -150,142 +200,203 @@ function MarketplaceView() {
 
         {mode === 'buyer' ? (
           <>
-            <section className="result-card shadow-sm mb-4">
-              <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                <div>
-                  <span className="section-kicker">Explorar materiales</span>
-                  <h2 className="h4 fw-bold mb-0">Marketplace de publicaciones</h2>
-                </div>
-                <div className="marketplace-summary-grid compact">
-                  <div className="metric-box">
-                    <span className="metric-label">Publicaciones activas</span>
-                    <strong>{items.length}</strong>
+            <div className="row g-4 align-items-start">
+              <div className="col-xl-9">
+                <section className="result-card shadow-sm mb-4">
+                  <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <div>
+                      <span className="section-kicker">Explorar materiales</span>
+                      <h2 className="h4 fw-bold mb-0">Marketplace de publicaciones</h2>
+                    </div>
+                    <div className="marketplace-summary-grid compact">
+                      <div className="metric-box">
+                        <span className="metric-label">Publicaciones activas</span>
+                        <strong>{items.length}</strong>
+                      </div>
+                      <div className="metric-box">
+                        <span className="metric-label">Productos en carrito</span>
+                        <strong>{cartTotals.itemCount}</strong>
+                      </div>
+                    </div>
                   </div>
-                  <div className="metric-box">
-                    <span className="metric-label">Filtros activos</span>
-                    <strong>{activeFiltersCount}</strong>
-                  </div>
-                </div>
+
+                  <form className="row g-3 align-items-end" onSubmit={handleSearch}>
+                    <div className="col-lg-4">
+                      <label className="form-label">Buscar</label>
+                      <div className="marketplace-search-wrap">
+                        <span className="marketplace-search-icon">🔎</span>
+                        <input
+                          className="form-control marketplace-search-input"
+                          name="search"
+                          value={filters.search}
+                          onChange={handleFilterChange}
+                          placeholder="Ej: cemento, hierro, ventana, Córdoba"
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-6 col-lg-2">
+                      <label className="form-label">Material</label>
+                      <select className="form-select" name="materialKey" value={filters.materialKey} onChange={handleFilterChange}>
+                        <option value="">Todos</option>
+                        {facets.materials.map((material) => (
+                          <option key={material} value={material}>{material}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-md-6 col-lg-2">
+                      <label className="form-label">Zona</label>
+                      <select className="form-select" name="zone" value={filters.zone} onChange={handleFilterChange}>
+                        <option value="">Todas</option>
+                        {facets.zones.map((zone) => (
+                          <option key={zone} value={zone}>{zone}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-md-6 col-lg-2">
+                      <label className="form-label">Ciudad</label>
+                      <select className="form-select" name="location" value={filters.location} onChange={handleFilterChange}>
+                        <option value="">Todas</option>
+                        {facets.locations.map((location) => (
+                          <option key={location} value={location}>{location}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-md-6 col-lg-2">
+                      <label className="form-label">Ordenar</label>
+                      <select className="form-select" name="sort" value={filters.sort} onChange={handleFilterChange}>
+                        <option value="recent">Más recientes</option>
+                        <option value="price_asc">Menor precio</option>
+                        <option value="price_desc">Mayor precio</option>
+                        <option value="stock_desc">Mayor stock</option>
+                      </select>
+                    </div>
+                    <div className="col-md-6 col-lg-2">
+                      <label className="form-label">Precio mín.</label>
+                      <input className="form-control" name="minPrice" type="number" value={filters.minPrice} onChange={handleFilterChange} placeholder="0" />
+                    </div>
+                    <div className="col-md-6 col-lg-2">
+                      <label className="form-label">Precio máx.</label>
+                      <input className="form-control" name="maxPrice" type="number" value={filters.maxPrice} onChange={handleFilterChange} placeholder={`${facets.priceRange.max || 0}`} />
+                    </div>
+                    <div className="col-md-6 col-lg-4 d-flex gap-2">
+                      <button className="btn btn-success flex-grow-1" type="submit">Aplicar filtros</button>
+                      <button className="btn btn-outline-light flex-grow-1" type="button" onClick={handleClearFilters}>Limpiar</button>
+                    </div>
+                  </form>
+                </section>
+
+                <section className="marketplace-grid-section">
+                  {error ? <div className="alert alert-danger">{error}</div> : null}
+                  {loading ? (
+                    <div className="result-card shadow-sm">
+                      <p className="mb-0 text-muted">Cargando publicaciones...</p>
+                    </div>
+                  ) : (
+                    <div className="row g-4">
+                      {items.map((item) => {
+                        const savings = Number(item.price) - Number(item.discountPrice)
+                        return (
+                          <div className="col-md-6 col-xl-4" key={item.id}>
+                            <article className="marketplace-product-card h-100">
+                              <div className="marketplace-product-image-wrap">
+                                <img src={item.imageUrl} alt={item.materialName} className="marketplace-product-image" />
+                                <span className="marketplace-badge">{item.condition || 'Disponible'}</span>
+                                <span className="marketplace-stock-badge">Stock: {item.stock} {item.unit}</span>
+                              </div>
+                              <div className="marketplace-product-body">
+                                <div className="d-flex justify-content-between align-items-start gap-3 mb-2">
+                                  <div>
+                                    <h3 className="marketplace-product-title">{item.materialName}</h3>
+                                    <p className="marketplace-product-architect mb-0">{item.architect}</p>
+                                  </div>
+                                  <span className="marketplace-product-key">{item.materialKey}</span>
+                                </div>
+
+                                <p className="marketplace-product-description">{item.description}</p>
+
+                                <div className="marketplace-price-row">
+                                  <div>
+                                    <span className="marketplace-price-label">Precio regular</span>
+                                    <strong className="marketplace-price-old">USD {Number(item.price).toLocaleString()}</strong>
+                                  </div>
+                                  <div>
+                                    <span className="marketplace-price-label">Oferta</span>
+                                    <strong className="marketplace-price-new">USD {Number(item.discountPrice).toLocaleString()}</strong>
+                                  </div>
+                                </div>
+
+                                <ul className="marketplace-meta-list">
+                                  <li><strong>Ubicación:</strong> {item.location}</li>
+                                  <li><strong>Zona:</strong> {item.zone || 'Sin especificar'}</li>
+                                  <li><strong>Stock disponible:</strong> {item.stock} {item.unit}</li>
+                                  <li><strong>Ahorro por unidad:</strong> USD {savings.toLocaleString()}</li>
+                                </ul>
+
+                                <button className="btn btn-success w-100" type="button" onClick={() => addToCart(item)}>
+                                  Agregar al carrito
+                                </button>
+                              </div>
+                            </article>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </section>
               </div>
 
-              <form className="row g-3 align-items-end" onSubmit={handleSearch}>
-                <div className="col-lg-4">
-                  <label className="form-label">Buscar</label>
-                  <div className="marketplace-search-wrap">
-                    <span className="marketplace-search-icon">🔎</span>
-                    <input
-                      className="form-control marketplace-search-input"
-                      name="search"
-                      value={filters.search}
-                      onChange={handleFilterChange}
-                      placeholder="Ej: cemento, hierro, ventana, Córdoba"
-                    />
-                  </div>
-                </div>
-                <div className="col-md-6 col-lg-2">
-                  <label className="form-label">Material</label>
-                  <select className="form-select" name="materialKey" value={filters.materialKey} onChange={handleFilterChange}>
-                    <option value="">Todos</option>
-                    {facets.materials.map((material) => (
-                      <option key={material} value={material}>{material}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="col-md-6 col-lg-2">
-                  <label className="form-label">Zona</label>
-                  <select className="form-select" name="zone" value={filters.zone} onChange={handleFilterChange}>
-                    <option value="">Todas</option>
-                    {facets.zones.map((zone) => (
-                      <option key={zone} value={zone}>{zone}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="col-md-6 col-lg-2">
-                  <label className="form-label">Ciudad</label>
-                  <select className="form-select" name="location" value={filters.location} onChange={handleFilterChange}>
-                    <option value="">Todas</option>
-                    {facets.locations.map((location) => (
-                      <option key={location} value={location}>{location}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="col-md-6 col-lg-2">
-                  <label className="form-label">Ordenar</label>
-                  <select className="form-select" name="sort" value={filters.sort} onChange={handleFilterChange}>
-                    <option value="recent">Más recientes</option>
-                    <option value="price_asc">Menor precio</option>
-                    <option value="price_desc">Mayor precio</option>
-                    <option value="stock_desc">Mayor stock</option>
-                  </select>
-                </div>
-                <div className="col-md-6 col-lg-2">
-                  <label className="form-label">Precio mín.</label>
-                  <input className="form-control" name="minPrice" type="number" value={filters.minPrice} onChange={handleFilterChange} placeholder="0" />
-                </div>
-                <div className="col-md-6 col-lg-2">
-                  <label className="form-label">Precio máx.</label>
-                  <input className="form-control" name="maxPrice" type="number" value={filters.maxPrice} onChange={handleFilterChange} placeholder={`${facets.priceRange.max || 0}`} />
-                </div>
-                <div className="col-md-6 col-lg-4 d-flex gap-2">
-                  <button className="btn btn-success flex-grow-1" type="submit">Aplicar filtros</button>
-                  <button className="btn btn-outline-light flex-grow-1" type="button" onClick={handleClearFilters}>Limpiar</button>
-                </div>
-              </form>
-            </section>
+              <div className="col-xl-3">
+                <aside className="result-card shadow-sm marketplace-cart-card sticky-xl-top">
+                  <span className="section-kicker">Carrito</span>
+                  <h2 className="h4 fw-bold mb-3">Tus materiales</h2>
 
-            <section className="marketplace-grid-section">
-              {error ? <div className="alert alert-danger">{error}</div> : null}
-              {loading ? (
-                <div className="result-card shadow-sm">
-                  <p className="mb-0 text-muted">Cargando publicaciones...</p>
-                </div>
-              ) : (
-                <div className="row g-4">
-                  {items.map((item) => {
-                    const savings = Number(item.price) - Number(item.discountPrice)
-                    return (
-                      <div className="col-md-6 col-xl-4" key={item.id}>
-                        <article className="marketplace-product-card h-100">
-                          <div className="marketplace-product-image-wrap">
-                            <img src={item.imageUrl} alt={item.materialName} className="marketplace-product-image" />
-                            <span className="marketplace-badge">{item.condition || 'Disponible'}</span>
-                          </div>
-                          <div className="marketplace-product-body">
-                            <div className="d-flex justify-content-between align-items-start gap-3 mb-2">
-                              <div>
-                                <h3 className="marketplace-product-title">{item.materialName}</h3>
-                                <p className="marketplace-product-architect mb-0">{item.architect}</p>
-                              </div>
-                              <span className="marketplace-product-key">{item.materialKey}</span>
+                  {cart.length === 0 ? (
+                    <p className="text-muted mb-0">Todavía no agregaste productos al carrito.</p>
+                  ) : (
+                    <>
+                      <div className="marketplace-cart-list">
+                        {cart.map((item) => (
+                          <div key={item.id} className="marketplace-cart-item">
+                            <div>
+                              <strong className="marketplace-cart-title">{item.materialName}</strong>
+                              <div className="marketplace-cart-subtitle">{item.architect}</div>
+                              <div className="marketplace-cart-price">USD {item.price.toLocaleString()} por {item.unit}</div>
                             </div>
-
-                            <p className="marketplace-product-description">{item.description}</p>
-
-                            <div className="marketplace-price-row">
-                              <div>
-                                <span className="marketplace-price-label">Precio regular</span>
-                                <strong className="marketplace-price-old">USD {Number(item.price).toLocaleString()}</strong>
-                              </div>
-                              <div>
-                                <span className="marketplace-price-label">Oferta</span>
-                                <strong className="marketplace-price-new">USD {Number(item.discountPrice).toLocaleString()}</strong>
-                              </div>
+                            <div className="marketplace-cart-controls">
+                              <label className="form-label mb-1">Cantidad</label>
+                              <input
+                                className="form-control"
+                                type="number"
+                                min="1"
+                                max={item.stock}
+                                value={item.quantity}
+                                onChange={(event) => updateCartQuantity(item.id, event.target.value)}
+                              />
+                              <small className="marketplace-cart-stock">Máx. {item.stock} {item.unit}</small>
+                              <button className="btn btn-outline-light btn-sm" type="button" onClick={() => removeFromCart(item.id)}>
+                                Quitar
+                              </button>
                             </div>
-
-                            <ul className="marketplace-meta-list">
-                              <li><strong>Ubicación:</strong> {item.location}</li>
-                              <li><strong>Zona:</strong> {item.zone || 'Sin especificar'}</li>
-                              <li><strong>Stock:</strong> {item.stock} {item.unit}</li>
-                              <li><strong>Ahorro por unidad:</strong> USD {savings.toLocaleString()}</li>
-                            </ul>
                           </div>
-                        </article>
+                        ))}
                       </div>
-                    )
-                  })}
-                </div>
-              )}
-            </section>
+
+                      <div className="marketplace-cart-footer">
+                        <div className="marketplace-cart-total-row">
+                          <span>Productos</span>
+                          <strong>{cartTotals.itemCount}</strong>
+                        </div>
+                        <div className="marketplace-cart-total-row">
+                          <span>Total estimado</span>
+                          <strong>USD {cartTotals.total.toLocaleString()}</strong>
+                        </div>
+                        <button className="btn btn-success w-100" type="button">Continuar compra</button>
+                      </div>
+                    </>
+                  )}
+                </aside>
+              </div>
+            </div>
           </>
         ) : null}
 

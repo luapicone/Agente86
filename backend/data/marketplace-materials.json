@@ -10,7 +10,7 @@
     "discountPrice": 6.5,
     "location": "Córdoba Capital",
     "zone": "Centro",
-    "imageUrl": "https://images.unsplash.com/photo-1518889735218-3e3a03fd3128?auto=format&fit=crop&w=900&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=900&q=80",
     "description": "Bolsas sin abrir, sobrante de obra residencial, retiro inmediato.",
     "condition": "Nuevo",
     "publishedAt": "2026-04-18T14:10:00.000Z"
@@ -26,7 +26,7 @@
     "discountPrice": 0.68,
     "location": "Rosario",
     "zone": "Fisherton",
-    "imageUrl": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=900&q=80",
     "description": "Lote completo de ladrillo hueco en excelente estado, ideal para ampliación.",
     "condition": "Nuevo",
     "publishedAt": "2026-04-17T11:25:00.000Z"
@@ -42,7 +42,7 @@
     "discountPrice": 9.8,
     "location": "Buenos Aires",
     "zone": "Zona Sur",
-    "imageUrl": "https://images.unsplash.com/photo-1599707254554-027aeb4deacd?auto=format&fit=crop&w=900&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=900&q=80",
     "description": "Barras de hierro certificadas, excedente de estructura, venta por lote o parcial.",
     "condition": "Nuevo",
     "publishedAt": "2026-04-19T09:40:00.000Z"
@@ -58,7 +58,7 @@
     "discountPrice": 84,
     "location": "Mendoza",
     "zone": "Godoy Cruz",
-    "imageUrl": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=900&q=80",
     "description": "Aberturas listas para colocar, con marcos incluidos.",
     "condition": "Excelente",
     "publishedAt": "2026-04-20T12:05:00.000Z"
@@ -74,7 +74,7 @@
     "discountPrice": 10.5,
     "location": "Córdoba Capital",
     "zone": "Nueva Córdoba",
-    "imageUrl": "https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?auto=format&fit=crop&w=900&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=900&q=80",
     "description": "Cerámica clara para pisos y baños, remanente de obra premium.",
     "condition": "Nuevo",
     "publishedAt": "2026-04-18T16:45:00.000Z"
@@ -90,7 +90,7 @@
     "discountPrice": 14.2,
     "location": "Mendoza",
     "zone": "Maipú",
-    "imageUrl": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=80",
     "description": "Paneles livianos aislantes para techos y galerías.",
     "condition": "Nuevo",
     "publishedAt": "2026-04-16T10:10:00.000Z"
@@ -106,7 +106,7 @@
     "discountPrice": 24,
     "location": "Bariloche",
     "zone": "Oeste",
-    "imageUrl": "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=900&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80",
     "description": "Madera seca y tratada, apta para estructura liviana y decks.",
     "condition": "Excelente",
     "publishedAt": "2026-04-20T08:20:00.000Z"
@@ -138,7 +138,7 @@
     "discountPrice": 8.9,
     "location": "Buenos Aires",
     "zone": "Zona Norte",
-    "imageUrl": "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=900&q=80",
+    "imageUrl": "https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?auto=format&fit=crop&w=900&q=80",
     "description": "Paneles para muros y cubiertas, excelente relación costo-beneficio.",
     "condition": "Nuevo",
     "publishedAt": "2026-04-20T13:55:00.000Z"

@@ -813,6 +813,19 @@ textarea:focus {
   font-weight: 700;
 }
 
+.marketplace-stock-badge {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  padding: 0.38rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(10, 18, 14, 0.82);
+  color: #ecf7f1;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
 .marketplace-product-body {
   padding: 1.1rem;
   display: flex;
@@ -890,6 +903,70 @@ textarea:focus {
 
 .marketplace-meta-list li strong {
   color: #f1f7f3;
+}
+
+.marketplace-cart-card {
+  position: sticky;
+  top: 92px;
+}
+
+.marketplace-cart-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.marketplace-cart-item {
+  padding: 0.95rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(186, 224, 199, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.marketplace-cart-title {
+  display: block;
+  color: #f1f7f3;
+}
+
+.marketplace-cart-subtitle {
+  color: #8ed9af;
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
+.marketplace-cart-price {
+  color: #c6d5cc;
+  font-size: 0.88rem;
+  margin-top: 0.25rem;
+}
+
+.marketplace-cart-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.marketplace-cart-stock {
+  color: #aabdb2 !important;
+}
+
+.marketplace-cart-footer {
+  margin-top: 1.15rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(186, 224, 199, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.marketplace-cart-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #eaf3ee;
 }
 
 .floorplan-shell {
