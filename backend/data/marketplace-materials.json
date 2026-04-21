@@ -8,7 +8,12 @@
     "unit": "bolsa",
     "price": 8,
     "discountPrice": 6.5,
-    "location": "Córdoba"
+    "location": "Córdoba Capital",
+    "zone": "Centro",
+    "imageUrl": "https://images.unsplash.com/photo-1518889735218-3e3a03fd3128?auto=format&fit=crop&w=900&q=80",
+    "description": "Bolsas sin abrir, sobrante de obra residencial, retiro inmediato.",
+    "condition": "Nuevo",
+    "publishedAt": "2026-04-18T14:10:00.000Z"
   },
   {
     "id": "mat-002",
@@ -19,7 +24,12 @@
     "unit": "unidad",
     "price": 0.95,
     "discountPrice": 0.68,
-    "location": "Rosario"
+    "location": "Rosario",
+    "zone": "Fisherton",
+    "imageUrl": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=80",
+    "description": "Lote completo de ladrillo hueco en excelente estado, ideal para ampliación.",
+    "condition": "Nuevo",
+    "publishedAt": "2026-04-17T11:25:00.000Z"
   },
   {
     "id": "mat-003",
@@ -30,18 +40,28 @@
     "unit": "barra",
     "price": 12,
     "discountPrice": 9.8,
-    "location": "Buenos Aires"
+    "location": "Buenos Aires",
+    "zone": "Zona Sur",
+    "imageUrl": "https://images.unsplash.com/photo-1599707254554-027aeb4deacd?auto=format&fit=crop&w=900&q=80",
+    "description": "Barras de hierro certificadas, excedente de estructura, venta por lote o parcial.",
+    "condition": "Nuevo",
+    "publishedAt": "2026-04-19T09:40:00.000Z"
   },
   {
     "id": "mat-004",
     "materialKey": "abertura",
-    "materialName": "Ventana aluminio línea simple",
+    "materialName": "Ventanas de aluminio línea simple",
     "architect": "Arq. Reuso Norte",
     "stock": 8,
     "unit": "unidad",
     "price": 110,
     "discountPrice": 84,
-    "location": "Mendoza"
+    "location": "Mendoza",
+    "zone": "Godoy Cruz",
+    "imageUrl": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80",
+    "description": "Aberturas listas para colocar, con marcos incluidos.",
+    "condition": "Excelente",
+    "publishedAt": "2026-04-20T12:05:00.000Z"
   },
   {
     "id": "mat-005",
@@ -52,7 +72,12 @@
     "unit": "m2",
     "price": 14,
     "discountPrice": 10.5,
-    "location": "Córdoba"
+    "location": "Córdoba Capital",
+    "zone": "Nueva Córdoba",
+    "imageUrl": "https://images.unsplash.com/photo-1523413651479-597eb2da0ad6?auto=format&fit=crop&w=900&q=80",
+    "description": "Cerámica clara para pisos y baños, remanente de obra premium.",
+    "condition": "Nuevo",
+    "publishedAt": "2026-04-18T16:45:00.000Z"
   },
   {
     "id": "mat-006",
@@ -63,6 +88,75 @@
     "unit": "m2",
     "price": 18,
     "discountPrice": 14.2,
-    "location": "Mendoza"
+    "location": "Mendoza",
+    "zone": "Maipú",
+    "imageUrl": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&q=80",
+    "description": "Paneles livianos aislantes para techos y galerías.",
+    "condition": "Nuevo",
+    "publishedAt": "2026-04-16T10:10:00.000Z"
+  },
+  {
+    "id": "mat-007",
+    "materialKey": "madera",
+    "materialName": "Tablones de madera tratada",
+    "architect": "Taller Modular Patagonia",
+    "stock": 65,
+    "unit": "unidad",
+    "price": 32,
+    "discountPrice": 24,
+    "location": "Bariloche",
+    "zone": "Oeste",
+    "imageUrl": "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=900&q=80",
+    "description": "Madera seca y tratada, apta para estructura liviana y decks.",
+    "condition": "Excelente",
+    "publishedAt": "2026-04-20T08:20:00.000Z"
+  },
+  {
+    "id": "mat-008",
+    "materialKey": "sanitario",
+    "materialName": "Juego sanitario completo",
+    "architect": "Estudio Delta Obra",
+    "stock": 4,
+    "unit": "kit",
+    "price": 240,
+    "discountPrice": 185,
+    "location": "La Plata",
+    "zone": "Casco Urbano",
+    "imageUrl": "https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&w=900&q=80",
+    "description": "Kit con inodoro, mochila, bidet y lavatorio, ideal para baño principal.",
+    "condition": "Nuevo",
+    "publishedAt": "2026-04-19T18:35:00.000Z"
+  },
+  {
+    "id": "mat-009",
+    "materialKey": "aislacion",
+    "materialName": "Panel aislante térmico EPS",
+    "architect": "Arquitectura Circular BA",
+    "stock": 140,
+    "unit": "m2",
+    "price": 11,
+    "discountPrice": 8.9,
+    "location": "Buenos Aires",
+    "zone": "Zona Norte",
+    "imageUrl": "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=900&q=80",
+    "description": "Paneles para muros y cubiertas, excelente relación costo-beneficio.",
+    "condition": "Nuevo",
+    "publishedAt": "2026-04-20T13:55:00.000Z"
+  },
+  {
+    "id": "mat-010",
+    "materialKey": "pintura",
+    "materialName": "Pintura latex interior 20L",
+    "architect": "Habitar Reuso Rosario",
+    "stock": 12,
+    "unit": "balde",
+    "price": 78,
+    "discountPrice": 59,
+    "location": "Rosario",
+    "zone": "Centro",
+    "imageUrl": "https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=900&q=80",
+    "description": "Baldes cerrados, color blanco, listos para entrega.",
+    "condition": "Nuevo",
+    "publishedAt": "2026-04-15T15:15:00.000Z"
   }
 ]

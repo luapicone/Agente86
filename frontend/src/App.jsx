@@ -4,12 +4,11 @@ import './App.css'
 import { generateProjectProposal } from './services/api'
 import { generateRender } from './services/renderApi'
 import { generateRenderWithPuter } from './services/puterRender'
-import { createMarketplaceMaterial, fetchMarketplaceMaterials } from './services/marketplaceApi'
 import EnvironmentCarousel from './components/EnvironmentCarousel'
 import ImageLightbox from './components/ImageLightbox'
 import ProjectChatbot from './components/ProjectChatbot'
-import ArchitectMarketplace from './components/ArchitectMarketplace'
 import ConceptFloorPlan from './components/ConceptFloorPlan'
+import MarketplaceView from './components/MarketplaceView'
 import { downloadProjectPdf } from './components/ProjectPdfSummary'
 import {
   buildEnvironmentPrompt,
@@ -29,7 +28,6 @@ function App() {
   const [formError, setFormError] = useState('')
   const [imageLoadFailed, setImageLoadFailed] = useState(false)
   const [lightboxItem, setLightboxItem] = useState(null)
-  const [marketplaceItems, setMarketplaceItems] = useState([])
 
   const features = [
     {
@@ -145,8 +143,6 @@ function App() {
       }
 
       const environmentGallery = await generateEnvironmentGallery(generated, normalizedPayload, masterPrompt)
-      const marketplaceResponse = await fetchMarketplaceMaterials(normalizedPayload.location).catch(() => ({ items: [] }))
-      setMarketplaceItems(marketplaceResponse.items || [])
 
       setGeneratedProject({
         ...generated,
@@ -166,16 +162,6 @@ function App() {
     } finally {
       setIsSubmitting(false)
       setIsGeneratingImage(false)
-    }
-  }
-
-  const handlePublishMarketplaceMaterial = async (payload) => {
-    try {
-      await createMarketplaceMaterial(payload)
-      const refreshed = await fetchMarketplaceMaterials(chatAnswers.location).catch(() => ({ items: [] }))
-      setMarketplaceItems(refreshed.items || [])
-    } catch (_error) {
-      // no-op MVP
     }
   }
 
@@ -223,6 +209,11 @@ function App() {
                 </button>
               </li>
               <li className="nav-item">
+                <button className="nav-link btn btn-link" onClick={() => setCurrentView('marketplace')}>
+                  Marketplace
+                </button>
+              </li>
+              <li className="nav-item">
                 <button className="btn btn-success ms-lg-2" onClick={() => setCurrentView('generator')}>
                   Empezar ahora
                 </button>
@@ -250,9 +241,9 @@ function App() {
                     <button className="btn btn-success btn-lg px-4" onClick={() => setCurrentView('generator')}>
                       Iniciar conversación
                     </button>
-                    <a href="#impacto" className="btn btn-outline-light btn-lg px-4">
-                      Ver triple impacto
-                    </a>
+                    <button className="btn btn-outline-light btn-lg px-4" onClick={() => setCurrentView('marketplace')}>
+                      Ver marketplace
+                    </button>
                   </div>
                 </div>
                 <div className="col-lg-5">
@@ -390,7 +381,9 @@ function App() {
             </section>
           </main>
         </>
-      ) : (
+      ) : null}
+
+      {currentView === 'generator' ? (
         <main className="generator-page py-5">
           <div className="container">
             <div className="row g-4 align-items-start compact-top-layout">
@@ -608,11 +601,11 @@ function App() {
                 </div>
               </section>
             ) : null}
-
-            <ArchitectMarketplace items={marketplaceItems} onPublish={handlePublishMarketplaceMaterial} />
           </div>
         </main>
-      )}
+      ) : null}
+
+      {currentView === 'marketplace' ? <MarketplaceView /> : null}
 
       <ImageLightbox item={lightboxItem} onClose={() => setLightboxItem(null)} />
     </div>

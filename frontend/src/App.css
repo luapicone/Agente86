@@ -666,6 +666,170 @@ textarea:focus {
   margin-bottom: 0.8rem;
 }
 
+.marketplace-page {
+  min-height: calc(100vh - 72px);
+}
+
+.marketplace-hero-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.marketplace-hero-card::after {
+  content: '';
+  position: absolute;
+  right: -120px;
+  top: -80px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(120, 255, 181, 0.12), transparent 65%);
+  pointer-events: none;
+}
+
+.marketplace-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.marketplace-search-wrap {
+  position: relative;
+}
+
+.marketplace-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #afc4b7;
+  z-index: 2;
+}
+
+.marketplace-search-input {
+  padding-left: 2.5rem;
+}
+
+.marketplace-grid-section {
+  margin-top: 1rem;
+}
+
+.marketplace-product-card {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(20, 30, 26, 0.95) 0%, rgba(12, 18, 16, 0.98) 100%);
+  border: 1px solid rgba(186, 224, 199, 0.12);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.marketplace-product-image-wrap {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.marketplace-product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.marketplace-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(7, 18, 13, 0.76);
+  color: #dcf5e5;
+  border: 1px solid rgba(164, 226, 190, 0.28);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.marketplace-product-body {
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.marketplace-product-title {
+  margin: 0;
+  font-size: 1.08rem;
+  color: #f1f7f3;
+}
+
+.marketplace-product-architect {
+  color: #8ddaae !important;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.marketplace-product-key {
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(60, 178, 115, 0.12);
+  border: 1px solid rgba(117, 218, 163, 0.2);
+  color: #c9f0d9;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.marketplace-product-description {
+  color: #b9c9c0;
+  margin: 0;
+  min-height: 48px;
+}
+
+.marketplace-price-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.marketplace-price-row > div {
+  padding: 0.85rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(186, 224, 199, 0.1);
+}
+
+.marketplace-price-label {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9fb4a8;
+  margin-bottom: 0.25rem;
+}
+
+.marketplace-price-old {
+  color: #dbe8e0;
+}
+
+.marketplace-price-new {
+  color: #86ecae;
+}
+
+.marketplace-meta-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  color: #d4e2da;
+}
+
+.marketplace-meta-list li strong {
+  color: #f1f7f3;
+}
+
 .floorplan-shell {
   border-radius: var(--radius-xl);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.015) 0%, rgba(255, 255, 255, 0.03) 100%);
@@ -839,6 +1003,7 @@ textarea:focus {
 
   .hero-section .btn,
   .generator-page .btn,
+  .marketplace-page .btn,
   .environment-carousel-controls .btn,
   .chat-option-btn {
     width: 100%;
@@ -858,5 +1023,10 @@ textarea:focus {
 
   .chat-options-grid {
     flex-direction: column;
+  }
+
+  .marketplace-summary-grid,
+  .marketplace-price-row {
+    grid-template-columns: 1fr;
   }
 }
