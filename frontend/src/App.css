@@ -242,6 +242,14 @@ small,
   color: var(--muted) !important;
 }
 
+.material-table td,
+.material-table td *,
+.material-table .offer-empty,
+.material-table .architect-offer-name,
+.material-table .architect-offer-chip small {
+  color: #eef7f1 !important;
+}
+
 .team-section .section-title,
 .team-section .section-kicker,
 .text-white {
@@ -610,13 +618,40 @@ textarea:focus {
 .material-table td {
   background: transparent !important;
   border-color: rgba(184, 221, 198, 0.08);
+  vertical-align: top;
+}
+
+.material-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .material-table th {
   font-size: 0.76rem;
   text-transform: uppercase;
-  color: var(--muted);
+  color: #bcd2c4;
   letter-spacing: 0.08em;
+}
+
+.architect-offers-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.architect-offer-chip {
+  padding: 0.55rem 0.7rem;
+  border-radius: 12px;
+  background: rgba(80, 176, 118, 0.14);
+  border: 1px solid rgba(112, 207, 149, 0.28);
+}
+
+.architect-offer-name {
+  font-weight: 700;
+  margin-bottom: 0.15rem;
+}
+
+.offer-empty {
+  color: #c8d5cd !important;
 }
 
 .marketplace-card h3 {
@@ -631,32 +666,142 @@ textarea:focus {
   margin-bottom: 0.8rem;
 }
 
+.floorplan-shell {
+  border-radius: var(--radius-xl);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.015) 0%, rgba(255, 255, 255, 0.03) 100%);
+  padding: 1rem;
+}
+
 .floorplan-canvas {
   position: relative;
   width: 100%;
   min-height: 520px;
   border-radius: var(--radius-xl);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.04) 100%);
+  background: #f4f2eb;
   border: 1px solid rgba(184, 221, 198, 0.12);
   overflow: hidden;
 }
 
+.floorplan-canvas--architectural {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.floorplan-paper-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(35, 46, 40, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(35, 46, 40, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+.floorplan-outline {
+  position: absolute;
+  inset: 12px;
+  border: 3px solid #17231d;
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+.floorplan-title-block {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.65rem 0.85rem;
+  border: 2px solid rgba(23, 35, 29, 0.65);
+  background: rgba(255, 255, 255, 0.82);
+  border-radius: 10px;
+  color: #17231d;
+}
+
+.floorplan-title-block span {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #55645d;
+}
+
+.floorplan-title-block strong {
+  font-size: 0.88rem;
+}
+
+.floorplan-hallway {
+  position: absolute;
+  background: rgba(204, 211, 206, 0.42);
+  border-left: 2px solid rgba(23, 35, 29, 0.32);
+  border-right: 2px solid rgba(23, 35, 29, 0.32);
+}
+
 .floorplan-room {
   position: absolute;
-  background: rgba(60, 178, 115, 0.1);
-  border: 1px solid rgba(90, 208, 141, 0.7);
-  border-radius: 14px;
   padding: 0.55rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  color: #e6f2eb;
   font-size: 0.82rem;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.floorplan-room--architectural {
+  background: rgba(255, 255, 255, 0.62);
+  border: 3px solid #17231d;
+  border-radius: 6px;
+  color: #17231d;
+  box-shadow: inset 0 0 0 1px rgba(23, 35, 29, 0.04);
+}
+
+.floorplan-room-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
 }
 
 .floorplan-room strong {
-  font-size: 0.86rem;
+  font-size: 0.9rem;
+  color: #17231d;
+}
+
+.floorplan-room span {
+  color: #44544c;
+  font-weight: 600;
+}
+
+.floorplan-door,
+.floorplan-window,
+.floorplan-door-swing {
+  position: absolute;
+  z-index: 2;
+}
+
+.floorplan-door {
+  background: #f4f2eb;
+  border-radius: 999px;
+}
+
+.floorplan-door-swing {
+  border: 2px solid rgba(23, 35, 29, 0.35);
+  border-left: 0;
+  border-bottom: 0;
+  border-top-right-radius: 999px;
+  background: transparent;
+  transform-origin: top left;
+  pointer-events: none;
+}
+
+.floorplan-door-swing--vertical {
+  border-right: 0;
+  border-left: 2px solid rgba(23, 35, 29, 0.35);
+  border-top-left-radius: 999px;
+  border-top-right-radius: 0;
+}
+
+.floorplan-window {
+  background: #8fd2ff;
+  box-shadow: 0 0 0 1px rgba(22, 76, 128, 0.2);
 }
 
 .result-card .table-responsive {

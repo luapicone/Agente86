@@ -1,4 +1,4 @@
-const { getBestArchitectOffer } = require('./materialMarketplaceService')
+const { getArchitectOffers } = require('./materialMarketplaceService')
 
 function round(value) {
   return Math.round(value * 100) / 100
@@ -37,7 +37,7 @@ function estimateMaterials(payload = {}) {
       key: 'ladrillo',
       name: 'Ladrillo hueco 18x18x33',
       unit: 'unidad',
-      quantity: Math.ceil((netWallSurface * 16.5) * qualityFactor),
+      quantity: Math.ceil(netWallSurface * 16.5 * qualityFactor),
       unitPrice: 0.95,
     },
     {
@@ -72,46 +72,62 @@ function estimateMaterials(payload = {}) {
 
   let optimizedTotal = 0
   let architectDiscountTotal = 0
+  let purchasedFromMarketplaceTotal = 0
 
   const materials = materialPlan.map((material) => {
     const baseTotal = round(material.quantity * material.unitPrice)
     optimizedTotal += baseTotal
 
-    const architectOffer = getBestArchitectOffer(material.key, material.quantity, payload.location)
+    const architectOffers = getArchitectOffers(material.key, material.quantity, payload.location)
 
-    if (!architectOffer) {
+    if (!architectOffers.length) {
       return {
         ...material,
         baseTotal,
-        architectOffer: null,
+        architectOffers: [],
+        architectOfferSummary: null,
         architectSavings: 0,
         optimizedPurchaseTotal: baseTotal,
+        purchasedFromMarketplace: 0,
       }
     }
 
-    const architectSubtotal = round(architectOffer.applicableQuantity * architectOffer.discountPrice)
-    const regularSubtotalRemaining = round((material.quantity - architectOffer.applicableQuantity) * material.unitPrice)
-    const optimizedPurchaseTotal = round(architectSubtotal + regularSubtotalRemaining)
+    const purchasedFromMarketplace = round(
+      architectOffers.reduce((sum, offer) => sum + offer.applicableQuantity * offer.discountPrice, 0),
+    )
+    const totalMarketplaceUnits = architectOffers.reduce((sum, offer) => sum + offer.applicableQuantity, 0)
+    const regularSubtotalRemaining = round((material.quantity - totalMarketplaceUnits) * material.unitPrice)
+    const optimizedPurchaseTotal = round(purchasedFromMarketplace + regularSubtotalRemaining)
     const architectSavings = round(baseTotal - optimizedPurchaseTotal)
     architectDiscountTotal += architectSavings
+    purchasedFromMarketplaceTotal += purchasedFromMarketplace
 
     return {
       ...material,
       baseTotal,
-      architectOffer: {
-        listingId: architectOffer.id,
-        architect: architectOffer.architect,
-        applicableQuantity: architectOffer.applicableQuantity,
-        discountPrice: architectOffer.discountPrice,
+      architectOffers: architectOffers.map((offer) => ({
+        listingId: offer.id,
+        architect: offer.architect,
+        applicableQuantity: offer.applicableQuantity,
+        discountPrice: offer.discountPrice,
+        location: offer.location,
+        coverage: offer.coverage,
+        isFallbackLocation: offer.isFallbackLocation,
+      })),
+      architectOfferSummary: {
+        listingsUsed: architectOffers.length,
+        totalMarketplaceUnits,
       },
       architectSavings,
       optimizedPurchaseTotal,
+      purchasedFromMarketplace,
     }
   })
 
   const discountedTotal = round(optimizedTotal - architectDiscountTotal)
   const estimatedConstructionBudget = round(squareMeters * 850 + bedrooms * 3500 + bathrooms * 2200 + floors * 1800)
-  const finalDifference = round(estimatedConstructionBudget - discountedTotal)
+  const marketplaceSavings = architectDiscountTotal
+  const materialsWeightOverBudget = estimatedConstructionBudget ? round((discountedTotal / estimatedConstructionBudget) * 100) : 0
 
   return {
     technicalBasis: {
@@ -127,7 +143,10 @@ function estimateMaterials(payload = {}) {
       architectDiscountTotal: round(architectDiscountTotal),
       discountedMaterialTotal: discountedTotal,
       estimatedConstructionBudget,
-      finalDifference,
+      purchasedFromMarketplaceTotal: round(purchasedFromMarketplaceTotal),
+      marketplaceSavings,
+      finalDifference: marketplaceSavings,
+      materialsWeightOverBudget,
     },
   }
 }

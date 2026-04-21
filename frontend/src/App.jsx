@@ -498,15 +498,21 @@ function App() {
                                     <td>{material.quantity} {material.unit}</td>
                                     <td>USD {material.baseTotal.toLocaleString()}</td>
                                     <td>
-                                      {material.architectOffer ? (
-                                        <div>
-                                          <div>{material.architectOffer.architect}</div>
-                                          <small>
-                                            {material.architectOffer.applicableQuantity} {material.unit} a USD {material.architectOffer.discountPrice}
-                                          </small>
+                                      {material.architectOffers?.length ? (
+                                        <div className="architect-offers-stack">
+                                          {material.architectOffers.map((offer) => (
+                                            <div key={`${material.key}-${offer.listingId}`} className="architect-offer-chip">
+                                              <div className="architect-offer-name">{offer.architect}</div>
+                                              <small>
+                                                {offer.applicableQuantity} {material.unit} a USD {offer.discountPrice}
+                                                {offer.location ? ` · ${offer.location}` : ''}
+                                                {offer.isFallbackLocation ? ' · otra zona' : ''}
+                                              </small>
+                                            </div>
+                                          ))}
                                         </div>
                                       ) : (
-                                        '—'
+                                        <span className="offer-empty">Sin oferta disponible</span>
                                       )}
                                     </td>
                                     <td>USD {material.architectSavings.toLocaleString()}</td>
@@ -531,7 +537,7 @@ function App() {
                             </div>
                             <div className="col-md-6">
                               <div className="metric-box">
-                                <span className="metric-label">Total descontado</span>
+                                <span className="metric-label">Costo con descuento del marketplace</span>
                                 <strong>USD {generatedProject.materialEstimate.totals.discountedMaterialTotal.toLocaleString()}</strong>
                               </div>
                             </div>
@@ -543,7 +549,7 @@ function App() {
                             </div>
                             <div className="col-12">
                               <div className="metric-box">
-                                <span className="metric-label">Diferencia estimada a favor</span>
+                                <span className="metric-label">Ahorro estimado por marketplace</span>
                                 <strong>USD {generatedProject.materialEstimate.totals.finalDifference.toLocaleString()}</strong>
                               </div>
                             </div>

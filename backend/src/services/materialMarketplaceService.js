@@ -12,13 +12,17 @@ function writeListings(listings) {
   fs.writeFileSync(DATA_PATH, JSON.stringify(listings, null, 2))
 }
 
+function normalizeLocation(value = '') {
+  return value.toString().trim().toLowerCase()
+}
+
 function getMarketplaceListings(filters = {}) {
   const listings = readListings()
+  const requestedLocation = normalizeLocation(filters.location)
 
   return listings.filter((item) => {
-    const matchesLocation = filters.location
-      ? item.location?.toLowerCase().includes(filters.location.toLowerCase())
-      : true
+    const itemLocation = normalizeLocation(item.location)
+    const matchesLocation = requestedLocation ? itemLocation.includes(requestedLocation) : true
     const matchesMaterial = filters.materialKey ? item.materialKey === filters.materialKey : true
 
     return matchesLocation && matchesMaterial
@@ -45,24 +49,40 @@ function createMarketplaceListing(payload = {}) {
   return newItem
 }
 
-function getBestArchitectOffer(materialKey, neededQuantity, location) {
-  const matches = getMarketplaceListings({ materialKey, location }).filter((item) => item.stock > 0)
+function getArchitectOffers(materialKey, neededQuantity, location) {
+  const localMatches = getMarketplaceListings({ materialKey, location }).filter((item) => item.stock > 0)
+  const fallbackMatches = localMatches.length ? [] : getMarketplaceListings({ materialKey }).filter((item) => item.stock > 0)
+  const source = localMatches.length ? localMatches : fallbackMatches
 
-  if (!matches.length) {
-    return null
+  if (!source.length) {
+    return []
   }
 
-  const best = matches.sort((a, b) => a.discountPrice - b.discountPrice)[0]
-  const applicableQuantity = Math.min(best.stock, neededQuantity)
+  let remaining = Number(neededQuantity || 0)
 
-  return {
-    ...best,
-    applicableQuantity,
-  }
+  return source
+    .sort((a, b) => a.discountPrice - b.discountPrice)
+    .reduce((offers, item) => {
+      if (remaining <= 0) {
+        return offers
+      }
+
+      const applicableQuantity = Math.min(item.stock, remaining)
+      remaining -= applicableQuantity
+
+      offers.push({
+        ...item,
+        applicableQuantity,
+        coverage: neededQuantity ? Math.round((applicableQuantity / neededQuantity) * 100) : 0,
+        isFallbackLocation: !localMatches.length,
+      })
+
+      return offers
+    }, [])
 }
 
 module.exports = {
   getMarketplaceListings,
   createMarketplaceListing,
-  getBestArchitectOffer,
+  getArchitectOffers,
 }
