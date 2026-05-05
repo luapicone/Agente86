@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 import { generateProjectProposal } from './services/api'
@@ -16,11 +16,13 @@ import {
   expandEnvironmentViews,
   getEnvironmentDefinitions,
 } from './utils/environmentPrompts'
+import { initHomeAnimations } from './homeAnimations'
 
 const initialAnswers = {}
 
 function App() {
   const [currentView, setCurrentView] = useState('home')
+  const homeRootRef = useRef(null)
   const [generatedProject, setGeneratedProject] = useState(null)
   const [chatAnswers, setChatAnswers] = useState(initialAnswers)
   const [isGeneratingImage, setIsGeneratingImage] = useState(false)
@@ -165,6 +167,11 @@ function App() {
     }
   }
 
+  useEffect(() => {
+    if (currentView !== 'home' || !homeRootRef.current) return undefined
+    return initHomeAnimations(homeRootRef.current)
+  }, [currentView])
+
   const stats = useMemo(
     () => [
       { label: 'Diseños modulares', value: '100%' },
@@ -224,11 +231,14 @@ function App() {
       </nav>
 
       {currentView === 'home' ? (
-        <>
-          <header id="inicio" className="hero-section">
-            <div className="container py-5">
+        <div ref={homeRootRef} className="home-cinematic-shell">
+          <header id="inicio" className="hero-section scene-section" data-scene="hero">
+            <canvas className="hero-canvas" aria-hidden="true"></canvas>
+            <div className="hero-orb hero-orb-a" aria-hidden="true"></div>
+            <div className="hero-orb hero-orb-b" aria-hidden="true"></div>
+            <div className="container py-5 scene-content">
               <div className="row align-items-center min-vh-75 g-4">
-                <div className="col-lg-7 text-start">
+                <div className="col-lg-7 text-start hero-copy">
                   <span className="badge habitat-badge mb-3">PropTech + IA + Sustentabilidad</span>
                   <h1 className="display-4 fw-bold text-white mb-4">
                     Pensamos viviendas accesibles para familias que necesitan construir con bajo presupuesto.
@@ -247,7 +257,7 @@ function App() {
                   </div>
                 </div>
                 <div className="col-lg-5">
-                  <div className="hero-card shadow-lg">
+                  <div className="hero-card shadow-lg floating-panel">
                     <h2 className="h4 fw-bold mb-3">¿Para qué sirve HabitatIA?</h2>
                     <ul className="list-unstyled mb-0">
                       <li className="mb-3">• Ayuda a pensar una vivienda posible según el dinero disponible.</li>
@@ -261,12 +271,12 @@ function App() {
           </header>
 
           <main>
-            <section className="py-4 stats-strip">
+            <section className="py-4 stats-strip scene-section" data-scene="stats">
               <div className="container">
                 <div className="row g-3">
                   {stats.map((stat) => (
                     <div className="col-md-4" key={stat.label}>
-                      <div className="stat-card">
+                      <div className="stat-card floating-panel scene-card">
                         <div className="stat-value">{stat.value}</div>
                         <div className="stat-label">{stat.label}</div>
                       </div>
@@ -276,7 +286,8 @@ function App() {
               </div>
             </section>
 
-            <section id="propuesta" className="py-5 section-light">
+            <section id="propuesta" className="py-5 section-light scene-section" data-scene="proposal">
+              <div className="section-atmosphere" aria-hidden="true"><span></span><span></span></div>
               <div className="container">
                 <div className="text-center mb-5">
                   <span className="section-kicker">Nuestra propuesta</span>
@@ -290,7 +301,7 @@ function App() {
                 <div className="row g-4">
                   {features.map((feature) => (
                     <div className="col-md-4" key={feature.title}>
-                      <div className="card feature-card h-100 border-0 shadow-sm">
+                      <div className="card feature-card scene-card h-100 border-0 shadow-sm">
                         <div className="card-body p-4">
                           <h3 className="h5 fw-bold mb-3">{feature.title}</h3>
                           <p className="text-muted mb-0">{feature.description}</p>
@@ -302,7 +313,8 @@ function App() {
               </div>
             </section>
 
-            <section id="impacto" className="py-5 section-green">
+            <section id="impacto" className="py-5 section-green scene-section" data-scene="impact">
+              <div className="section-atmosphere" aria-hidden="true"><span></span><span></span></div>
               <div className="container">
                 <div className="text-center mb-5">
                   <span className="section-kicker text-success-emphasis">Triple impacto</span>
@@ -315,7 +327,7 @@ function App() {
                 <div className="row g-4">
                   {impacts.map((impact) => (
                     <div className="col-md-4" key={impact.title}>
-                      <div className="card impact-card h-100 border-0">
+                      <div className="card impact-card scene-card h-100 border-0">
                         <div className="card-body p-4">
                           <h3 className="h5 fw-bold mb-3">{impact.title}</h3>
                           <p className="mb-0 text-secondary">{impact.description}</p>
@@ -327,10 +339,11 @@ function App() {
               </div>
             </section>
 
-            <section className="py-5 section-light">
+            <section className="py-5 section-light scene-section" data-scene="technology">
+              <div className="section-atmosphere" aria-hidden="true"><span></span><span></span></div>
               <div className="container">
                 <div className="row g-4 align-items-center">
-                  <div className="col-lg-6">
+                  <div className="col-lg-6 scene-copy">
                     <h2 className="section-title text-start">Tecnología base del proyecto</h2>
                     <p className="section-text text-start mx-0 mb-4">
                       La plataforma fue pensada para dar una primera orientación clara sobre qué vivienda conviene,
@@ -346,7 +359,7 @@ function App() {
                     </div>
                   </div>
                   <div className="col-lg-6">
-                    <div className="info-panel shadow-sm">
+                    <div className="info-panel shadow-sm floating-panel">
                       <h3 className="h5 fw-bold mb-3">Objetivo del MVP</h3>
                       <p className="mb-0 text-muted">
                         Construir una primera versión capaz de orientar a una familia sobre una vivienda accesible,
@@ -358,7 +371,8 @@ function App() {
               </div>
             </section>
 
-            <section id="equipo" className="py-5 team-section">
+            <section id="equipo" className="py-5 team-section scene-section" data-scene="team">
+              <div className="section-atmosphere" aria-hidden="true"><span></span><span></span></div>
               <div className="container text-center">
                 <span className="section-kicker text-white-50">Equipo</span>
                 <h2 className="section-title text-white">Integrantes del proyecto</h2>
@@ -371,7 +385,7 @@ function App() {
                     'Felipe Villares',
                   ].map((member) => (
                     <div className="col-sm-6 col-lg-4" key={member}>
-                      <div className="team-card">
+                      <div className="team-card scene-card">
                         <p className="mb-0 fw-semibold">{member}</p>
                       </div>
                     </div>
@@ -380,7 +394,7 @@ function App() {
               </div>
             </section>
           </main>
-        </>
+        </div>
       ) : null}
 
       {currentView === 'generator' ? (
