@@ -24,6 +24,11 @@ const scenePrompts = {
     parallax: 'Foreground cards carry more motion than the section shell to keep focus on the three pillars.',
     camera: 'Smooth pass-through that maintains legibility and premium rhythm.',
   },
+  'before-after': {
+    depth: 'Two facade states occupy the same frame, with the renovated version sliding above the original as a controlled reveal.',
+    parallax: 'Atmosphere, comparison shell and divider handle move subtly at different speeds while the images stay readable.',
+    camera: 'Slow centered push through the comparison module so it feels like part of the main narrative.',
+  },
   technology: {
     depth: 'Copy column and objective panel live on separate planes with subtle glow and shadow contrast.',
     parallax: 'Tech pills, panel and atmosphere separate slightly to avoid flat scrolling.',

@@ -9,6 +9,7 @@ import ImageLightbox from './components/ImageLightbox'
 import ProjectChatbot from './components/ProjectChatbot'
 import ConceptFloorPlan from './components/ConceptFloorPlan'
 import MarketplaceView from './components/MarketplaceView'
+import BeforeAfterShowcase from './components/BeforeAfterShowcase'
 import { downloadProjectPdf } from './components/ProjectPdfSummary'
 import {
   buildEnvironmentPrompt,
@@ -312,6 +313,8 @@ function App() {
                 </div>
               </div>
             </section>
+
+            <BeforeAfterShowcase />
 
             <section id="impacto" className="py-5 section-green scene-section" data-scene="impact">
               <div className="section-atmosphere" aria-hidden="true"><span></span><span></span></div>

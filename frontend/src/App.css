@@ -254,6 +254,143 @@ body {
   will-change: transform, opacity;
 }
 
+.before-after-shell {
+  max-width: 980px;
+  padding: 1.25rem;
+}
+
+.before-after-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(var(--radius-xl) - 4px);
+  min-height: 520px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(186, 224, 199, 0.12);
+}
+
+.before-after-image {
+  width: 100%;
+  height: 520px;
+  object-fit: cover;
+  display: block;
+}
+
+.before-after-overlay {
+  position: absolute;
+  inset: 0 auto 0 0;
+  overflow: hidden;
+  border-right: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.before-after-overlay .before-after-image {
+  width: 980px;
+  max-width: none;
+}
+
+.before-after-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  transform: translateX(-50%);
+}
+
+.before-after-handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(13, 21, 18, 0.92);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+  font-size: 1rem;
+}
+
+.before-after-label {
+  position: absolute;
+  top: 20px;
+  z-index: 2;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  backdrop-filter: blur(10px);
+}
+
+.before-label {
+  left: 20px;
+  background: rgba(13, 21, 18, 0.78);
+  color: #d8efe1;
+  border: 1px solid rgba(186, 224, 199, 0.16);
+}
+
+.after-label {
+  right: 20px;
+  background: rgba(60, 178, 115, 0.16);
+  color: #f4fff8;
+  border: 1px solid rgba(184, 240, 207, 0.18);
+}
+
+.before-after-controls {
+  display: grid;
+  gap: 1rem;
+  padding: 1.1rem 0 0.5rem;
+}
+
+.before-after-range {
+  width: 100%;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(184, 240, 207, 0.3), rgba(60, 178, 115, 0.92));
+  outline: none;
+}
+
+.before-after-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid var(--primary);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+}
+
+.before-after-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid var(--primary);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+}
+
+.before-after-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: var(--muted);
+}
+
+.before-after-caption strong {
+  color: #eef7f1;
+}
+
+.before-after-source {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
 .scene-section {
   position: relative;
   --scene-glow: 0.28;
@@ -1236,6 +1373,17 @@ textarea:focus {
   .environment-section .environment-image {
     height: 360px;
   }
+
+  .before-after-frame,
+  .before-after-image {
+    min-height: 420px;
+    height: 420px;
+  }
+
+  .before-after-overlay .before-after-image {
+    width: 100%;
+    height: 420px;
+  }
 }
 
 @media (max-width: 576px) {
@@ -1271,5 +1419,37 @@ textarea:focus {
   .marketplace-price-row,
   .marketplace-entry-actions {
     grid-template-columns: 1fr;
+  }
+
+  .before-after-shell {
+    padding: 0.8rem;
+  }
+
+  .before-after-frame,
+  .before-after-image {
+    min-height: 320px;
+    height: 320px;
+  }
+
+  .before-after-overlay .before-after-image {
+    height: 320px;
+  }
+
+  .before-after-handle {
+    width: 44px;
+    height: 44px;
+  }
+
+  .before-after-label {
+    top: 14px;
+    font-size: 0.68rem;
+  }
+
+  .before-label {
+    left: 14px;
+  }
+
+  .after-label {
+    right: 14px;
   }
 }
