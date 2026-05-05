@@ -62,15 +62,6 @@ function BeforeAfterShowcase() {
             <div className="before-after-label after-label">Después</div>
           </div>
 
-          <div className="before-after-controls">
-            <div className="before-after-caption">
-              <strong>Arrastrá el botón central</strong>
-              <span>La comparación se mueve únicamente desde la manija circular del medio.</span>
-            </div>
-          </div>
-          <p className="before-after-source mb-0">
-            Referencia visual externa utilizada para inspiración de remodelación exterior. Fuente: HGTV / River Brook Design.
-          </p>
         </div>
       </div>
     </section>
