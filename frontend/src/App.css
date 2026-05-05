@@ -312,6 +312,17 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.24);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
   font-size: 1rem;
+  cursor: ew-resize;
+  touch-action: none;
+  user-select: none;
+  padding: 0;
+  appearance: none;
+}
+
+.before-after-handle:hover,
+.before-after-handle:focus-visible {
+  background: rgba(18, 28, 24, 0.98);
+  outline: none;
 }
 
 .before-after-label {
@@ -345,34 +356,6 @@ body {
   display: grid;
   gap: 1rem;
   padding: 1.1rem 0 0.5rem;
-}
-
-.before-after-range {
-  width: 100%;
-  appearance: none;
-  height: 6px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(184, 240, 207, 0.3), rgba(60, 178, 115, 0.92));
-  outline: none;
-}
-
-.before-after-range::-webkit-slider-thumb {
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 999px;
-  background: #fff;
-  border: 2px solid var(--primary);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
-}
-
-.before-after-range::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 999px;
-  background: #fff;
-  border: 2px solid var(--primary);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
 }
 
 .before-after-caption {

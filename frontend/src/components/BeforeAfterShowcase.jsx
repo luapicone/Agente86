@@ -1,9 +1,33 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import beforeImage from '../assets/before-after/house-before.webp'
 import afterImage from '../assets/before-after/house-after.webp'
 
 function BeforeAfterShowcase() {
   const [position, setPosition] = useState(52)
+  const frameRef = useRef(null)
+
+  const updatePositionFromClientX = (clientX) => {
+    const frame = frameRef.current
+    if (!frame) return
+
+    const rect = frame.getBoundingClientRect()
+    const next = ((clientX - rect.left) / rect.width) * 100
+    setPosition(Math.max(0, Math.min(100, next)))
+  }
+
+  const startDrag = (event) => {
+    event.preventDefault()
+
+    const move = (moveEvent) => updatePositionFromClientX(moveEvent.clientX)
+    const stop = () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', stop)
+    }
+
+    updatePositionFromClientX(event.clientX)
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', stop)
+  }
 
   return (
     <section id="antes-despues" className="py-5 section-light scene-section" data-scene="before-after">
@@ -19,31 +43,29 @@ function BeforeAfterShowcase() {
         </div>
 
         <div className="before-after-shell scene-card floating-panel mx-auto">
-          <div className="before-after-frame" style={{ '--before-after-position': `${position}%` }}>
+          <div ref={frameRef} className="before-after-frame" style={{ '--before-after-position': `${position}%` }}>
             <img className="before-after-image" src={beforeImage} alt="Exterior de casa antes de la remodelación" />
             <div className="before-after-overlay" style={{ width: `${position}%` }}>
               <img className="before-after-image" src={afterImage} alt="Exterior de casa después de la remodelación" />
             </div>
             <div className="before-after-divider" style={{ left: `${position}%` }}>
-              <span className="before-after-handle">↔</span>
+              <button
+                type="button"
+                className="before-after-handle"
+                onPointerDown={startDrag}
+                aria-label="Mover comparador antes y después"
+              >
+                ↔
+              </button>
             </div>
             <div className="before-after-label before-label">Antes</div>
             <div className="before-after-label after-label">Después</div>
           </div>
 
           <div className="before-after-controls">
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={position}
-              onChange={(event) => setPosition(Number(event.target.value))}
-              aria-label="Comparar antes y después de la vivienda"
-              className="before-after-range"
-            />
             <div className="before-after-caption">
-              <strong>Deslizá la barra</strong>
-              <span>La comparación se mueve solo cuando el usuario interactúa con el control.</span>
+              <strong>Arrastrá el botón central</strong>
+              <span>La comparación se mueve únicamente desde la manija circular del medio.</span>
             </div>
           </div>
           <p className="before-after-source mb-0">
