@@ -1,32 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import beforeImage from '../assets/before-after/house-before.webp'
 import afterImage from '../assets/before-after/house-after.webp'
 
 function BeforeAfterShowcase() {
   const [position, setPosition] = useState(52)
-  const [isInteracting, setIsInteracting] = useState(false)
-
-  useEffect(() => {
-    if (isInteracting) return undefined
-
-    let value = 52
-    let direction = 1
-
-    const interval = window.setInterval(() => {
-      value += direction * 1.2
-      if (value >= 84) {
-        value = 84
-        direction = -1
-      }
-      if (value <= 16) {
-        value = 16
-        direction = 1
-      }
-      setPosition(value)
-    }, 70)
-
-    return () => window.clearInterval(interval)
-  }, [isInteracting])
 
   return (
     <section id="antes-despues" className="py-5 section-light scene-section" data-scene="before-after">
@@ -61,18 +38,12 @@ function BeforeAfterShowcase() {
               max="100"
               value={position}
               onChange={(event) => setPosition(Number(event.target.value))}
-              onPointerDown={() => setIsInteracting(true)}
-              onPointerUp={() => setIsInteracting(false)}
-              onMouseDown={() => setIsInteracting(true)}
-              onMouseUp={() => setIsInteracting(false)}
-              onTouchStart={() => setIsInteracting(true)}
-              onTouchEnd={() => setIsInteracting(false)}
               aria-label="Comparar antes y después de la vivienda"
               className="before-after-range"
             />
             <div className="before-after-caption">
               <strong>Deslizá la barra</strong>
-              <span>La secuencia se anima sola, pero también la podés controlar manualmente.</span>
+              <span>La comparación se mueve solo cuando el usuario interactúa con el control.</span>
             </div>
           </div>
           <p className="before-after-source mb-0">
