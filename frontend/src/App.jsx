@@ -371,28 +371,6 @@ function App() {
               </div>
             </section>
 
-            <section id="equipo" className="py-5 team-section scene-section" data-scene="team">
-              <div className="section-atmosphere" aria-hidden="true"><span></span><span></span></div>
-              <div className="container text-center">
-                <span className="section-kicker text-white-50">Equipo</span>
-                <h2 className="section-title text-white">Integrantes del proyecto</h2>
-                <div className="row g-4 justify-content-center mt-2">
-                  {[
-                    'Luca Picone',
-                    'Ignacio Sanguinetti',
-                    'Aquiles Luzuriaga',
-                    'Antonio Cocca',
-                    'Felipe Villares',
-                  ].map((member) => (
-                    <div className="col-sm-6 col-lg-4" key={member}>
-                      <div className="team-card scene-card">
-                        <p className="mb-0 fw-semibold">{member}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
           </main>
         </div>
       ) : null}
