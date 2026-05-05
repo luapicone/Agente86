@@ -243,7 +243,7 @@ export function initHomeAnimations(root) {
           camera.updateProjectionMatrix()
         }
 
-        const ambient = new THREE.AmbientLight(0x8fbaff, 0.7)
+        const ambient = new THREE.AmbientLight(0xb8f0cf, 0.7)
         scene.add(ambient)
         const point = new THREE.PointLight(0x57e49a, 1.8, 24, 2)
         point.position.set(2.4, 1.1, 4.2)
@@ -260,7 +260,7 @@ export function initHomeAnimations(root) {
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
 
         const material = new THREE.PointsMaterial({
-          color: 0xa6ffe3,
+          color: 0xb8f0cf,
           size: 0.05,
           transparent: true,
           opacity: 0.6,
