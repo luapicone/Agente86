@@ -18,12 +18,26 @@ const providerHandlers = {
 }
 
 function getConfiguredProviders() {
-  const providers = (process.env.RENDER_PROVIDER_ORDER || 'huggingface,replicate,together,deepai,demo,mock')
+  const configuredProviders = (process.env.RENDER_PROVIDER_ORDER || 'huggingface,replicate,together,deepai,demo,mock')
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean)
 
-  return providers.length ? providers : ['huggingface', 'replicate', 'together', 'deepai', 'demo', 'mock']
+  const providers = configuredProviders.length
+    ? configuredProviders
+    : ['huggingface', 'replicate', 'together', 'deepai', 'demo', 'mock']
+
+  if (!providers.includes('demo')) {
+    const mockIndex = providers.indexOf('mock')
+
+    if (mockIndex >= 0) {
+      providers.splice(mockIndex, 0, 'demo')
+    } else {
+      providers.push('demo')
+    }
+  }
+
+  return [...new Set(providers)]
 }
 
 async function generateRenderImage(payload) {
