@@ -47,10 +47,11 @@ http://localhost:5173
 - generación de propuesta
 - generación de prompt arquitectónico para render
 - generación de render vía backend
-- generación visual MVP con Puter.js para pruebas
+- generación visual MVP con Puter.js solo como último respaldo del navegador
 - fallback configurable de proveedores
-- fallback híbrido para la galería: cada ambiente intenta render por backend y, si falla, prueba Puter en cliente
-- si no hay proveedores externos configurados, `mock` ahora devuelve una vista SVG automática basada en el prompt para evitar galerías vacías en producción
+- fallback híbrido para la galería: cada ambiente intenta render por backend y, si falla por completo, recién prueba Puter en cliente
+- si no hay proveedores externos configurados, `demo` devuelve imágenes arquitectónicas de muestra sin API keys ni costo para reuniones y validaciones rápidas
+- `mock` sigue existiendo solo como último respaldo técnico para evitar galerías vacías
 - normalización de respuestas booleanas del chat para que extras como pileta, garage, quincho o parrilla respeten el "Sí/No" real
 - configurador avanzado para casa/departamento
 - carrusel de ambientes con vista fullscreen
@@ -68,6 +69,8 @@ Este repo quedó preparado para deploy unificado en Vercel:
 
 - `REPLICATE_API_TOKEN` (si querés usar Replicate)
 - cualquier otra variable usada por `backend/.env`
+
+Si no configurás ninguna credencial externa, el backend igual puede responder imágenes mediante el proveedor `demo`.
 
 ### Nota importante
 

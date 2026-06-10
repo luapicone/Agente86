@@ -3,6 +3,7 @@ const { generateWithHuggingFace } = require('./renderProviders/huggingFaceProvid
 const { generateWithReplicate } = require('./renderProviders/replicateProvider')
 const { generateWithTogether } = require('./renderProviders/togetherProvider')
 const { generateWithPollinations } = require('./renderProviders/pollinationsProvider')
+const { generateWithDemo } = require('./renderProviders/demoProvider')
 const { generateWithMock } = require('./renderProviders/mockProvider')
 const { validateImageUrl } = require('./renderValidationService')
 
@@ -12,16 +13,17 @@ const providerHandlers = {
   replicate: generateWithReplicate,
   together: generateWithTogether,
   pollinations: generateWithPollinations,
+  demo: generateWithDemo,
   mock: generateWithMock,
 }
 
 function getConfiguredProviders() {
-  const providers = (process.env.RENDER_PROVIDER_ORDER || 'pollinations,mock')
+  const providers = (process.env.RENDER_PROVIDER_ORDER || 'huggingface,replicate,together,deepai,demo,mock')
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean)
 
-  return providers.length ? providers : ['pollinations', 'mock']
+  return providers.length ? providers : ['huggingface', 'replicate', 'together', 'deepai', 'demo', 'mock']
 }
 
 async function generateRenderImage(payload) {
