@@ -16,12 +16,12 @@ const providerHandlers = {
 }
 
 function getConfiguredProviders() {
-  const providers = (process.env.RENDER_PROVIDER_ORDER || 'huggingface,replicate,together,deepai,mock')
+  const providers = (process.env.RENDER_PROVIDER_ORDER || 'pollinations,mock')
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean)
 
-  return providers.length ? providers : ['huggingface', 'replicate', 'together', 'deepai', 'mock']
+  return providers.length ? providers : ['pollinations', 'mock']
 }
 
 async function generateRenderImage(payload) {

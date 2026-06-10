@@ -2,7 +2,7 @@ export const chatQuestions = [
   {
     key: 'projectName',
     label: 'Nombre del proyecto',
-    question: 'Para arrancar, ¿cómo querés llamar al proyecto?',
+    question: 'Hola, soy HabitatIA. Para empezar, ¿cómo te gustaría llamar a tu proyecto?',
     type: 'text',
     placeholder: 'Ej: Casa familiar zona sur',
   },

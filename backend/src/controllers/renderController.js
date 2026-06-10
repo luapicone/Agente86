@@ -3,21 +3,13 @@ const { generateRenderImage } = require('../services/renderService')
 
 const generateRender = async (req, res) => {
   try {
-    const hasDirectPrompt = typeof req.body?.prompt === 'string' && req.body.prompt.trim().length > 0
-    const projectProposal = hasDirectPrompt ? null : buildProjectProposal(req.body)
-    const renderInput = hasDirectPrompt
-      ? {
-          prompt: req.body.prompt.trim(),
-          negativePrompt: req.body?.negativePrompt || '',
-          styleLabel: req.body?.styleLabel || 'Render directo',
-        }
-      : {
-          prompt: projectProposal.imagePrompt,
-          negativePrompt: projectProposal.negativePrompt,
-          styleLabel: projectProposal.imageStyle,
-        }
+    const projectProposal = buildProjectProposal(req.body)
 
-    const renderResult = await generateRenderImage(renderInput)
+    const renderResult = await generateRenderImage({
+      prompt: projectProposal.imagePrompt,
+      negativePrompt: projectProposal.negativePrompt,
+      styleLabel: projectProposal.imageStyle,
+    })
 
     if (!renderResult.success) {
       return res.status(502).json({

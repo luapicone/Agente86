@@ -12,7 +12,7 @@ app.use(cors())
 app.use(express.json())
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'Agente86 render backend', timestamp: new Date().toISOString() })
+  res.json({ ok: true, service: 'HabitatIA backend', timestamp: new Date().toISOString() })
 })
 
 app.use('/api/projects', projectRoutes)

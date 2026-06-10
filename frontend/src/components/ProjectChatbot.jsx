@@ -49,10 +49,10 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
     <div className="chatbot-shell shadow-sm">
       <div className="chatbot-header">
         <div>
-          <span className="section-kicker text-white-50">Chat de relevamiento</span>
-          <h1 className="chatbot-title">Describí el proyecto y generamos el render</h1>
+          <span className="section-kicker text-white-50">Asistente de proyecto</span>
+          <h1 className="chatbot-title">Configurá tu vivienda conversando paso a paso</h1>
           <p className="chatbot-subtitle mb-0">
-            Respondé una pregunta a la vez. Al final armamos el prompt y generamos la imagen.
+            Respondé una pregunta a la vez. Al final generamos tu propuesta completa.
           </p>
         </div>
         <div className="chatbot-progress-wrapper">
@@ -68,7 +68,7 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
         <div className="chat-thread">
           <div className="message message-bot">
             <div className="message-bubble">
-              Hola, soy Agente86. Te voy a hacer preguntas concretas para entender el proyecto y renderizarlo.
+              Hola, soy HabitatIA. Te voy a ayudar a definir tu proyecto con preguntas simples.
             </div>
           </div>
 
@@ -92,7 +92,7 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
           ) : canGenerate ? (
             <div className="message message-bot">
               <div className="message-bubble">
-                Ya tengo la base del proyecto. Si querés, genero el render ahora.
+                Ya tengo toda la información necesaria. Si querés, generamos la propuesta ahora.
               </div>
             </div>
           ) : null}
@@ -131,7 +131,7 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
         ) : canGenerate ? (
           <div className="chat-complete-panel">
             <button className="btn btn-success btn-lg" onClick={() => onComplete(normalizedAnswers)} disabled={isSubmitting}>
-              {isSubmitting ? 'Generando render...' : 'Generar render'}
+              {isSubmitting ? 'Generando proyecto...' : 'Generar proyecto'}
             </button>
           </div>
         ) : null}
