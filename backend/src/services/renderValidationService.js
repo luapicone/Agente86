@@ -3,6 +3,10 @@ async function validateImageUrl(imageUrl) {
     return false
   }
 
+  if (typeof imageUrl === 'string' && imageUrl.startsWith('data:image/')) {
+    return true
+  }
+
   try {
     const response = await fetch(imageUrl, {
       method: 'HEAD',

@@ -50,6 +50,7 @@ http://localhost:5173
 - generación visual MVP con Puter.js para pruebas
 - fallback configurable de proveedores
 - fallback híbrido para la galería: cada ambiente intenta render por backend y, si falla, prueba Puter en cliente
+- si no hay proveedores externos configurados, `mock` ahora devuelve una vista SVG automática basada en el prompt para evitar galerías vacías en producción
 - normalización de respuestas booleanas del chat para que extras como pileta, garage, quincho o parrilla respeten el "Sí/No" real
 - configurador avanzado para casa/departamento
 - carrusel de ambientes con vista fullscreen

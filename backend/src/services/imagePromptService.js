@@ -23,6 +23,13 @@ const QUALITY_DESCRIPTIONS = {
   alto: 'high construction quality, refined finishes, better materials, more complete architectural detailing',
 }
 
+function parseBooleanFlag(value) {
+  if (typeof value === 'boolean') return value
+  if (value === 'true' || value === 'si' || value === 'sí') return true
+  if (value === 'false' || value === 'no') return false
+  return Boolean(value)
+}
+
 function buildExtraHouseFeatures(payload = {}) {
   if (payload.propertyType !== 'casa') {
     return 'apartment layout optimized for vertical building living'
@@ -30,11 +37,11 @@ function buildExtraHouseFeatures(payload = {}) {
 
   const extras = [
     `${Number(payload.floors || 1)} floor house`,
-    payload.hasSuiteBathroom ? 'master bedroom with ensuite bathroom' : null,
-    payload.hasPool ? 'swimming pool integrated with outdoor area' : null,
-    payload.hasGarage ? 'covered garage for vehicles' : null,
-    payload.hasQuincho ? 'quincho / covered social barbecue area' : null,
-    payload.hasGrill ? 'dedicated outdoor grill area' : null,
+    parseBooleanFlag(payload.hasSuiteBathroom) ? 'master bedroom with ensuite bathroom' : null,
+    parseBooleanFlag(payload.hasPool) ? 'swimming pool integrated with outdoor area' : null,
+    parseBooleanFlag(payload.hasGarage) ? 'covered garage for vehicles' : null,
+    parseBooleanFlag(payload.hasQuincho) ? 'quincho / covered social barbecue area' : null,
+    parseBooleanFlag(payload.hasGrill) ? 'dedicated outdoor grill area' : null,
   ].filter(Boolean)
 
   return extras.join(', ')
