@@ -149,13 +149,13 @@ function App() {
 
       setGeneratedProject({
         ...generated,
-        imageStatus: 'ready',
+        imageStatus: puterRender?.imageUrl || renderResponse?.render?.imageUrl ? 'ready' : 'unavailable',
         imageDescription:
           puterRender?.note ||
           renderResponse?.render?.note ||
-          'Vista conceptual lista para usar como base de render o integración con proveedores externos.',
+          'No se pudo generar la vista principal, pero la propuesta del proyecto sí quedó armada con la información del chat.',
         imageUrl: puterRender?.imageUrl || renderResponse?.render?.imageUrl || null,
-        renderProvider: puterRender?.provider || renderResponse?.render?.provider || null,
+        renderProvider: puterRender?.provider || renderResponse?.render?.providerUsed || renderResponse?.render?.provider || null,
         masterPrompt,
         environmentGallery,
       })
@@ -393,6 +393,50 @@ function App() {
 
                   {generatedProject ? (
                     <>
+                      <div className="result-highlight mb-4">
+                        <h3 className="h5 fw-bold mb-3">Render principal de la vivienda</h3>
+                        {generatedProject.imageUrl ? (
+                          <>
+                            <button
+                              type="button"
+                              className="environment-slide-button w-100"
+                              onClick={() =>
+                                setLightboxItem({
+                                  imageUrl: generatedProject.imageUrl,
+                                  title: generatedProject.projectName,
+                                  description: generatedProject.imageDescription,
+                                })
+                              }
+                            >
+                              <img
+                                src={generatedProject.imageUrl}
+                                alt={`Render principal de ${generatedProject.projectName}`}
+                                className="d-block w-100 environment-image rounded-4"
+                                onError={() => setImageLoadFailed(true)}
+                              />
+                            </button>
+                            <p className="text-muted mt-3 mb-1">{generatedProject.imageDescription}</p>
+                            <small className="text-muted">
+                              {generatedProject.renderProvider
+                                ? `Proveedor usado: ${generatedProject.renderProvider}`
+                                : 'Render generado desde el flujo automático del proyecto.'}
+                            </small>
+                          </>
+                        ) : (
+                          <div className="empty-state">
+                            <p className="text-muted mb-0">
+                              No pudimos mostrar la imagen principal de la casa en este intento, pero la propuesta se generó
+                              correctamente. Probá generar de nuevo para pedir otro render.
+                            </p>
+                          </div>
+                        )}
+                        {imageLoadFailed ? (
+                          <div className="alert alert-warning mt-3 mb-0">
+                            La imagen principal se generó pero no se pudo cargar en pantalla. Probá abrirla de nuevo o volver a generar el proyecto.
+                          </div>
+                        ) : null}
+                      </div>
+
                       <div className="result-highlight mb-3">
                         <h3 className="h5 fw-bold mb-1">{generatedProject.projectName}</h3>
                         <p className="mb-0 text-muted">{generatedProject.summary}</p>
