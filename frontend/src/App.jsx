@@ -21,6 +21,29 @@ import { initHomeAnimations } from './homeAnimations'
 
 const initialAnswers = {}
 
+function normalizeBooleanAnswer(value) {
+  if (typeof value === 'boolean') return value
+  if (value === 'true' || value === 'si' || value === 'sí') return true
+  if (value === 'false' || value === 'no') return false
+  return Boolean(value)
+}
+
+function normalizeProjectAnswers(answers) {
+  return {
+    ...answers,
+    squareMeters: Number(answers.squareMeters || 0),
+    bedrooms: Number(answers.bedrooms || 0),
+    bathrooms: Number(answers.bathrooms || 0),
+    budget: Number(answers.budget || 0),
+    floors: Number(answers.floors || 1),
+    hasSuiteBathroom: normalizeBooleanAnswer(answers.hasSuiteBathroom),
+    hasPool: normalizeBooleanAnswer(answers.hasPool),
+    hasGarage: normalizeBooleanAnswer(answers.hasGarage),
+    hasQuincho: normalizeBooleanAnswer(answers.hasQuincho),
+    hasGrill: normalizeBooleanAnswer(answers.hasGrill),
+  }
+}
+
 function App() {
   const [currentView, setCurrentView] = useState('home')
   const homeRootRef = useRef(null)
@@ -68,6 +91,33 @@ function App() {
     },
   ]
 
+  const requestRenderAsset = async ({ prompt, negativePrompt, payload }) => {
+    try {
+      const renderResponse = await generateRender(
+        payload || {
+          prompt,
+          negativePrompt,
+        },
+      )
+
+      if (renderResponse?.render?.imageUrl) {
+        return {
+          imageUrl: renderResponse.render.imageUrl,
+          provider: renderResponse.render.providerUsed || renderResponse.render.provider || 'backend',
+          note: renderResponse.render.note || 'Render generado desde el backend.',
+        }
+      }
+    } catch (_renderError) {
+      // Keep fallbacking to client-side generation when backend render is unavailable.
+    }
+
+    try {
+      return await generateRenderWithPuter({ prompt, negativePrompt })
+    } catch (_puterError) {
+      return null
+    }
+  }
+
   const generateEnvironmentGallery = async (project, answers, masterPrompt) => {
     const environments = getEnvironmentDefinitions(answers)
     const images = []
@@ -79,7 +129,7 @@ function App() {
         const prompt = buildEnvironmentPrompt(view, project, answers, masterPrompt)
 
         try {
-          const puterRender = await generateRenderWithPuter({
+          const renderAsset = await requestRenderAsset({
             prompt,
             negativePrompt: project.negativePrompt,
           })
@@ -87,8 +137,8 @@ function App() {
           images.push({
             ...view,
             environmentLabel: environment.title,
-            imageUrl: puterRender.imageUrl,
-            provider: puterRender.provider,
+            imageUrl: renderAsset?.imageUrl || null,
+            provider: renderAsset?.provider || 'fallback',
           })
         } catch (_error) {
           images.push({
@@ -113,49 +163,27 @@ function App() {
     setChatAnswers(answers)
 
     try {
-      const normalizedPayload = {
-        ...answers,
-        squareMeters: Number(answers.squareMeters || 0),
-        bedrooms: Number(answers.bedrooms || 0),
-        bathrooms: Number(answers.bathrooms || 0),
-        budget: Number(answers.budget || 0),
-        floors: Number(answers.floors || 1),
-      }
+      const normalizedPayload = normalizeProjectAnswers(answers)
 
       const generated = await generateProjectProposal(normalizedPayload)
 
-      let renderResponse = null
-      let puterRender = null
       const masterPrompt = buildMasterHousePrompt(normalizedPayload, generated)
-
-      try {
-        puterRender = await generateRenderWithPuter({
-          prompt: masterPrompt,
-          negativePrompt: generated.negativePrompt,
-        })
-      } catch (_puterError) {
-        puterRender = null
-      }
-
-      if (!puterRender) {
-        try {
-          renderResponse = await generateRender(normalizedPayload)
-        } catch (_renderError) {
-          renderResponse = null
-        }
-      }
+      const mainRenderAsset = await requestRenderAsset({
+        prompt: masterPrompt,
+        negativePrompt: generated.negativePrompt,
+        payload: normalizedPayload,
+      })
 
       const environmentGallery = await generateEnvironmentGallery(generated, normalizedPayload, masterPrompt)
 
       setGeneratedProject({
         ...generated,
-        imageStatus: puterRender?.imageUrl || renderResponse?.render?.imageUrl ? 'ready' : 'unavailable',
+        imageStatus: mainRenderAsset?.imageUrl ? 'ready' : 'unavailable',
         imageDescription:
-          puterRender?.note ||
-          renderResponse?.render?.note ||
+          mainRenderAsset?.note ||
           'No se pudo generar la vista principal, pero la propuesta del proyecto sí quedó armada con la información del chat.',
-        imageUrl: puterRender?.imageUrl || renderResponse?.render?.imageUrl || null,
-        renderProvider: puterRender?.provider || renderResponse?.render?.providerUsed || renderResponse?.render?.provider || null,
+        imageUrl: mainRenderAsset?.imageUrl || null,
+        renderProvider: mainRenderAsset?.provider || null,
         masterPrompt,
         environmentGallery,
       })

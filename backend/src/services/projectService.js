@@ -21,6 +21,13 @@ const CLIMATE_STRATEGIES = {
   humedo: 'Materiales resistentes a humedad + circulación de aire constante',
 }
 
+function parseBooleanFlag(value) {
+  if (typeof value === 'boolean') return value
+  if (value === 'true' || value === 'si' || value === 'sí') return true
+  if (value === 'false' || value === 'no') return false
+  return Boolean(value)
+}
+
 function buildProjectProposal(payload = {}) {
   const squareMeters = Number(payload.squareMeters || 0)
   const bedrooms = Number(payload.bedrooms || 0)
@@ -28,6 +35,11 @@ function buildProjectProposal(payload = {}) {
   const budget = Number(payload.budget || 0)
   const floors = Number(payload.floors || 1)
   const propertyType = payload.propertyType === 'departamento' ? 'Departamento' : 'Casa'
+  const hasSuiteBathroom = parseBooleanFlag(payload.hasSuiteBathroom)
+  const hasPool = parseBooleanFlag(payload.hasPool)
+  const hasGarage = parseBooleanFlag(payload.hasGarage)
+  const hasQuincho = parseBooleanFlag(payload.hasQuincho)
+  const hasGrill = parseBooleanFlag(payload.hasGrill)
 
   const validationErrors = []
 
@@ -58,11 +70,11 @@ function buildProjectProposal(payload = {}) {
 
   const houseExtras = []
   if (payload.propertyType === 'casa') {
-    if (payload.hasSuiteBathroom) houseExtras.push('Dormitorio principal con baño en suite')
-    if (payload.hasPool) houseExtras.push('Pileta')
-    if (payload.hasGarage) houseExtras.push('Garage')
-    if (payload.hasQuincho) houseExtras.push('Quincho')
-    if (payload.hasGrill) houseExtras.push('Parrilla')
+    if (hasSuiteBathroom) houseExtras.push('Dormitorio principal con baño en suite')
+    if (hasPool) houseExtras.push('Pileta')
+    if (hasGarage) houseExtras.push('Garage')
+    if (hasQuincho) houseExtras.push('Quincho')
+    if (hasGrill) houseExtras.push('Parrilla')
   }
 
   const qualityLevel = payload.qualityLevel || 'bajo'

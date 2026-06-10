@@ -3,12 +3,13 @@ const { generateRenderImage } = require('../services/renderService')
 
 const generateRender = async (req, res) => {
   try {
-    const projectProposal = buildProjectProposal(req.body)
+    const hasDirectPrompt = typeof req.body?.prompt === 'string' && req.body.prompt.trim().length > 0
+    const projectProposal = hasDirectPrompt ? null : buildProjectProposal(req.body)
 
     const renderResult = await generateRenderImage({
-      prompt: projectProposal.imagePrompt,
-      negativePrompt: projectProposal.negativePrompt,
-      styleLabel: projectProposal.imageStyle,
+      prompt: hasDirectPrompt ? req.body.prompt.trim() : projectProposal.imagePrompt,
+      negativePrompt: hasDirectPrompt ? req.body.negativePrompt : projectProposal.negativePrompt,
+      styleLabel: hasDirectPrompt ? req.body.styleLabel : projectProposal.imageStyle,
     })
 
     if (!renderResult.success) {

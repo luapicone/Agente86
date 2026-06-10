@@ -49,6 +49,8 @@ http://localhost:5173
 - generación de render vía backend
 - generación visual MVP con Puter.js para pruebas
 - fallback configurable de proveedores
+- fallback híbrido para la galería: cada ambiente intenta render por backend y, si falla, prueba Puter en cliente
+- normalización de respuestas booleanas del chat para que extras como pileta, garage, quincho o parrilla respeten el "Sí/No" real
 - configurador avanzado para casa/departamento
 - carrusel de ambientes con vista fullscreen
 
