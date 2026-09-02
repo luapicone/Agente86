@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { formatAnswerLabel, getVisibleQuestions } from '../utils/chatFlow'
+import { formatAnswerLabel, getAnswerAcknowledgement, getQuestionPrompt, getVisibleQuestions } from '../utils/chatFlow'
 
 function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
   const [answers, setAnswers] = useState(initialAnswers)
@@ -14,6 +14,13 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
   const canGenerate = !currentQuestion && questions.length >= 10
   const answeredQuestions = questions.filter((question) => answers[question.key] !== undefined)
   const progress = Math.round((answeredQuestions.length / questions.length) * 100)
+  const introMessage = useMemo(() => {
+    if (!answers.projectName) {
+      return 'Hola, soy HabitatIA. Te voy a ayudar a definir tu proyecto con preguntas simples y una propuesta pensada para tu caso.'
+    }
+
+    return `Hola, soy HabitatIA. Ya estoy armando el marco inicial de ${answers.projectName}. Voy a hacerte preguntas clave para adaptar la propuesta a tu realidad.`
+  }, [answers.projectName])
 
   const submitAnswer = (value) => {
     if (!currentQuestion || value === '' || value === undefined || value === null) {
@@ -67,19 +74,22 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
       <div className="chatbot-body">
         <div className="chat-thread">
           <div className="message message-bot">
-            <div className="message-bubble">
-              Hola, soy HabitatIA. Te voy a ayudar a definir tu proyecto con preguntas simples.
-            </div>
+            <div className="message-bubble">{introMessage}</div>
           </div>
 
           {answeredQuestions.map((question) => (
             <div key={question.key}>
               <div className="message message-bot">
-                <div className="message-bubble">{question.question}</div>
+                <div className="message-bubble">{getQuestionPrompt(question, answers)}</div>
               </div>
               <div className="message message-user">
                 <div className="message-bubble user-bubble">
                   {formatAnswerLabel(question, answers[question.key])}
+                </div>
+              </div>
+              <div className="message message-bot">
+                <div className="message-bubble message-bubble-muted">
+                  {getAnswerAcknowledgement(question, answers[question.key], answers)}
                 </div>
               </div>
             </div>
@@ -87,12 +97,12 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
 
           {currentQuestion ? (
             <div className="message message-bot current-question">
-              <div className="message-bubble">{currentQuestion.question}</div>
+              <div className="message-bubble">{getQuestionPrompt(currentQuestion, answers)}</div>
             </div>
           ) : canGenerate ? (
             <div className="message message-bot">
               <div className="message-bubble">
-                Ya tengo toda la información necesaria. Si querés, generamos la propuesta ahora.
+                Ya tengo una base bastante clara del proyecto. Si querés, ahora genero una propuesta adaptada a todo lo que me contaste.
               </div>
             </div>
           ) : null}

@@ -788,6 +788,12 @@ textarea:focus {
   border: 1px solid rgba(184, 221, 198, 0.12);
 }
 
+.message-bubble-muted {
+  background: rgba(103, 181, 131, 0.08);
+  color: rgba(230, 243, 235, 0.9);
+  border-color: rgba(111, 209, 154, 0.14);
+}
+
 .user-bubble {
   background: linear-gradient(135deg, #2f855a 0%, #236b47 100%);
   color: #fff;

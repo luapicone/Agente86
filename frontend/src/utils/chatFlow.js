@@ -134,6 +134,7 @@ export const chatQuestions = [
     label: 'Tipo de terreno',
     question: '¿Qué tipo de terreno tenés o estimás que tendrá la vivienda?',
     type: 'select',
+    showIf: (answers) => answers.hasLand === 'si',
     options: [
       { value: 'urbano', label: 'Urbano' },
       { value: 'suburbano', label: 'Suburbano' },
@@ -239,4 +240,145 @@ export function formatAnswerLabel(question, value) {
   }
 
   return value
+}
+
+function formatPropertyType(value) {
+  if (value === 'casa') return 'una casa'
+  if (value === 'departamento') return 'un departamento'
+  return 'la vivienda'
+}
+
+function formatUrgency(value) {
+  if (value === 'alta') return 'con bastante urgencia'
+  if (value === 'media') return 'con una urgencia intermedia'
+  if (value === 'baja') return 'sin apuro inmediato'
+  return 'con el ritmo que te resulte mejor'
+}
+
+function formatPriority(value) {
+  if (value === 'costo') return 'cuidar al máximo el presupuesto'
+  if (value === 'eficiencia') return 'bajar gastos de mantenimiento'
+  if (value === 'sostenibilidad') return 'lograr una solución más sostenible'
+  return 'definir una prioridad clara'
+}
+
+function formatQualityLevel(value) {
+  if (value === 'bajo') return 'una resolución simple y bien cuidada'
+  if (value === 'medio') return 'un equilibrio entre costo y calidad'
+  if (value === 'alto') return 'una terminación más completa y exigente'
+  return 'el nivel de terminación'
+}
+
+export function getQuestionPrompt(question, answers) {
+  switch (question.key) {
+    case 'propertyType':
+      return `Perfecto. Para ${answers.projectName || 'tu proyecto'}, ¿estás pensando en ${formatPropertyType('casa')} o en ${formatPropertyType('departamento')}?`
+    case 'familyMembers':
+      return `Bien. Así adapto mejor la distribución de ${formatPropertyType(answers.propertyType)}, ¿cuántas personas van a vivir ahí?`
+    case 'bedrooms':
+      return `Con eso en mente, ¿cuántos dormitorios necesitás para que ${answers.projectName || 'el proyecto'} funcione bien?`
+    case 'bathrooms':
+      return '¿Y cuántos baños te gustaría incluir para que la propuesta quede cómoda?'
+    case 'squareMeters':
+      return `Hasta acá voy entendiendo la base. ¿Qué superficie aproximada te imaginás para ${answers.projectName || 'la vivienda'}?`
+    case 'budget':
+      return 'Clave para orientarte bien: ¿cuál es el presupuesto máximo que te gustaría destinar a la construcción?'
+    case 'hasLand':
+      return 'Antes de seguir con la parte técnica, necesito saber si ya contás con un terreno o si eso todavía no está resuelto.'
+    case 'urgency':
+      return 'Entiendo. ¿Qué nivel de urgencia tiene hoy este proyecto para vos o tu familia?'
+    case 'priority':
+      return 'Si tuvieras que elegir un criterio principal para esta primera propuesta, ¿qué querés priorizar más?'
+    case 'qualityLevel':
+      return `Perfecto. Y en términos de terminaciones, ¿te imaginás ${formatQualityLevel('bajo')}, ${formatQualityLevel('medio')} o una opción más alta?`
+    case 'location':
+      return '¿En qué ciudad o zona estaría ubicada la vivienda? Eso me ayuda a contextualizar mejor la propuesta.'
+    case 'climate':
+      return `Bien, ya tengo la ubicación general. ¿Cómo describirías el clima de esa zona?`
+    case 'terrainType':
+      return 'Como ya tenés terreno, decime qué tipo de lote es o cómo lo describirías mejor.'
+    case 'material':
+      return `¿Tenés alguna preferencia de material o querés que priorice lo que mejor se adapte a ${formatPriority(answers.priority)}?`
+    case 'floors':
+      return 'Como estamos hablando de una casa, ¿te gustaría resolverla en una planta o pensás en más de un piso?'
+    case 'hasSuiteBathroom':
+      return '¿Querés que el dormitorio principal tenga baño en suite?'
+    case 'hasPool':
+      return '¿Te interesa sumar pileta o preferís concentrar la inversión en la vivienda principal?'
+    case 'hasGarage':
+      return '¿Querés incluir garage dentro de la propuesta?'
+    case 'hasQuincho':
+      return '¿Te gustaría sumar quincho como parte del proyecto?'
+    case 'hasGrill':
+      return '¿Y parrilla? Puede ser importante si querés reforzar el uso social del espacio.'
+    case 'extraNotes':
+      return 'Última parte: si hay alguna preferencia especial, restricción o detalle importante para tu familia, contámelo ahora y lo sumo al criterio de la propuesta.'
+    default:
+      return question.question
+  }
+}
+
+export function getAnswerAcknowledgement(question, value, answers) {
+  const label = formatAnswerLabel(question, value)
+
+  switch (question.key) {
+    case 'projectName':
+      return `Perfecto, voy a tomar "${label}" como nombre base del proyecto.`
+    case 'propertyType':
+      return `Buenísimo. Entonces voy a pensar la propuesta como ${formatPropertyType(value)}.`
+    case 'familyMembers':
+      return `Anotado: una vivienda para ${label.toLowerCase()}.`
+    case 'bedrooms':
+      return `Bien, ya tomo ${label.toLowerCase()} como punto de partida.`
+    case 'bathrooms':
+      return `Perfecto, eso me ayuda a ajustar mejor la comodidad general.`
+    case 'squareMeters':
+      return `Genial. Voy a orientar la propuesta alrededor de ${label} m² aproximados.`
+    case 'budget':
+      return `Entendido. Voy a usar ese presupuesto como marco principal para evitar proponerte algo fuera de escala.`
+    case 'hasLand':
+      return value === 'si'
+        ? 'Eso simplifica bastante la etapa inicial porque ya podemos pensar la propuesta sobre una base más concreta.'
+        : 'Perfecto. Entonces voy a pensar la propuesta sin asumir un lote ya definido.'
+    case 'urgency':
+      return `Bien, lo tomo como un proyecto ${formatUrgency(value)}.`
+    case 'priority':
+      return `Perfecto. Voy a orientar la propuesta para ${formatPriority(value)}.`
+    case 'qualityLevel':
+      return `Entendido, voy a trabajar con ${formatQualityLevel(value)} como referencia de calidad.`
+    case 'location':
+      return `Buen dato. La ubicación en ${label} me sirve para contextualizar mejor la propuesta.`
+    case 'climate':
+      return `Perfecto, el clima ${label.toLowerCase()} también condiciona decisiones importantes.`
+    case 'terrainType':
+      return `Anotado. Ese tipo de terreno puede influir bastante en la lógica del proyecto.`
+    case 'material':
+      return `Bien, tomo ${label.toLowerCase()} como preferencia inicial de material.`
+    case 'floors':
+      return `Perfecto, ya tengo claro cómo querés resolver la altura de la vivienda.`
+    case 'hasSuiteBathroom':
+      return value === 'true'
+        ? 'Buenísimo, entonces sumo suite en el dormitorio principal.'
+        : 'Perfecto, dejamos el dormitorio principal sin baño en suite.'
+    case 'hasPool':
+      return value === 'true'
+        ? 'Entendido, voy a contemplar pileta dentro del concepto general.'
+        : 'Perfecto, así concentramos el presupuesto en lo más importante.'
+    case 'hasGarage':
+      return value === 'true'
+        ? 'Bien, entonces incluyo garage dentro del planteo.'
+        : 'Perfecto, dejo el garage fuera de esta primera propuesta.'
+    case 'hasQuincho':
+      return value === 'true'
+        ? 'Buenísimo, sumo quincho como parte del uso social del proyecto.'
+        : 'Perfecto, por ahora dejamos el quincho afuera.'
+    case 'hasGrill':
+      return value === 'true'
+        ? 'Entendido, incorporo parrilla dentro de los extras.'
+        : 'Perfecto, no sumamos parrilla en esta versión inicial.'
+    case 'extraNotes':
+      return 'Excelente. Esa aclaración extra me ayuda a personalizar mejor la propuesta final.'
+    default:
+      return `Perfecto, tomo ${label} como parte del proyecto.`
+  }
 }
