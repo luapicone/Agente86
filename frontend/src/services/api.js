@@ -17,3 +17,20 @@ export async function generateProjectProposal(payload) {
 
   return response.json()
 }
+
+export async function generateChatTurn(payload) {
+  const response = await fetch(`${API_BASE_URL}/projects/chat-turn`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}))
+    throw new Error(errorBody.error || errorBody.message || 'No se pudo generar el siguiente turno del chat.')
+  }
+
+  return response.json()
+}

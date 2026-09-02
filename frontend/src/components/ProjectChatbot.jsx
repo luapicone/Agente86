@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { formatAnswerLabel, getAnswerAcknowledgement, getQuestionPrompt, getVisibleQuestions } from '../utils/chatFlow'
+import { generateChatTurn } from '../services/api'
 
 function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
   const [answers, setAnswers] = useState(initialAnswers)
   const [draft, setDraft] = useState('')
+  const [assistantMessage, setAssistantMessage] = useState('')
+  const [isAssistantThinking, setIsAssistantThinking] = useState(false)
 
   useEffect(() => {
     setAnswers(initialAnswers)
@@ -12,15 +15,66 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
   const questions = useMemo(() => getVisibleQuestions(answers), [answers])
   const currentQuestion = questions.find((question) => answers[question.key] === undefined)
   const canGenerate = !currentQuestion && questions.length >= 10
-  const answeredQuestions = questions.filter((question) => answers[question.key] !== undefined)
+  const answeredQuestions = useMemo(
+    () => questions.filter((question) => answers[question.key] !== undefined),
+    [answers, questions],
+  )
   const progress = Math.round((answeredQuestions.length / questions.length) * 100)
-  const introMessage = useMemo(() => {
-    if (!answers.projectName) {
-      return 'Hola, soy HabitatIA. Te voy a ayudar a definir tu proyecto con preguntas simples y una propuesta pensada para tu caso.'
+  useEffect(() => {
+    let cancelled = false
+
+    const latestAnsweredQuestion = answeredQuestions[answeredQuestions.length - 1]
+    const answeredValue = latestAnsweredQuestion ? answers[latestAnsweredQuestion.key] : null
+
+    const fallbackMessage = currentQuestion
+      ? `${latestAnsweredQuestion ? `${getAnswerAcknowledgement(latestAnsweredQuestion, answeredValue, answers)} ` : ''}${getQuestionPrompt(currentQuestion, answers)}`
+      : 'Ya tengo una base bastante clara del proyecto. Si querés, ahora genero una propuesta adaptada a todo lo que me contaste.'
+
+    const loadAssistantTurn = async () => {
+      setIsAssistantThinking(true)
+
+      try {
+        const response = await generateChatTurn({
+          answers,
+          answeredQuestion: latestAnsweredQuestion
+            ? {
+                key: latestAnsweredQuestion.key,
+                label: latestAnsweredQuestion.label,
+                value: answeredValue,
+                labelValue: formatAnswerLabel(latestAnsweredQuestion, answeredValue),
+              }
+            : null,
+          nextQuestion: currentQuestion
+            ? {
+                key: currentQuestion.key,
+                label: currentQuestion.label,
+                question: currentQuestion.question,
+                type: currentQuestion.type,
+                options: currentQuestion.options || [],
+              }
+            : null,
+        })
+
+        if (!cancelled) {
+          setAssistantMessage(response.message || fallbackMessage)
+        }
+      } catch (_error) {
+        if (!cancelled) {
+          setAssistantMessage(fallbackMessage)
+        }
+      } finally {
+        if (!cancelled) {
+          setIsAssistantThinking(false)
+        }
+      }
     }
 
-    return `Hola, soy HabitatIA. Ya estoy armando el marco inicial de ${answers.projectName}. Voy a hacerte preguntas clave para adaptar la propuesta a tu realidad.`
-  }, [answers.projectName])
+    loadAssistantTurn()
+
+    return () => {
+      cancelled = true
+    }
+  }, [answers, answeredQuestions, currentQuestion])
 
   const submitAnswer = (value) => {
     if (!currentQuestion || value === '' || value === undefined || value === null) {
@@ -74,36 +128,24 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
       <div className="chatbot-body">
         <div className="chat-thread">
           <div className="message message-bot">
-            <div className="message-bubble">{introMessage}</div>
+            <div className="message-bubble">
+              {assistantMessage || 'Hola, soy HabitatIA. Estoy preparando las preguntas iniciales para entender mejor tu proyecto.'}
+            </div>
           </div>
 
           {answeredQuestions.map((question) => (
             <div key={question.key}>
-              <div className="message message-bot">
-                <div className="message-bubble">{getQuestionPrompt(question, answers)}</div>
-              </div>
               <div className="message message-user">
                 <div className="message-bubble user-bubble">
                   {formatAnswerLabel(question, answers[question.key])}
                 </div>
               </div>
-              <div className="message message-bot">
-                <div className="message-bubble message-bubble-muted">
-                  {getAnswerAcknowledgement(question, answers[question.key], answers)}
-                </div>
-              </div>
             </div>
           ))}
 
-          {currentQuestion ? (
+          {isAssistantThinking ? (
             <div className="message message-bot current-question">
-              <div className="message-bubble">{getQuestionPrompt(currentQuestion, answers)}</div>
-            </div>
-          ) : canGenerate ? (
-            <div className="message message-bot">
-              <div className="message-bubble">
-                Ya tengo una base bastante clara del proyecto. Si querés, ahora genero una propuesta adaptada a todo lo que me contaste.
-              </div>
+              <div className="message-bubble message-bubble-muted">HabitatIA está pensando la mejor siguiente pregunta para este caso...</div>
             </div>
           ) : null}
         </div>
