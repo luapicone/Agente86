@@ -31,6 +31,7 @@ function normalizeBooleanAnswer(value) {
 function normalizeProjectAnswers(answers) {
   return {
     ...answers,
+    propertyType: answers.propertyType || 'casa',
     squareMeters: Number(answers.squareMeters || 0),
     bedrooms: Number(answers.bedrooms || 0),
     bathrooms: Number(answers.bathrooms || 0),

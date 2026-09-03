@@ -1,113 +1,86 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import {
-  formatAnswerLabel,
-  getAnswerAcknowledgement,
-  getQuestionPrompt,
-  getVisibleQuestions,
-  normalizeConversationalAnswer,
-} from '../utils/chatFlow'
+import { useEffect, useRef, useState } from 'react'
 import { generateChatTurn } from '../services/api'
 
+const initialStructuredAnswers = {
+  propertyType: 'casa',
+}
+
+function mergeAnswers(currentAnswers, extractedAnswers = {}) {
+  const nextAnswers = { ...currentAnswers, propertyType: 'casa' }
+
+  Object.entries(extractedAnswers || {}).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') {
+      return
+    }
+
+    nextAnswers[key] = value
+  })
+
+  nextAnswers.propertyType = 'casa'
+  return nextAnswers
+}
+
+function createMessage(role, text) {
+  return {
+    id: `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    role,
+    text,
+  }
+}
+
 function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
-  const [answers, setAnswers] = useState(initialAnswers)
+  const [answers, setAnswers] = useState({ ...initialStructuredAnswers, ...initialAnswers })
   const [draft, setDraft] = useState('')
   const [chatMessages, setChatMessages] = useState([])
+  const [assistantQuestionCount, setAssistantQuestionCount] = useState(0)
   const [isAssistantThinking, setIsAssistantThinking] = useState(false)
   const [inputError, setInputError] = useState('')
-  const lastAssistantTurnRef = useRef('')
+  const [isInterviewComplete, setIsInterviewComplete] = useState(false)
   const threadEndRef = useRef(null)
-
-  useEffect(() => {
-    setAnswers(initialAnswers)
-    setDraft('')
-    setChatMessages([])
-    setIsAssistantThinking(false)
-    setInputError('')
-    lastAssistantTurnRef.current = ''
-  }, [initialAnswers])
-
-  const questions = useMemo(() => getVisibleQuestions(answers), [answers])
-  const currentQuestion = questions.find((question) => answers[question.key] === undefined)
-  const canGenerate = !currentQuestion && questions.length >= 10
-  const answeredQuestions = useMemo(
-    () => questions.filter((question) => answers[question.key] !== undefined),
-    [answers, questions],
-  )
-  const progress = Math.round((answeredQuestions.length / questions.length) * 100)
 
   useEffect(() => {
     threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [chatMessages, isAssistantThinking])
 
   useEffect(() => {
+    const bootAnswers = { ...initialStructuredAnswers, ...initialAnswers }
     let cancelled = false
 
-    const latestAnsweredQuestion = answeredQuestions[answeredQuestions.length - 1]
-    const answeredValue = latestAnsweredQuestion ? answers[latestAnsweredQuestion.key] : null
-    const turnSignature = JSON.stringify({
-      answeredCount: answeredQuestions.length,
-      latestAnsweredKey: latestAnsweredQuestion?.key || null,
-      latestAnsweredValue: answeredValue,
-      nextQuestionKey: currentQuestion?.key || null,
-    })
+    setAnswers(bootAnswers)
+    setDraft('')
+    setChatMessages([])
+    setAssistantQuestionCount(0)
+    setIsAssistantThinking(false)
+    setInputError('')
+    setIsInterviewComplete(false)
 
-    const fallbackMessage = currentQuestion
-      ? `${latestAnsweredQuestion ? `${getAnswerAcknowledgement(latestAnsweredQuestion, answeredValue, answers)} ` : ''}${getQuestionPrompt(currentQuestion, answers)}`
-      : 'Ya tengo una base bastante clara del proyecto. Si querés, ahora genero una propuesta adaptada a todo lo que me contaste.'
-
-    if (lastAssistantTurnRef.current === turnSignature) {
-      return undefined
-    }
-
-    const loadAssistantTurn = async () => {
+    const startInterview = async () => {
       setIsAssistantThinking(true)
 
       try {
         const response = await generateChatTurn({
-          answers,
-          answeredQuestion: latestAnsweredQuestion
-            ? {
-                key: latestAnsweredQuestion.key,
-                label: latestAnsweredQuestion.label,
-                value: answeredValue,
-                labelValue: formatAnswerLabel(latestAnsweredQuestion, answeredValue),
-                rawValue: chatMessages.filter((message) => message.role === 'user').at(-1)?.text || null,
-              }
-            : null,
-          nextQuestion: currentQuestion
-            ? {
-                key: currentQuestion.key,
-                label: currentQuestion.label,
-                question: currentQuestion.question,
-                type: currentQuestion.type,
-                options: currentQuestion.options || [],
-              }
-            : null,
+          answers: bootAnswers,
+          messages: [],
+          assistantQuestionCount: 0,
         })
 
-        if (!cancelled) {
-          const nextMessage = response.message || fallbackMessage
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              id: `assistant-${answeredQuestions.length}`,
-              role: 'assistant',
-              text: nextMessage,
-            },
-          ])
-          lastAssistantTurnRef.current = turnSignature
+        if (cancelled) {
+          return
         }
+
+        setAnswers((prev) => mergeAnswers(prev, response.extractedAnswers))
+        setChatMessages([createMessage('assistant', response.message)])
+        setIsInterviewComplete(Boolean(response.shouldComplete))
+        setAssistantQuestionCount(response.shouldComplete ? 0 : 1)
       } catch (_error) {
         if (!cancelled) {
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              id: `assistant-${answeredQuestions.length}`,
-              role: 'assistant',
-              text: fallbackMessage,
-            },
+          setChatMessages([
+            createMessage(
+              'assistant',
+              'Arranquemos por una base general: contame para quién sería la casa, si ya tienen terreno y qué presupuesto aproximado imaginan para construir.',
+            ),
           ])
-          lastAssistantTurnRef.current = turnSignature
+          setAssistantQuestionCount(1)
         }
       } finally {
         if (!cancelled) {
@@ -116,76 +89,83 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
       }
     }
 
-    loadAssistantTurn()
+    startInterview()
 
     return () => {
       cancelled = true
     }
-  }, [answers, answeredQuestions, currentQuestion])
+  }, [initialAnswers])
 
-  const submitAnswer = (rawValue) => {
-    if (!currentQuestion) {
+  const submitAnswer = async () => {
+    const trimmedValue = draft.trim()
+
+    if (!trimmedValue) {
+      setInputError('Escribí una respuesta para continuar.')
       return
     }
 
-    const normalizedAnswer = normalizeConversationalAnswer(currentQuestion, rawValue)
-
-    if (!normalizedAnswer.isValid) {
-      setInputError(normalizedAnswer.error)
-      return
-    }
+    const userMessage = createMessage('user', trimmedValue)
+    const nextMessages = [...chatMessages, userMessage]
+    const currentAnswers = answers
+    const currentQuestionCount = assistantQuestionCount
 
     setInputError('')
-
-    setChatMessages((prev) => [
-      ...prev,
-      {
-        id: `user-${currentQuestion.key}`,
-        role: 'user',
-        text: normalizedAnswer.displayText,
-      },
-    ])
-    setAnswers((prev) => ({
-      ...prev,
-      [currentQuestion.key]: normalizedAnswer.value,
-    }))
     setDraft('')
+    setChatMessages(nextMessages)
+    setIsAssistantThinking(true)
+
+    try {
+      const response = await generateChatTurn({
+        answers: currentAnswers,
+        messages: nextMessages,
+        assistantQuestionCount: currentQuestionCount,
+      })
+
+      const mergedAnswers = mergeAnswers(currentAnswers, response.extractedAnswers)
+
+      setAnswers(mergedAnswers)
+      setChatMessages((prev) => [...prev, createMessage('assistant', response.message)])
+      setIsInterviewComplete(Boolean(response.shouldComplete))
+      setAssistantQuestionCount(response.shouldComplete ? currentQuestionCount : currentQuestionCount + 1)
+    } catch (_error) {
+      setChatMessages((prev) => [
+        ...prev,
+        createMessage(
+          'assistant',
+          'Seguí contándome un poco más de la casa: tamaño aproximado, cantidad de ambientes, ubicación o presupuesto, y con eso avanzo.',
+        ),
+      ])
+      setAssistantQuestionCount((prev) => prev + 1)
+    } finally {
+      setIsAssistantThinking(false)
+    }
   }
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    submitAnswer(draft.trim())
+    if (!isAssistantThinking) {
+      submitAnswer()
+    }
   }
 
-  const normalizedAnswers = useMemo(() => {
-    const toBoolean = (value) => value === true || value === 'true'
-
-    return {
-      ...answers,
-      hasSuiteBathroom: toBoolean(answers.hasSuiteBathroom),
-      hasPool: toBoolean(answers.hasPool),
-      hasGarage: toBoolean(answers.hasGarage),
-      hasQuincho: toBoolean(answers.hasQuincho),
-      hasGrill: toBoolean(answers.hasGrill),
-    }
-  }, [answers])
+  const progress = Math.min(100, Math.round((assistantQuestionCount / 10) * 100))
 
   return (
     <div className="chatbot-shell shadow-sm">
       <div className="chatbot-header">
         <div>
           <span className="section-kicker text-white-50">Asistente de proyecto</span>
-          <h1 className="chatbot-title">Configurá tu vivienda conversando paso a paso</h1>
+          <h1 className="chatbot-title">Contame tu casa ideal y HabitatIA adapta la entrevista</h1>
           <p className="chatbot-subtitle mb-0">
-            Respondé una pregunta a la vez. Al final generamos tu propuesta completa.
+            No seguís un formulario fijo: la conversación profundiza solo donde hace falta.
           </p>
         </div>
         <div className="chatbot-progress-wrapper">
-          <span className="chatbot-progress-label">Avance</span>
+          <span className="chatbot-progress-label">Entrevista</span>
           <div className="progress chatbot-progress">
             <div className="progress-bar" style={{ width: `${progress}%` }}></div>
           </div>
-          <small>{answeredQuestions.length} / {questions.length}</small>
+          <small>{assistantQuestionCount} / 10 preguntas máximas</small>
         </div>
       </div>
 
@@ -193,21 +173,19 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
         <div className="chat-thread">
           {chatMessages.map((message) => (
             <div key={message.id} className={`message ${message.role === 'assistant' ? 'message-bot' : 'message-user'}`}>
-              <div className={`message-bubble ${message.role === 'user' ? 'user-bubble' : ''}`}>
-                {message.text}
-              </div>
+              <div className={`message-bubble ${message.role === 'user' ? 'user-bubble' : ''}`}>{message.text}</div>
             </div>
           ))}
 
           {isAssistantThinking ? (
             <div className="message message-bot current-question">
-              <div className="message-bubble message-bubble-muted">HabitatIA está pensando la mejor siguiente pregunta para este caso...</div>
+              <div className="message-bubble message-bubble-muted">HabitatIA está pensando cómo seguir esta conversación...</div>
             </div>
           ) : null}
           <div ref={threadEndRef} />
         </div>
 
-        {currentQuestion ? (
+        {!isInterviewComplete ? (
           <div className="chat-input-panel">
             <form onSubmit={handleSubmit} className="chat-input-form">
               <input
@@ -220,35 +198,22 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
                     setInputError('')
                   }
                 }}
-                placeholder={currentQuestion.placeholder || 'Escribí tu respuesta'}
+                placeholder="Respondé como si estuvieras charlando con un asesor"
+                disabled={isAssistantThinking}
               />
-              <button type="submit" className="btn btn-success">
+              <button type="submit" className="btn btn-success" disabled={isAssistantThinking}>
                 Enviar
               </button>
             </form>
             {inputError ? <div className="chat-input-error">{inputError}</div> : null}
-            {currentQuestion.options?.length ? (
-              <div className="chat-suggestions">
-                {currentQuestion.options.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className="btn btn-outline-success chat-suggestion-btn"
-                    onClick={() => submitAnswer(option.label)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            ) : null}
           </div>
-        ) : canGenerate ? (
+        ) : (
           <div className="chat-complete-panel">
-            <button className="btn btn-success btn-lg" onClick={() => onComplete(normalizedAnswers)} disabled={isSubmitting}>
+            <button className="btn btn-success btn-lg" onClick={() => onComplete(answers)} disabled={isSubmitting}>
               {isSubmitting ? 'Generando proyecto...' : 'Generar proyecto'}
             </button>
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   )
