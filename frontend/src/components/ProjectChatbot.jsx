@@ -1,15 +1,21 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { formatAnswerLabel, getAnswerAcknowledgement, getQuestionPrompt, getVisibleQuestions } from '../utils/chatFlow'
 import { generateChatTurn } from '../services/api'
 
 function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
   const [answers, setAnswers] = useState(initialAnswers)
   const [draft, setDraft] = useState('')
-  const [assistantMessage, setAssistantMessage] = useState('')
+  const [chatMessages, setChatMessages] = useState([])
   const [isAssistantThinking, setIsAssistantThinking] = useState(false)
+  const lastAssistantTurnRef = useRef('')
+  const threadEndRef = useRef(null)
 
   useEffect(() => {
     setAnswers(initialAnswers)
+    setDraft('')
+    setChatMessages([])
+    setIsAssistantThinking(false)
+    lastAssistantTurnRef.current = ''
   }, [initialAnswers])
 
   const questions = useMemo(() => getVisibleQuestions(answers), [answers])
@@ -20,15 +26,30 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
     [answers, questions],
   )
   const progress = Math.round((answeredQuestions.length / questions.length) * 100)
+
+  useEffect(() => {
+    threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }, [chatMessages, isAssistantThinking])
+
   useEffect(() => {
     let cancelled = false
 
     const latestAnsweredQuestion = answeredQuestions[answeredQuestions.length - 1]
     const answeredValue = latestAnsweredQuestion ? answers[latestAnsweredQuestion.key] : null
+    const turnSignature = JSON.stringify({
+      answeredCount: answeredQuestions.length,
+      latestAnsweredKey: latestAnsweredQuestion?.key || null,
+      latestAnsweredValue: answeredValue,
+      nextQuestionKey: currentQuestion?.key || null,
+    })
 
     const fallbackMessage = currentQuestion
       ? `${latestAnsweredQuestion ? `${getAnswerAcknowledgement(latestAnsweredQuestion, answeredValue, answers)} ` : ''}${getQuestionPrompt(currentQuestion, answers)}`
       : 'Ya tengo una base bastante clara del proyecto. Si querés, ahora genero una propuesta adaptada a todo lo que me contaste.'
+
+    if (lastAssistantTurnRef.current === turnSignature) {
+      return undefined
+    }
 
     const loadAssistantTurn = async () => {
       setIsAssistantThinking(true)
@@ -56,11 +77,28 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
         })
 
         if (!cancelled) {
-          setAssistantMessage(response.message || fallbackMessage)
+          const nextMessage = response.message || fallbackMessage
+          setChatMessages((prev) => [
+            ...prev,
+            {
+              id: `assistant-${answeredQuestions.length}`,
+              role: 'assistant',
+              text: nextMessage,
+            },
+          ])
+          lastAssistantTurnRef.current = turnSignature
         }
       } catch (_error) {
         if (!cancelled) {
-          setAssistantMessage(fallbackMessage)
+          setChatMessages((prev) => [
+            ...prev,
+            {
+              id: `assistant-${answeredQuestions.length}`,
+              role: 'assistant',
+              text: fallbackMessage,
+            },
+          ])
+          lastAssistantTurnRef.current = turnSignature
         }
       } finally {
         if (!cancelled) {
@@ -81,6 +119,16 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
       return
     }
 
+    const visibleAnswer = formatAnswerLabel(currentQuestion, value)
+
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        id: `user-${currentQuestion.key}`,
+        role: 'user',
+        text: visibleAnswer,
+      },
+    ])
     setAnswers((prev) => ({
       ...prev,
       [currentQuestion.key]: value,
@@ -127,18 +175,10 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
 
       <div className="chatbot-body">
         <div className="chat-thread">
-          <div className="message message-bot">
-            <div className="message-bubble">
-              {assistantMessage || 'Hola, soy HabitatIA. Estoy preparando las preguntas iniciales para entender mejor tu proyecto.'}
-            </div>
-          </div>
-
-          {answeredQuestions.map((question) => (
-            <div key={question.key}>
-              <div className="message message-user">
-                <div className="message-bubble user-bubble">
-                  {formatAnswerLabel(question, answers[question.key])}
-                </div>
+          {chatMessages.map((message) => (
+            <div key={message.id} className={`message ${message.role === 'assistant' ? 'message-bot' : 'message-user'}`}>
+              <div className={`message-bubble ${message.role === 'user' ? 'user-bubble' : ''}`}>
+                {message.text}
               </div>
             </div>
           ))}
@@ -148,6 +188,7 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
               <div className="message-bubble message-bubble-muted">HabitatIA está pensando la mejor siguiente pregunta para este caso...</div>
             </div>
           ) : null}
+          <div ref={threadEndRef} />
         </div>
 
         {currentQuestion ? (
