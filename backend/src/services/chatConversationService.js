@@ -156,6 +156,85 @@ function sanitizeExtractedAnswers(rawAnswers = {}) {
   return sanitized
 }
 
+function normalizeText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+}
+
+function extractBudget(rawText) {
+  const normalized = normalizeText(rawText)
+  const rangeMatch = normalized.match(/(\d+(?:[.,]\d+)?)\s*(mil)?\s*(?:usd|u\$s|dolares?)?.{0,20}?(?:y|a|-|entre)\s*(\d+(?:[.,]\d+)?)\s*(mil)?/)
+
+  if (rangeMatch) {
+    const inferredThousands = Boolean(rangeMatch[2] || rangeMatch[4])
+    const firstValue = Number(rangeMatch[1].replace(',', '.')) * (rangeMatch[2] || inferredThousands ? 1000 : 1)
+    const secondValue = Number(rangeMatch[3].replace(',', '.')) * (rangeMatch[4] || inferredThousands ? 1000 : 1)
+    return String(Math.round((firstValue + secondValue) / 2))
+  }
+
+  const singleMatch = normalized.match(/(\d+(?:[.,]\d+)?)\s*(mil)?\s*(?:usd|u\$s|dolares?)/)
+
+  if (!singleMatch) {
+    return null
+  }
+
+  const numericValue = Number(singleMatch[1].replace(',', '.')) * (singleMatch[2] ? 1000 : 1)
+  return String(Math.round(numericValue))
+}
+
+function extractHasLand(rawText) {
+  const normalized = normalizeText(rawText)
+
+  if (/\b(contamos|tenemos|tengo|con|poseemos)\b.{0,20}\bterreno\b/.test(normalized)) {
+    return 'si'
+  }
+
+  if (/\b(no|sin)\b.{0,20}\bterreno\b/.test(normalized)) {
+    return 'no'
+  }
+
+  return null
+}
+
+function extractProjectName(rawText) {
+  const trimmed = String(rawText || '').trim()
+
+  if (!trimmed) {
+    return null
+  }
+
+  const normalized = normalizeText(trimmed)
+
+  if (trimmed.length > 40) {
+    return null
+  }
+
+  if (/\b(familia|terreno|presupuesto|dolares|usd|casa|construir)\b/.test(normalized)) {
+    return null
+  }
+
+  return trimmed
+}
+
+function extractFallbackAnswersFromMessages(messages = [], currentAnswers = {}) {
+  const lastUserMessage = [...messages].reverse().find((message) => message?.role === 'user' && message?.text)?.text
+
+  if (!lastUserMessage) {
+    return currentAnswers
+  }
+
+  const extracted = {
+    projectName: currentAnswers.projectName || extractProjectName(lastUserMessage),
+    budget: currentAnswers.budget || extractBudget(lastUserMessage),
+    hasLand: currentAnswers.hasLand || extractHasLand(lastUserMessage),
+  }
+
+  return sanitizeExtractedAnswers({ ...currentAnswers, ...extracted })
+}
+
 function getMissingFields(answers = {}) {
   const normalized = { ...answers, propertyType: 'casa' }
   const terrainRelevant = normalized.hasLand === 'si'
@@ -334,9 +413,10 @@ Genera solamente el JSON pedido.
 }
 
 async function generateConversationalTurn(payload = {}) {
-  const answers = sanitizeExtractedAnswers(payload.answers || {})
+  const baseAnswers = sanitizeExtractedAnswers(payload.answers || {})
   const messages = Array.isArray(payload.messages) ? payload.messages : []
   const assistantQuestionCount = Number(payload.assistantQuestionCount || 0)
+  const answers = extractFallbackAnswersFromMessages(messages, baseAnswers)
 
   try {
     return await requestOpenAIChatTurn({ answers, messages, assistantQuestionCount })
