@@ -813,19 +813,30 @@ textarea:focus {
   border-top: 1px solid rgba(184, 221, 198, 0.12);
 }
 
-.chat-options-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.chat-option-btn {
-  min-width: 180px;
-}
-
 .chat-input-form {
   display: flex;
   gap: 0.75rem;
+}
+
+.chat-input-form .form-control {
+  min-height: 48px;
+}
+
+.chat-input-error {
+  margin-top: 0.7rem;
+  color: #ffb8b8;
+  font-size: 0.92rem;
+}
+
+.chat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+}
+
+.chat-suggestion-btn {
+  min-width: 180px;
 }
 
 .chat-complete-panel {
@@ -1384,7 +1395,7 @@ textarea:focus {
   .generator-page .btn,
   .marketplace-page .btn,
   .environment-carousel-controls .btn,
-  .chat-option-btn {
+  .chat-suggestion-btn {
     width: 100%;
   }
 
@@ -1400,7 +1411,7 @@ textarea:focus {
     height: 260px;
   }
 
-  .chat-options-grid {
+  .chat-suggestions {
     flex-direction: column;
   }
 

@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { formatAnswerLabel, getAnswerAcknowledgement, getQuestionPrompt, getVisibleQuestions } from '../utils/chatFlow'
+import {
+  formatAnswerLabel,
+  getAnswerAcknowledgement,
+  getQuestionPrompt,
+  getVisibleQuestions,
+  normalizeConversationalAnswer,
+} from '../utils/chatFlow'
 import { generateChatTurn } from '../services/api'
 
 function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
@@ -7,6 +13,7 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
   const [draft, setDraft] = useState('')
   const [chatMessages, setChatMessages] = useState([])
   const [isAssistantThinking, setIsAssistantThinking] = useState(false)
+  const [inputError, setInputError] = useState('')
   const lastAssistantTurnRef = useRef('')
   const threadEndRef = useRef(null)
 
@@ -15,6 +22,7 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
     setDraft('')
     setChatMessages([])
     setIsAssistantThinking(false)
+    setInputError('')
     lastAssistantTurnRef.current = ''
   }, [initialAnswers])
 
@@ -63,6 +71,7 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
                 label: latestAnsweredQuestion.label,
                 value: answeredValue,
                 labelValue: formatAnswerLabel(latestAnsweredQuestion, answeredValue),
+                rawValue: chatMessages.filter((message) => message.role === 'user').at(-1)?.text || null,
               }
             : null,
           nextQuestion: currentQuestion
@@ -114,24 +123,31 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
     }
   }, [answers, answeredQuestions, currentQuestion])
 
-  const submitAnswer = (value) => {
-    if (!currentQuestion || value === '' || value === undefined || value === null) {
+  const submitAnswer = (rawValue) => {
+    if (!currentQuestion) {
       return
     }
 
-    const visibleAnswer = formatAnswerLabel(currentQuestion, value)
+    const normalizedAnswer = normalizeConversationalAnswer(currentQuestion, rawValue)
+
+    if (!normalizedAnswer.isValid) {
+      setInputError(normalizedAnswer.error)
+      return
+    }
+
+    setInputError('')
 
     setChatMessages((prev) => [
       ...prev,
       {
         id: `user-${currentQuestion.key}`,
         role: 'user',
-        text: visibleAnswer,
+        text: normalizedAnswer.displayText,
       },
     ])
     setAnswers((prev) => ({
       ...prev,
-      [currentQuestion.key]: value,
+      [currentQuestion.key]: normalizedAnswer.value,
     }))
     setDraft('')
   }
@@ -193,33 +209,38 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
 
         {currentQuestion ? (
           <div className="chat-input-panel">
-            {currentQuestion.type === 'select' ? (
-              <div className="chat-options-grid">
-                {currentQuestion.options?.map((option) => (
+            <form onSubmit={handleSubmit} className="chat-input-form">
+              <input
+                type="text"
+                className="form-control"
+                value={draft}
+                onChange={(event) => {
+                  setDraft(event.target.value)
+                  if (inputError) {
+                    setInputError('')
+                  }
+                }}
+                placeholder={currentQuestion.placeholder || 'Escribí tu respuesta'}
+              />
+              <button type="submit" className="btn btn-success">
+                Enviar
+              </button>
+            </form>
+            {inputError ? <div className="chat-input-error">{inputError}</div> : null}
+            {currentQuestion.options?.length ? (
+              <div className="chat-suggestions">
+                {currentQuestion.options.map((option) => (
                   <button
                     key={option.value}
                     type="button"
-                    className="btn btn-outline-success chat-option-btn"
-                    onClick={() => submitAnswer(option.value)}
+                    className="btn btn-outline-success chat-suggestion-btn"
+                    onClick={() => submitAnswer(option.label)}
                   >
                     {option.label}
                   </button>
                 ))}
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="chat-input-form">
-                <input
-                  type={currentQuestion.type === 'number' ? 'number' : 'text'}
-                  className="form-control"
-                  value={draft}
-                  onChange={(event) => setDraft(event.target.value)}
-                  placeholder={currentQuestion.placeholder || 'Escribí tu respuesta'}
-                />
-                <button type="submit" className="btn btn-success">
-                  Enviar
-                </button>
-              </form>
-            )}
+            ) : null}
           </div>
         ) : canGenerate ? (
           <div className="chat-complete-panel">

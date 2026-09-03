@@ -242,6 +242,184 @@ export function formatAnswerLabel(question, value) {
   return value
 }
 
+function normalizeText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+}
+
+function parseNumberAnswer(rawValue) {
+  const normalized = normalizeText(rawValue).replace(/,/g, '.')
+  const digits = normalized.match(/\d+(?:\.\d+)?/)
+
+  if (!digits) {
+    return null
+  }
+
+  return digits[0]
+}
+
+function parseBooleanLike(rawValue) {
+  const normalized = normalizeText(rawValue)
+
+  if (/^(si|sí|s|yes|ok|dale|claro|obvio)$/.test(normalized) || normalized.includes('tengo') || normalized.includes('quiero')) {
+    return 'true'
+  }
+
+  if (/^(no|n|nope)$/.test(normalized) || normalized.includes('no tengo') || normalized.includes('sin ')) {
+    return 'false'
+  }
+
+  return null
+}
+
+function parseFamilyMembersAnswer(rawValue) {
+  const parsedNumber = parseNumberAnswer(rawValue)
+
+  if (!parsedNumber) {
+    return null
+  }
+
+  const value = Number(parsedNumber)
+  if (value >= 6) return '6'
+  if (value >= 1 && value <= 5) return String(value)
+  return null
+}
+
+function parseBoundedNumericAnswer(rawValue, allowedValues) {
+  const parsedNumber = parseNumberAnswer(rawValue)
+
+  if (!parsedNumber) {
+    return null
+  }
+
+  const numericValue = String(Number(parsedNumber))
+  return allowedValues.includes(numericValue) ? numericValue : null
+}
+
+function parseSelectAnswer(question, rawValue) {
+  const normalized = normalizeText(rawValue)
+
+  if (!normalized) {
+    return null
+  }
+
+  switch (question.key) {
+    case 'propertyType':
+      if (normalized.includes('depa') || normalized.includes('departa') || normalized.includes('apart')) return 'departamento'
+      if (normalized.includes('casa')) return 'casa'
+      return null
+    case 'familyMembers':
+      return parseFamilyMembersAnswer(rawValue)
+    case 'bedrooms':
+      return parseBoundedNumericAnswer(rawValue, ['1', '2', '3', '4'])
+    case 'bathrooms':
+      return parseBoundedNumericAnswer(rawValue, ['1', '2', '3'])
+    case 'hasLand':
+      if (normalized.includes('no')) return 'no'
+      if (normalized.includes('si') || normalized.includes('sí') || normalized.includes('tengo')) return 'si'
+      return null
+    case 'urgency':
+      if (normalized.includes('alta') || normalized.includes('urgente') || normalized.includes('ya')) return 'alta'
+      if (normalized.includes('media') || normalized.includes('normal') || normalized.includes('intermedia')) return 'media'
+      if (normalized.includes('baja') || normalized.includes('tranqui') || normalized.includes('sin apuro')) return 'baja'
+      return null
+    case 'priority':
+      if (normalized.includes('costo') || normalized.includes('barato') || normalized.includes('ahorro') || normalized.includes('presupuesto')) return 'costo'
+      if (normalized.includes('eficien') || normalized.includes('mantenimiento') || normalized.includes('consumo')) return 'eficiencia'
+      if (normalized.includes('sosten') || normalized.includes('ecolog') || normalized.includes('ambient') || normalized.includes('sustent')) return 'sostenibilidad'
+      return null
+    case 'qualityLevel':
+      if (normalized.includes('alto') || normalized.includes('premium') || normalized.includes('alta')) return 'alto'
+      if (normalized.includes('medio') || normalized.includes('intermedio') || normalized.includes('equilibrado')) return 'medio'
+      if (normalized.includes('bajo') || normalized.includes('basico') || normalized.includes('econ')) return 'bajo'
+      return null
+    case 'climate':
+      if (normalized.includes('templ')) return 'templado'
+      if (normalized.includes('calido') || normalized.includes('calor') || normalized.includes('caluroso')) return 'calido'
+      if (normalized.includes('frio') || normalized.includes('frío')) return 'frio'
+      if (normalized.includes('humedo') || normalized.includes('húmedo') || normalized.includes('humedad')) return 'humedo'
+      return null
+    case 'terrainType':
+      if (normalized.includes('pendiente') || normalized.includes('desnivel')) return 'pendiente'
+      if (normalized.includes('rural') || normalized.includes('campo')) return 'rural'
+      if (normalized.includes('suburb')) return 'suburbano'
+      if (normalized.includes('urban') || normalized.includes('ciudad') || normalized.includes('barrio')) return 'urbano'
+      return null
+    case 'material':
+      if (normalized.includes('madera')) return 'madera-reciclada'
+      if (normalized.includes('hormigon') || normalized.includes('hormigón') || normalized.includes('cemento')) return 'hormigon-verde'
+      if (normalized.includes('acero') || normalized.includes('metal')) return 'acero-reciclado'
+      return null
+    case 'floors':
+      return parseBoundedNumericAnswer(rawValue, ['1', '2', '3'])
+    case 'hasSuiteBathroom':
+    case 'hasPool':
+    case 'hasGarage':
+    case 'hasQuincho':
+    case 'hasGrill': {
+      const parsedBoolean = parseBooleanLike(rawValue)
+      return parsedBoolean
+    }
+    default:
+      break
+  }
+
+  const matchedOption = question.options?.find((option) => {
+    const optionLabel = normalizeText(option.label)
+    return normalized === normalizeText(option.value) || normalized === optionLabel || normalized.includes(optionLabel)
+  })
+
+  return matchedOption?.value || null
+}
+
+export function normalizeConversationalAnswer(question, rawValue) {
+  const trimmedValue = String(rawValue || '').trim()
+
+  if (!trimmedValue) {
+    return { isValid: false, error: 'Escribí una respuesta para continuar.' }
+  }
+
+  if (question.type === 'number') {
+    const parsedNumber = parseNumberAnswer(trimmedValue)
+
+    if (!parsedNumber) {
+      return { isValid: false, error: 'Necesito un número aproximado para seguir.' }
+    }
+
+    return {
+      isValid: true,
+      value: parsedNumber,
+      displayText: trimmedValue,
+    }
+  }
+
+  if (question.type === 'select') {
+    const parsedValue = parseSelectAnswer(question, trimmedValue)
+
+    if (!parsedValue) {
+      return {
+        isValid: false,
+        error: 'No terminé de interpretar esa respuesta. Escribila más directa o usá una de las sugerencias.',
+      }
+    }
+
+    return {
+      isValid: true,
+      value: parsedValue,
+      displayText: trimmedValue,
+    }
+  }
+
+  return {
+    isValid: true,
+    value: trimmedValue,
+    displayText: trimmedValue,
+  }
+}
+
 function formatPropertyType(value) {
   if (value === 'casa') return 'una casa'
   if (value === 'departamento') return 'un departamento'

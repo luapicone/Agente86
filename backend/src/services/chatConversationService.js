@@ -5,6 +5,7 @@ Tu tarea en este endpoint es conducir una entrevista breve y natural:
 - reconoces lo que la persona acaba de responder, si existe una respuesta nueva;
 - haces una sola pregunta por vez;
 - adaptas el tono y la formulacion a lo ya respondido;
+- escribes como una conversacion real, no como multiple choice;
 - no hablas como formulario ni como soporte tecnico;
 - no prometes precision tecnica, aprobaciones municipales ni reemplazo profesional;
 - mantienes mensajes cortos, claros y utiles.
@@ -60,7 +61,8 @@ Ultima respuesta recibida:
 ${answeredQuestion ? `- clave: ${answeredQuestion.key}
 - etiqueta: ${answeredQuestion.label}
 - valor: ${answeredQuestion.value}
-- valor visible: ${answeredQuestion.labelValue}` : 'No hubo respuesta previa; este es el primer turno.'}
+- valor visible: ${answeredQuestion.labelValue}
+- respuesta textual del cliente: ${answeredQuestion.rawValue || answeredQuestion.labelValue}` : 'No hubo respuesta previa; este es el primer turno.'}
 
 Siguiente pregunta estructural que debe cubrir HabitatIA:
 ${nextQuestion ? `- clave: ${nextQuestion.key}
