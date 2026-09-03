@@ -255,7 +255,21 @@ function parseNumberAnswer(rawValue) {
   const digits = normalized.match(/\d+(?:\.\d+)?/)
 
   if (!digits) {
-    return null
+    const numberWords = [
+      ['uno', '1'],
+      ['dos', '2'],
+      ['tres', '3'],
+      ['cuatro', '4'],
+      ['cinco', '5'],
+      ['seis', '6'],
+      ['siete', '7'],
+      ['ocho', '8'],
+      ['nueve', '9'],
+      ['diez', '10'],
+    ]
+
+    const matchedWord = numberWords.find(([word]) => new RegExp(`\\b${word}\\b`).test(normalized))
+    return matchedWord ? matchedWord[1] : null
   }
 
   return digits[0]
@@ -297,6 +311,64 @@ function parseBoundedNumericAnswer(rawValue, allowedValues) {
 
   const numericValue = String(Number(parsedNumber))
   return allowedValues.includes(numericValue) ? numericValue : null
+}
+
+function parseFloorsAnswer(rawValue) {
+  const normalized = normalizeText(rawValue)
+  const parsedNumber = parseBoundedNumericAnswer(rawValue, ['1', '2', '3'])
+
+  if (parsedNumber) {
+    return parsedNumber
+  }
+
+  if (
+    normalized.includes('una planta') ||
+    normalized.includes('planta unica') ||
+    normalized.includes('planta única') ||
+    normalized.includes('planta baja') ||
+    normalized.includes('un solo piso') ||
+    normalized.includes('solo un piso') ||
+    normalized.includes('todo en una planta')
+  ) {
+    return '1'
+  }
+
+  if (
+    normalized.includes('dos plantas') ||
+    normalized.includes('dos pisos') ||
+    normalized.includes('doble planta') ||
+    normalized.includes('dos niveles')
+  ) {
+    return '2'
+  }
+
+  if (
+    normalized.includes('tres plantas') ||
+    normalized.includes('tres pisos') ||
+    normalized.includes('tres niveles')
+  ) {
+    return '3'
+  }
+
+  if (
+    normalized.includes('mas de un piso') ||
+    normalized.includes('más de un piso') ||
+    normalized.includes('mas de una planta') ||
+    normalized.includes('más de una planta') ||
+    normalized.includes('varios pisos') ||
+    normalized.includes('varias plantas')
+  ) {
+    return '2'
+  }
+
+  if (
+    (normalized.includes('presupuesto') || normalized.includes('se pueda') || normalized.includes('segun convenga')) &&
+    (normalized.includes('piso') || normalized.includes('planta') || normalized.includes('nivel'))
+  ) {
+    return '2'
+  }
+
+  return null
 }
 
 function parseSelectAnswer(question, rawValue) {
@@ -354,7 +426,7 @@ function parseSelectAnswer(question, rawValue) {
       if (normalized.includes('acero') || normalized.includes('metal')) return 'acero-reciclado'
       return null
     case 'floors':
-      return parseBoundedNumericAnswer(rawValue, ['1', '2', '3'])
+      return parseFloorsAnswer(rawValue)
     case 'hasSuiteBathroom':
     case 'hasPool':
     case 'hasGarage':
@@ -400,9 +472,16 @@ export function normalizeConversationalAnswer(question, rawValue) {
     const parsedValue = parseSelectAnswer(question, trimmedValue)
 
     if (!parsedValue) {
+      const customError =
+        question.key === 'floors'
+          ? 'Contame aunque sea aproximado si la imaginás de 1, 2 o 3 pisos.'
+          : null
+
       return {
         isValid: false,
-        error: 'No terminé de interpretar esa respuesta. Escribila más directa o usá una de las sugerencias.',
+        error:
+          customError ||
+          'No terminé de interpretar esa respuesta. Escribila más directa o usá una de las sugerencias.',
       }
     }
 
