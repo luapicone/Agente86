@@ -41,7 +41,7 @@ http://localhost:5173
 
 ## Flujo actual
 
-- landing page
+- landing page visual sincronizada con la presentación comercial de HabitatIA, manteniendo el chat conversacional y el marketplace dentro de la app principal
 - generador de viviendas
 - integración frontend → backend
 - generación de propuesta

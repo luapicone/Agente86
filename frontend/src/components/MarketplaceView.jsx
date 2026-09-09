@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createMarketplaceMaterial, fetchMarketplaceFilters, fetchMarketplaceMaterials } from '../services/marketplaceApi'
 
 const initialForm = {
@@ -34,8 +34,11 @@ function MarketplaceView() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [publishSuccess, setPublishSuccess] = useState('')
+  const filtersRef = useRef(filters)
 
-  const loadMarketplace = async (activeFilters = filters) => {
+  filtersRef.current = filters
+
+  const loadMarketplace = useCallback(async (activeFilters) => {
     setLoading(true)
     setError('')
 
@@ -52,13 +55,13 @@ function MarketplaceView() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     if (mode === 'buyer') {
-      loadMarketplace()
+      loadMarketplace(filtersRef.current)
     }
-  }, [mode])
+  }, [loadMarketplace, mode])
 
   const handleFilterChange = ({ target }) => {
     const { name, value } = target
@@ -146,11 +149,6 @@ function MarketplaceView() {
   const removeFromCart = (id) => {
     setCart((prev) => prev.filter((entry) => entry.id !== id))
   }
-
-  const activeFiltersCount = useMemo(
-    () => Object.values(filters).filter((value) => value && value !== 'recent').length,
-    [filters],
-  )
 
   const cartTotals = useMemo(() => {
     const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0)

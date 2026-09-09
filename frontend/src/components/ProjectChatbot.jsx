@@ -72,7 +72,7 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
         setChatMessages([createMessage('assistant', response.message)])
         setIsInterviewComplete(Boolean(response.shouldComplete))
         setAssistantQuestionCount(response.shouldComplete ? 0 : 1)
-      } catch (_error) {
+      } catch {
         if (!cancelled) {
           setChatMessages([
             createMessage(
@@ -127,7 +127,7 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
       setChatMessages((prev) => [...prev, createMessage('assistant', response.message)])
       setIsInterviewComplete(Boolean(response.shouldComplete))
       setAssistantQuestionCount(response.shouldComplete ? currentQuestionCount : currentQuestionCount + 1)
-    } catch (_error) {
+    } catch {
       setChatMessages((prev) => [
         ...prev,
         createMessage(

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useState } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 import { generateProjectProposal } from './services/api'
@@ -6,10 +6,10 @@ import { generateRender } from './services/renderApi'
 import { generateRenderWithPuter } from './services/puterRender'
 import EnvironmentCarousel from './components/EnvironmentCarousel'
 import ImageLightbox from './components/ImageLightbox'
+import LandingHome from './components/LandingHome'
 import ProjectChatbot from './components/ProjectChatbot'
 import ConceptFloorPlan from './components/ConceptFloorPlan'
 import MarketplaceView from './components/MarketplaceView'
-import BeforeAfterShowcase from './components/BeforeAfterShowcase'
 import { downloadProjectPdf } from './components/ProjectPdfSummary'
 import {
   buildEnvironmentPrompt,
@@ -17,7 +17,6 @@ import {
   expandEnvironmentViews,
   getEnvironmentDefinitions,
 } from './utils/environmentPrompts'
-import { initHomeAnimations } from './homeAnimations'
 
 const initialAnswers = {}
 
@@ -47,50 +46,13 @@ function normalizeProjectAnswers(answers) {
 
 function App() {
   const [currentView, setCurrentView] = useState('home')
-  const homeRootRef = useRef(null)
   const [generatedProject, setGeneratedProject] = useState(null)
   const [chatAnswers, setChatAnswers] = useState(initialAnswers)
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false)
+  const [, setIsGeneratingImage] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState('')
   const [imageLoadFailed, setImageLoadFailed] = useState(false)
   const [lightboxItem, setLightboxItem] = useState(null)
-
-  const features = [
-    {
-      title: 'Vivienda accesible',
-      description:
-        'Propuestas pensadas para familias que necesitan una solución habitacional posible de construir y ampliar.',
-    },
-    {
-      title: 'Menor costo de obra',
-      description:
-        'Estimaciones orientadas a reducir materiales innecesarios y aprovechar mejor el presupuesto disponible.',
-    },
-    {
-      title: 'Diseño para crecer',
-      description:
-        'Opciones modulares que permiten arrancar con lo esencial y ampliar la vivienda en el futuro.',
-    },
-  ]
-
-  const impacts = [
-    {
-      title: 'Impacto social',
-      description:
-        'Apunta a acercar una vivienda digna y funcional a familias que hoy tienen presupuestos ajustados.',
-    },
-    {
-      title: 'Impacto ambiental',
-      description:
-        'Promueve materiales y estrategias que ayudan a ahorrar energía y reducir desperdicios.',
-    },
-    {
-      title: 'Impacto económico',
-      description:
-        'Ayuda a tomar decisiones más claras para construir con menos errores y menos gasto innecesario.',
-    },
-  ]
 
   const requestRenderAsset = async ({ prompt, negativePrompt, payload }) => {
     try {
@@ -108,13 +70,13 @@ function App() {
           note: renderResponse.render.note || 'Render generado desde el backend.',
         }
       }
-    } catch (_renderError) {
+    } catch {
       // Keep fallbacking to client-side generation when backend render is unavailable.
     }
 
     try {
       return await generateRenderWithPuter({ prompt, negativePrompt })
-    } catch (_puterError) {
+    } catch {
       return null
     }
   }
@@ -141,7 +103,7 @@ function App() {
             imageUrl: renderAsset?.imageUrl || null,
             provider: renderAsset?.provider || 'fallback',
           })
-        } catch (_error) {
+        } catch {
           images.push({
             ...view,
             environmentLabel: environment.title,
@@ -197,23 +159,9 @@ function App() {
     }
   }
 
-  useEffect(() => {
-    if (currentView !== 'home' || !homeRootRef.current) return undefined
-    return initHomeAnimations(homeRootRef.current)
-  }, [currentView])
-
-  const stats = useMemo(
-    () => [
-      { label: 'Diseños modulares', value: '100%' },
-      { label: 'Enfoque sostenible', value: 'Triple impacto' },
-      { label: 'Tecnología base', value: 'React + Node.js' },
-    ],
-    [],
-  )
-
   return (
     <div className="habitat-app">
-      <nav className="navbar navbar-expand-lg navbar-dark habitat-navbar sticky-top">
+      {currentView !== 'home' ? <nav className="navbar navbar-expand-lg navbar-dark habitat-navbar sticky-top">
         <div className="container">
           <button
             type="button"
@@ -258,153 +206,13 @@ function App() {
             </ul>
           </div>
         </div>
-      </nav>
+      </nav> : null}
 
       {currentView === 'home' ? (
-        <div ref={homeRootRef} className="home-cinematic-shell">
-          <header id="inicio" className="hero-section scene-section" data-scene="hero">
-            <canvas className="hero-canvas" aria-hidden="true"></canvas>
-            <div className="hero-orb hero-orb-a" aria-hidden="true"></div>
-            <div className="hero-orb hero-orb-b" aria-hidden="true"></div>
-            <div className="container py-5 scene-content">
-              <div className="row align-items-center min-vh-75 g-4">
-                <div className="col-lg-7 text-start hero-copy">
-                  <span className="badge habitat-badge mb-3">PropTech + IA + Sustentabilidad</span>
-                  <h1 className="display-4 fw-bold text-white mb-4">
-                    Pensamos viviendas accesibles para familias que necesitan construir con bajo presupuesto.
-                  </h1>
-                  <p className="lead text-white-50 mb-4 hero-text">
-                    HabitatIA ayuda a planificar una vivienda simple, funcional y sostenible, priorizando el costo,
-                    el aprovechamiento de materiales y la posibilidad de crecer por etapas.
-                  </p>
-                  <div className="d-flex flex-wrap gap-3">
-                    <button className="btn btn-success btn-lg px-4" onClick={() => setCurrentView('generator')}>
-                      Iniciar conversación
-                    </button>
-                    <button className="btn btn-outline-light btn-lg px-4" onClick={() => setCurrentView('marketplace')}>
-                      Ver marketplace
-                    </button>
-                  </div>
-                </div>
-                <div className="col-lg-5">
-                  <div className="hero-card shadow-lg floating-panel">
-                    <h2 className="h4 fw-bold mb-3">¿Para qué sirve HabitatIA?</h2>
-                    <ul className="list-unstyled mb-0">
-                      <li className="mb-3">• Ayuda a pensar una vivienda posible según el dinero disponible.</li>
-                      <li className="mb-3">• Sugiere opciones para construir por etapas y crecer más adelante.</li>
-                      <li>• Orienta sobre materiales, espacios y decisiones básicas para gastar mejor.</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </header>
-
-          <main>
-            <section className="py-4 stats-strip scene-section" data-scene="stats">
-              <div className="container">
-                <div className="row g-3">
-                  {stats.map((stat) => (
-                    <div className="col-md-4" key={stat.label}>
-                      <div className="stat-card floating-panel scene-card">
-                        <div className="stat-value">{stat.value}</div>
-                        <div className="stat-label">{stat.label}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            <section id="propuesta" className="py-5 section-light scene-section" data-scene="proposal">
-              <div className="section-atmosphere" aria-hidden="true"><span></span><span></span></div>
-              <div className="container">
-                <div className="text-center mb-5">
-                  <span className="section-kicker">Nuestra propuesta</span>
-                  <h2 className="section-title">Una herramienta pensada para viviendas posibles y reales</h2>
-                  <p className="section-text mx-auto">
-                    Combinamos planificación simple, criterios de ahorro y diseño modular para acercar soluciones
-                    habitacionales a familias que necesitan construir con recursos limitados.
-                  </p>
-                </div>
-
-                <div className="row g-4">
-                  {features.map((feature) => (
-                    <div className="col-md-4" key={feature.title}>
-                      <div className="card feature-card scene-card h-100 border-0 shadow-sm">
-                        <div className="card-body p-4">
-                          <h3 className="h5 fw-bold mb-3">{feature.title}</h3>
-                          <p className="text-muted mb-0">{feature.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            <BeforeAfterShowcase />
-
-            <section id="impacto" className="py-5 section-green scene-section" data-scene="impact">
-              <div className="section-atmosphere" aria-hidden="true"><span></span><span></span></div>
-              <div className="container">
-                <div className="text-center mb-5">
-                  <span className="section-kicker text-success-emphasis">Triple impacto</span>
-                  <h2 className="section-title">Tecnología aplicada a una vivienda digna, accesible y eficiente</h2>
-                  <p className="section-text mx-auto">
-                    HabitatIA busca que más familias puedan proyectar una casa posible de construir y mejorar con el tiempo.
-                  </p>
-                </div>
-
-                <div className="row g-4">
-                  {impacts.map((impact) => (
-                    <div className="col-md-4" key={impact.title}>
-                      <div className="card impact-card scene-card h-100 border-0">
-                        <div className="card-body p-4">
-                          <h3 className="h5 fw-bold mb-3">{impact.title}</h3>
-                          <p className="mb-0 text-secondary">{impact.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            <section className="py-5 section-light scene-section" data-scene="technology">
-              <div className="section-atmosphere" aria-hidden="true"><span></span><span></span></div>
-              <div className="container">
-                <div className="row g-4 align-items-center">
-                  <div className="col-lg-6 scene-copy">
-                    <h2 className="section-title text-start">Tecnología base del proyecto</h2>
-                    <p className="section-text text-start mx-0 mb-4">
-                      La plataforma fue pensada para dar una primera orientación clara sobre qué vivienda conviene,
-                      cuánto podría costar y cómo se podría construir de forma progresiva.
-                    </p>
-                    <div className="d-flex flex-wrap gap-2">
-                      <span className="tech-pill">React</span>
-                      <span className="tech-pill">Bootstrap</span>
-                      <span className="tech-pill">Node.js</span>
-                      <span className="tech-pill">API REST</span>
-                      <span className="tech-pill">Cloud Computing</span>
-                      <span className="tech-pill">IA Generativa</span>
-                    </div>
-                  </div>
-                  <div className="col-lg-6">
-                    <div className="info-panel shadow-sm floating-panel">
-                      <h3 className="h5 fw-bold mb-3">Objetivo del MVP</h3>
-                      <p className="mb-0 text-muted">
-                        Construir una primera versión capaz de orientar a una familia sobre una vivienda accesible,
-                        priorizando costo, funcionalidad y posibilidad de ampliación futura.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-          </main>
-        </div>
+        <LandingHome
+          onStartProject={() => setCurrentView('generator')}
+          onOpenMarketplace={() => setCurrentView('marketplace')}
+        />
       ) : null}
 
       {currentView === 'generator' ? (

@@ -575,7 +575,7 @@ export function getQuestionPrompt(question, answers) {
   }
 }
 
-export function getAnswerAcknowledgement(question, value, answers) {
+export function getAnswerAcknowledgement(question, value) {
   const label = formatAnswerLabel(question, value)
 
   switch (question.key) {
