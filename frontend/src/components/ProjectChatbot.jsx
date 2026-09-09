@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { generateChatTurn } from '../services/api'
+import { extractStructuredAnswersFromText } from '../utils/chatFlow'
 
 const initialStructuredAnswers = {
   propertyType: 'casa',
@@ -106,12 +107,13 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
 
     const userMessage = createMessage('user', trimmedValue)
     const nextMessages = [...chatMessages, userMessage]
-    const currentAnswers = answers
+    const currentAnswers = mergeAnswers(answers, extractStructuredAnswersFromText(trimmedValue, answers))
     const currentQuestionCount = assistantQuestionCount
 
     setInputError('')
     setDraft('')
     setChatMessages(nextMessages)
+    setAnswers(currentAnswers)
     setIsAssistantThinking(true)
 
     try {

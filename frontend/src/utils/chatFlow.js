@@ -290,6 +290,15 @@ function parseBooleanLike(rawValue) {
 }
 
 function parseFamilyMembersAnswer(rawValue) {
+  const normalized = normalizeText(rawValue)
+  const familyMatch = normalized.match(/\bfamilia\s+de\s+(\d+|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez)\b/)
+
+  if (familyMatch) {
+    return parseFamilyMembersAnswer(familyMatch[1])
+  }
+
+  const hasFamilyContext = /\b(familia|personas?|integrantes?|vivir|viviriamos|viviríamos|seriamos|seríamos)\b/.test(normalized)
+
   const parsedNumber = parseNumberAnswer(rawValue)
 
   if (!parsedNumber) {
@@ -297,6 +306,7 @@ function parseFamilyMembersAnswer(rawValue) {
   }
 
   const value = Number(parsedNumber)
+  if (!hasFamilyContext && value > 6) return null
   if (value >= 6) return '6'
   if (value >= 1 && value <= 5) return String(value)
   return null
@@ -369,6 +379,69 @@ function parseFloorsAnswer(rawValue) {
   }
 
   return null
+}
+
+function parseBudgetAnswer(rawValue) {
+  const normalized = normalizeText(rawValue).replace(/,/g, '.')
+  const rangeMatch = normalized.match(/(\d+(?:\.\d+)?)\s*(mil|k)?\s*(?:usd|u\$s|dolares?)?.{0,20}?(?:y|a|-|entre)\s*(\d+(?:\.\d+)?)\s*(mil|k)?/)
+
+  if (rangeMatch) {
+    const inferredThousands = Boolean(rangeMatch[2] || rangeMatch[4])
+    const firstValue = Number(rangeMatch[1]) * (rangeMatch[2] || inferredThousands ? 1000 : 1)
+    const secondValue = Number(rangeMatch[3]) * (rangeMatch[4] || inferredThousands ? 1000 : 1)
+    return String(Math.round((firstValue + secondValue) / 2))
+  }
+
+  const explicitCurrencyMatch = normalized.match(/(\d+(?:\.\d+)?)\s*(mil|k)?\s*(?:usd|u\$s|dolares?)/)
+  const budgetWordMatch = normalized.match(/(?:presupuesto|aprox|aproximado|maximo|maximo de|hasta)\D{0,18}(\d+(?:\.\d+)?)\s*(mil|k)?/)
+  const match = explicitCurrencyMatch || budgetWordMatch
+
+  if (!match) {
+    return null
+  }
+
+  const numericValue = Number(match[1]) * (match[2] ? 1000 : 1)
+  return String(Math.round(numericValue))
+}
+
+export function extractStructuredAnswersFromText(rawValue, currentAnswers = {}) {
+  const extracted = {}
+  const normalized = normalizeText(rawValue)
+
+  if (!currentAnswers.familyMembers) {
+    const familyMembers = parseFamilyMembersAnswer(rawValue)
+    if (familyMembers) extracted.familyMembers = familyMembers
+  }
+
+  if (!currentAnswers.budget) {
+    const budget = parseBudgetAnswer(rawValue)
+    if (budget) extracted.budget = budget
+  }
+
+  if (!currentAnswers.hasLand) {
+    if (/\b(no|sin)\b.{0,20}\bterreno\b/.test(normalized)) {
+      extracted.hasLand = 'no'
+    } else if (/\b(tengo|tenemos|contamos|poseemos|con)\b.{0,20}\bterreno\b/.test(normalized)) {
+      extracted.hasLand = 'si'
+    }
+  }
+
+  if (!currentAnswers.bedrooms && /\b(dormitorio|habitacion|habitaciones|cuarto|cuartos)\b/.test(normalized)) {
+    const bedrooms = parseBoundedNumericAnswer(rawValue, ['1', '2', '3', '4'])
+    if (bedrooms) extracted.bedrooms = bedrooms
+  }
+
+  if (!currentAnswers.bathrooms && /\b(bano|banos|baño|baños)\b/.test(normalized)) {
+    const bathrooms = parseBoundedNumericAnswer(rawValue, ['1', '2', '3'])
+    if (bathrooms) extracted.bathrooms = bathrooms
+  }
+
+  if (!currentAnswers.floors && /\b(piso|pisos|planta|plantas|nivel|niveles)\b/.test(normalized)) {
+    const floors = parseFloorsAnswer(rawValue)
+    if (floors) extracted.floors = floors
+  }
+
+  return extracted
 }
 
 function parseSelectAnswer(question, rawValue) {

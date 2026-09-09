@@ -166,7 +166,7 @@ function normalizeText(value) {
 
 function extractBudget(rawText) {
   const normalized = normalizeText(rawText)
-  const rangeMatch = normalized.match(/(\d+(?:[.,]\d+)?)\s*(mil)?\s*(?:usd|u\$s|dolares?)?.{0,20}?(?:y|a|-|entre)\s*(\d+(?:[.,]\d+)?)\s*(mil)?/)
+  const rangeMatch = normalized.match(/(\d+(?:[.,]\d+)?)\s*(mil|k)?\s*(?:usd|u\$s|dolares?)?.{0,20}?(?:y|a|-|entre)\s*(\d+(?:[.,]\d+)?)\s*(mil|k)?/)
 
   if (rangeMatch) {
     const inferredThousands = Boolean(rangeMatch[2] || rangeMatch[4])
@@ -175,7 +175,9 @@ function extractBudget(rawText) {
     return String(Math.round((firstValue + secondValue) / 2))
   }
 
-  const singleMatch = normalized.match(/(\d+(?:[.,]\d+)?)\s*(mil)?\s*(?:usd|u\$s|dolares?)/)
+  const singleMatch =
+    normalized.match(/(\d+(?:[.,]\d+)?)\s*(mil|k)?\s*(?:usd|u\$s|dolares?)/) ||
+    normalized.match(/(?:presupuesto|aprox|aproximado|maximo|hasta)\D{0,18}(\d+(?:[.,]\d+)?)\s*(mil|k)?/)
 
   if (!singleMatch) {
     return null
@@ -188,12 +190,101 @@ function extractBudget(rawText) {
 function extractHasLand(rawText) {
   const normalized = normalizeText(rawText)
 
+  if (/\b(no|sin)\b.{0,20}\bterreno\b/.test(normalized)) {
+    return 'no'
+  }
+
   if (/\b(contamos|tenemos|tengo|con|poseemos)\b.{0,20}\bterreno\b/.test(normalized)) {
     return 'si'
   }
 
-  if (/\b(no|sin)\b.{0,20}\bterreno\b/.test(normalized)) {
-    return 'no'
+  return null
+}
+
+function extractNumber(rawText) {
+  const normalized = normalizeText(rawText).replace(/,/g, '.')
+  const digitMatch = normalized.match(/\d+(?:\.\d+)?/)
+
+  if (digitMatch) {
+    return Number(digitMatch[0])
+  }
+
+  const numberWords = [
+    ['uno', 1],
+    ['una', 1],
+    ['dos', 2],
+    ['tres', 3],
+    ['cuatro', 4],
+    ['cinco', 5],
+    ['seis', 6],
+    ['siete', 7],
+    ['ocho', 8],
+    ['nueve', 9],
+    ['diez', 10],
+  ]
+
+  const matchedWord = numberWords.find(([word]) => new RegExp(`\\b${word}\\b`).test(normalized))
+  return matchedWord ? matchedWord[1] : null
+}
+
+function extractFamilyMembers(rawText) {
+  const normalized = normalizeText(rawText)
+  const explicitFamilyMatch = normalized.match(/\bfamilia\s+de\s+(\d+|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez)\b/)
+  const hasFamilyContext = /\b(familia|personas?|integrantes?|vivir|viviriamos|seriamos)\b/.test(normalized)
+  const value = extractNumber(explicitFamilyMatch?.[1] || rawText)
+
+  if (!value) {
+    return null
+  }
+
+  if (!explicitFamilyMatch && !hasFamilyContext && value > 6) {
+    return null
+  }
+
+  if (value >= 6) return '6'
+  if (value >= 1 && value <= 5) return String(value)
+  return null
+}
+
+function extractBoundedNumber(rawText, allowedValues) {
+  const value = extractNumber(rawText)
+
+  if (!value) {
+    return null
+  }
+
+  const normalizedValue = String(value)
+  return allowedValues.includes(normalizedValue) ? normalizedValue : null
+}
+
+function extractFloors(rawText) {
+  const normalized = normalizeText(rawText)
+  const boundedNumber = extractBoundedNumber(rawText, ['1', '2', '3'])
+
+  if (boundedNumber) {
+    return boundedNumber
+  }
+
+  if (
+    normalized.includes('una planta') ||
+    normalized.includes('planta unica') ||
+    normalized.includes('planta baja') ||
+    normalized.includes('un solo piso') ||
+    normalized.includes('todo en una planta')
+  ) {
+    return '1'
+  }
+
+  if (normalized.includes('dos plantas') || normalized.includes('dos pisos') || normalized.includes('dos niveles')) {
+    return '2'
+  }
+
+  if (normalized.includes('tres plantas') || normalized.includes('tres pisos') || normalized.includes('tres niveles')) {
+    return '3'
+  }
+
+  if (normalized.includes('mas de un piso') || normalized.includes('varios pisos') || normalized.includes('varias plantas')) {
+    return '2'
   }
 
   return null
@@ -228,8 +319,23 @@ function extractFallbackAnswersFromMessages(messages = [], currentAnswers = {}) 
 
   const extracted = {
     projectName: currentAnswers.projectName || extractProjectName(lastUserMessage),
+    familyMembers: currentAnswers.familyMembers || extractFamilyMembers(lastUserMessage),
     budget: currentAnswers.budget || extractBudget(lastUserMessage),
     hasLand: currentAnswers.hasLand || extractHasLand(lastUserMessage),
+  }
+
+  const normalized = normalizeText(lastUserMessage)
+
+  if (!currentAnswers.bedrooms && /\b(dormitorio|habitacion|habitaciones|cuarto|cuartos)\b/.test(normalized)) {
+    extracted.bedrooms = extractBoundedNumber(lastUserMessage, ['1', '2', '3', '4'])
+  }
+
+  if (!currentAnswers.bathrooms && /\b(bano|banos)\b/.test(normalized)) {
+    extracted.bathrooms = extractBoundedNumber(lastUserMessage, ['1', '2', '3'])
+  }
+
+  if (!currentAnswers.floors && /\b(piso|pisos|planta|plantas|nivel|niveles)\b/.test(normalized)) {
+    extracted.floors = extractFloors(lastUserMessage)
   }
 
   return sanitizeExtractedAnswers({ ...currentAnswers, ...extracted })
