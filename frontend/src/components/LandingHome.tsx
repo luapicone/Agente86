@@ -561,27 +561,23 @@ function LandingHome({ onStartProject, onOpenMarketplace }: LandingHomeProps) {
         <div className="hero-overlay absolute inset-0" />
 
         <div className="relative z-10 min-h-screen">
-          <header>
-            <div className="liquid-glass flex items-center justify-between rounded-xl px-5 py-3 text-white md:px-6">
-              <div className="text-3xl font-semibold tracking-tight">HabitatIA</div>
+          <header className="landing-header">
+            <div className="liquid-glass landing-navbar">
+              <div className="landing-brand">HabitatIA</div>
 
-            <nav className="hidden items-center gap-8 text-base text-white/90 md:flex">
-              {navigation.map((item) => (
-                <a key={item.href} className="transition-colors hover:text-gray-300" href={item.href}>
-                  {item.label}
-                </a>
-              ))}
-            </nav>
+              <nav className="landing-nav">
+                {navigation.map((item) => (
+                  <a key={item.href} className="landing-nav-link" href={item.href}>
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
 
-            <button
-              type="button"
-              onClick={onStartProject}
-              className="rounded-lg bg-white px-7 py-2.5 text-base font-medium text-black transition-colors hover:bg-gray-100"
-            >
-              Empezar ahora
-            </button>
-          </div>
-        </header>
+              <button type="button" onClick={onStartProject} className="landing-nav-cta">
+                Empezar ahora
+              </button>
+            </div>
+          </header>
 
         <section className="flex h-[calc(100vh-6rem)] flex-1 pt-6 lg:pt-10">
           <div className="flex h-full w-full flex-col">

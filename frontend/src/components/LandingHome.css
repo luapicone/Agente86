@@ -22,12 +22,14 @@ a {
 }
 
 .liquid-glass {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.58);
   background-blend-mode: luminosity;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border: none;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.08),
+    0 18px 40px rgba(0, 0, 0, 0.16);
   position: relative;
   overflow: hidden;
 }
@@ -51,6 +53,78 @@ a {
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
+}
+
+.landing-header {
+  position: relative;
+  z-index: 20;
+}
+
+.landing-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 4.9rem;
+  border-radius: 0.75rem;
+  padding: 0.85rem 1.6rem;
+  color: #ffffff;
+}
+
+.landing-brand {
+  flex: 0 0 auto;
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: 0;
+  color: #ffffff;
+}
+
+.landing-nav {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.6rem, 3.2vw, 3rem);
+  flex: 1 1 auto;
+  padding: 0 2rem;
+}
+
+.landing-nav-link,
+.landing-nav-link:visited {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: clamp(1rem, 1.25vw, 1.45rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+  text-decoration: none;
+  transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.landing-nav-link:hover,
+.landing-nav-link:focus-visible {
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.landing-nav-cta {
+  flex: 0 0 auto;
+  min-height: 4rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  color: #050505;
+  padding: 0 2.05rem;
+  font-size: clamp(1rem, 1.15vw, 1.25rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+  box-shadow: none;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.landing-nav-cta:hover,
+.landing-nav-cta:focus-visible {
+  background: #f2f2f2;
+  transform: translateY(-1px);
 }
 
 .hero-overlay {
@@ -1019,6 +1093,10 @@ a {
 }
 
 @media (min-width: 768px) {
+  .landing-nav {
+    display: flex;
+  }
+
   .hero-layout {
     gap: 3rem;
     padding-top: 1.5rem;
