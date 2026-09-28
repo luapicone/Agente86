@@ -205,7 +205,6 @@ body {
 .impact-card,
 .stat-card,
 .marketplace-card,
-.floorplan-canvas,
 .chatbot-shell {
   border: 1px solid var(--border);
   box-shadow: var(--shadow-lg);
@@ -683,19 +682,6 @@ textarea:focus {
 
 .ai-floorplan-caption strong {
   color: #f1f7f3;
-}
-
-.floorplan-backup-label {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  margin: 0.5rem 0 0.8rem;
-}
-
-.floorplan-backup-label span {
-  color: #eaf6ef;
-  font-weight: 800;
 }
 
 .floorplan-generation-status {
@@ -1433,144 +1419,6 @@ textarea:focus {
   color: #eaf3ee;
 }
 
-.floorplan-shell {
-  border-radius: var(--radius-xl);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.015) 0%, rgba(255, 255, 255, 0.03) 100%);
-  padding: 1rem;
-}
-
-.floorplan-canvas {
-  position: relative;
-  width: 100%;
-  min-height: 520px;
-  border-radius: var(--radius-xl);
-  background: #f4f2eb;
-  border: 1px solid rgba(184, 221, 198, 0.12);
-  overflow: hidden;
-}
-
-.floorplan-canvas--architectural {
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
-}
-
-.floorplan-paper-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(35, 46, 40, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(35, 46, 40, 0.06) 1px, transparent 1px);
-  background-size: 32px 32px;
-  pointer-events: none;
-}
-
-.floorplan-outline {
-  position: absolute;
-  inset: 12px;
-  border: 3px solid #17231d;
-  border-radius: 14px;
-  pointer-events: none;
-}
-
-.floorplan-title-block {
-  position: absolute;
-  right: 24px;
-  bottom: 24px;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.65rem 0.85rem;
-  border: 2px solid rgba(23, 35, 29, 0.65);
-  background: rgba(255, 255, 255, 0.82);
-  border-radius: 10px;
-  color: #17231d;
-}
-
-.floorplan-title-block span {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #55645d;
-}
-
-.floorplan-title-block strong {
-  font-size: 0.88rem;
-}
-
-.floorplan-hallway {
-  position: absolute;
-  background: rgba(204, 211, 206, 0.42);
-  border-left: 2px solid rgba(23, 35, 29, 0.32);
-  border-right: 2px solid rgba(23, 35, 29, 0.32);
-}
-
-.floorplan-room {
-  position: absolute;
-  padding: 0.55rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  font-size: 0.82rem;
-}
-
-.floorplan-room--architectural {
-  background: rgba(255, 255, 255, 0.62);
-  border: 3px solid #17231d;
-  border-radius: 6px;
-  color: #17231d;
-  box-shadow: inset 0 0 0 1px rgba(23, 35, 29, 0.04);
-}
-
-.floorplan-room-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.18rem;
-}
-
-.floorplan-room strong {
-  font-size: 0.9rem;
-  color: #17231d;
-}
-
-.floorplan-room span {
-  color: #44544c;
-  font-weight: 600;
-}
-
-.floorplan-door,
-.floorplan-window,
-.floorplan-door-swing {
-  position: absolute;
-  z-index: 2;
-}
-
-.floorplan-door {
-  background: #f4f2eb;
-  border-radius: 999px;
-}
-
-.floorplan-door-swing {
-  border: 2px solid rgba(23, 35, 29, 0.35);
-  border-left: 0;
-  border-bottom: 0;
-  border-top-right-radius: 999px;
-  background: transparent;
-  transform-origin: top left;
-  pointer-events: none;
-}
-
-.floorplan-door-swing--vertical {
-  border-right: 0;
-  border-left: 2px solid rgba(23, 35, 29, 0.35);
-  border-top-left-radius: 999px;
-  border-top-right-radius: 0;
-}
-
-.floorplan-window {
-  background: #8fd2ff;
-  box-shadow: 0 0 0 1px rgba(22, 76, 128, 0.2);
-}
-
 .result-card .table-responsive {
   border-radius: 14px;
 }
@@ -1637,7 +1485,6 @@ textarea:focus {
   }
 
   .environment-current-meta,
-  .floorplan-backup-label,
   .floorplan-generation-status {
     align-items: stretch;
     flex-direction: column;

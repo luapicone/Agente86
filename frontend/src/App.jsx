@@ -550,13 +550,12 @@ function App() {
               </div>
             </div>
 
-            {generatedProject?.conceptFloorPlan ? (
+            {generatedProject ? (
               <ConceptFloorPlan
                 aiPlans={generatedProject.floorPlans}
                 expectedCount={generatedProject.floorPlanCount}
                 isRetrying={isRetryingFloorPlans}
                 onRetry={handleRetryFloorPlans}
-                plan={generatedProject.conceptFloorPlan}
               />
             ) : null}
 

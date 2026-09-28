@@ -50,6 +50,7 @@ http://localhost:5173
 - generación de prompt arquitectónico para render
 - generación de render vía backend
 - generación de renders con FLUX.2 Pro mediante fal.ai
+- visualización de planos exclusivamente con las imágenes generadas por fal.ai, con reintento para plantas faltantes
 - generación visual MVP con Puter.js solo como último respaldo del navegador
 - fallback configurable de proveedores
 - fallback híbrido para la galería: cada ambiente intenta render por backend y, si falla por completo, recién prueba Puter en cliente
