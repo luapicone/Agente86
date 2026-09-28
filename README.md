@@ -49,6 +49,7 @@ http://localhost:5173
 - generación de propuesta
 - generación de prompt arquitectónico para render
 - generación de render vía backend
+- generación de renders con FLUX.2 Pro mediante fal.ai
 - generación visual MVP con Puter.js solo como último respaldo del navegador
 - fallback configurable de proveedores
 - fallback híbrido para la galería: cada ambiente intenta render por backend y, si falla por completo, recién prueba Puter en cliente
@@ -69,6 +70,8 @@ Este repo quedó preparado para deploy unificado en Vercel:
 
 ### Variables de entorno recomendadas en Vercel
 
+- `FAL_KEY` (requerida para generar con FLUX.2 Pro)
+- `RENDER_PROVIDER_ORDER=fal,demo,mock`
 - `REPLICATE_API_TOKEN` (si querés usar Replicate)
 - cualquier otra variable usada por `backend/.env`
 

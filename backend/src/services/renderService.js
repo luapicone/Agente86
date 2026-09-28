@@ -3,11 +3,13 @@ const { generateWithHuggingFace } = require('./renderProviders/huggingFaceProvid
 const { generateWithReplicate } = require('./renderProviders/replicateProvider')
 const { generateWithTogether } = require('./renderProviders/togetherProvider')
 const { generateWithPollinations } = require('./renderProviders/pollinationsProvider')
+const { generateWithFal } = require('./renderProviders/falProvider')
 const { generateWithDemo } = require('./renderProviders/demoProvider')
 const { generateWithMock } = require('./renderProviders/mockProvider')
 const { validateImageUrl } = require('./renderValidationService')
 
 const providerHandlers = {
+  fal: generateWithFal,
   deepai: generateWithDeepAI,
   huggingface: generateWithHuggingFace,
   replicate: generateWithReplicate,
@@ -18,14 +20,14 @@ const providerHandlers = {
 }
 
 function getConfiguredProviders() {
-  const configuredProviders = (process.env.RENDER_PROVIDER_ORDER || 'huggingface,replicate,together,deepai,demo,mock')
+  const configuredProviders = (process.env.RENDER_PROVIDER_ORDER || 'fal,demo,mock')
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean)
 
   const providers = configuredProviders.length
     ? configuredProviders
-    : ['huggingface', 'replicate', 'together', 'deepai', 'demo', 'mock']
+    : ['fal', 'demo', 'mock']
 
   if (!providers.includes('demo')) {
     const mockIndex = providers.indexOf('mock')

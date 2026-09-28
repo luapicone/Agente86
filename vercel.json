@@ -5,7 +5,8 @@
   "framework": "vite",
   "functions": {
     "api/index.js": {
-      "runtime": "@vercel/node@5.3.24"
+      "runtime": "@vercel/node@5.3.24",
+      "maxDuration": 180
     }
   },
   "rewrites": [

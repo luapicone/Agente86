@@ -49,11 +49,12 @@ Payload esperado:
 Orden configurable por `.env`:
 
 ```env
-RENDER_PROVIDER_ORDER=huggingface,replicate,together,deepai,demo,mock
+RENDER_PROVIDER_ORDER=fal,demo,mock
 ```
 
 Proveedores soportados actualmente:
 
+- `fal` (FLUX.2 Pro; requiere `FAL_KEY`)
 - `deepai`
 - `huggingface`
 - `replicate`
@@ -63,9 +64,6 @@ Proveedores soportados actualmente:
 
 Fallback recomendado backend:
 
-1. Hugging Face
-2. Replicate
-3. Together
-4. DeepAI
-5. Demo
-6. Mock
+1. fal.ai / FLUX.2 Pro
+2. Demo
+3. Mock
