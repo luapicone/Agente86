@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 import { generateProjectProposal } from './services/api'
@@ -19,6 +19,18 @@ import {
 } from './utils/environmentPrompts'
 
 const initialAnswers = {}
+
+const VIEW_PATHS = {
+  home: '/',
+  generator: '/configurador',
+  marketplace: '/marketplace',
+}
+
+function getViewFromPath(pathname) {
+  const normalizedPath = pathname.replace(/\/+$/, '') || '/'
+
+  return Object.entries(VIEW_PATHS).find(([, path]) => path === normalizedPath)?.[0] || 'home'
+}
 
 function normalizeBooleanAnswer(value) {
   if (typeof value === 'boolean') return value
@@ -45,7 +57,7 @@ function normalizeProjectAnswers(answers) {
 }
 
 function App() {
-  const [currentView, setCurrentView] = useState('home')
+  const [currentView, setCurrentView] = useState(() => getViewFromPath(window.location.pathname))
   const [generatedProject, setGeneratedProject] = useState(null)
   const [chatAnswers, setChatAnswers] = useState(initialAnswers)
   const [, setIsGeneratingImage] = useState(false)
@@ -53,6 +65,26 @@ function App() {
   const [formError, setFormError] = useState('')
   const [imageLoadFailed, setImageLoadFailed] = useState(false)
   const [lightboxItem, setLightboxItem] = useState(null)
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentView(getViewFromPath(window.location.pathname))
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  const navigateToView = (view) => {
+    const nextPath = VIEW_PATHS[view] || VIEW_PATHS.home
+
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState({ view }, '', nextPath)
+    }
+
+    setCurrentView(view)
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
 
   const requestRenderAsset = async ({ prompt, negativePrompt, payload }) => {
     try {
@@ -122,7 +154,7 @@ function App() {
     setImageLoadFailed(false)
     setIsSubmitting(true)
     setIsGeneratingImage(true)
-    setCurrentView('generator')
+    navigateToView('generator')
     setChatAnswers(answers)
 
     try {
@@ -166,7 +198,7 @@ function App() {
           <button
             type="button"
             className="navbar-brand fw-bold border-0 bg-transparent text-white"
-            onClick={() => setCurrentView('home')}
+            onClick={() => navigateToView('home')}
           >
             HabitatIA
           </button>
@@ -184,22 +216,22 @@ function App() {
           <div className="collapse navbar-collapse" id="mainNavbar">
             <ul className="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center gap-lg-2">
               <li className="nav-item">
-                <button className="nav-link btn btn-link" onClick={() => setCurrentView('home')}>
+                <button className="nav-link btn btn-link" onClick={() => navigateToView('home')}>
                   Inicio
                 </button>
               </li>
               <li className="nav-item">
-                <button className="nav-link btn btn-link" onClick={() => setCurrentView('generator')}>
+                <button className="nav-link btn btn-link" onClick={() => navigateToView('generator')}>
                   Configurador
                 </button>
               </li>
               <li className="nav-item">
-                <button className="nav-link btn btn-link" onClick={() => setCurrentView('marketplace')}>
+                <button className="nav-link btn btn-link" onClick={() => navigateToView('marketplace')}>
                   Marketplace
                 </button>
               </li>
               <li className="nav-item">
-                <button className="btn btn-success ms-lg-2" onClick={() => setCurrentView('generator')}>
+                <button className="btn btn-success ms-lg-2" onClick={() => navigateToView('generator')}>
                   Empezar ahora
                 </button>
               </li>
@@ -210,8 +242,8 @@ function App() {
 
       {currentView === 'home' ? (
         <LandingHome
-          onStartProject={() => setCurrentView('generator')}
-          onOpenMarketplace={() => setCurrentView('marketplace')}
+          onStartProject={() => navigateToView('generator')}
+          onOpenMarketplace={() => navigateToView('marketplace')}
         />
       ) : null}
 

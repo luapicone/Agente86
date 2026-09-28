@@ -42,6 +42,7 @@ http://localhost:5173
 ## Flujo actual
 
 - landing page visual sincronizada con la presentación comercial de HabitatIA, manteniendo el chat conversacional y el marketplace dentro de la app principal
+- navegación por URL entre la landing (`/`), el chat/configurador (`/configurador`) y el marketplace (`/marketplace`), con soporte para Atrás/Adelante y acceso directo gracias al rewrite SPA de Vercel
 - chat conversacional con extracción de respuestas compuestas para evitar repreguntar datos ya dichos en una misma frase
 - generador de viviendas
 - integración frontend → backend
