@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-function EnvironmentCarousel({ items, onOpen }) {
+function EnvironmentCarousel({ items, onEdit, onOpen }) {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   if (!items?.length) {
@@ -36,6 +36,18 @@ function EnvironmentCarousel({ items, onOpen }) {
         <button type="button" className="environment-slide-button" onClick={() => onOpen(currentItem)}>
           <img src={currentItem.imageUrl} className="d-block w-100 environment-image" alt={currentItem.title} />
         </button>
+      </div>
+
+      <div className="environment-current-meta">
+        <div>
+          <span className="section-kicker">Ambiente seleccionado</span>
+          <strong>{currentItem.title}</strong>
+        </div>
+        {onEdit ? (
+          <button className="btn btn-success" type="button" onClick={() => onEdit(currentItem)}>
+            Editar esta imagen con IA
+          </button>
+        ) : null}
       </div>
 
       {items.length > 1 ? (

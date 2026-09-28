@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 import { generateProjectProposal } from './services/api'
-import { generateRender } from './services/renderApi'
+import { generateFloorPlan, generateRender } from './services/renderApi'
 import { generateRenderWithPuter } from './services/puterRender'
 import EnvironmentCarousel from './components/EnvironmentCarousel'
+import ImageEditStudio from './components/ImageEditStudio'
 import ImageLightbox from './components/ImageLightbox'
 import LandingHome from './components/LandingHome'
 import ProjectChatbot from './components/ProjectChatbot'
@@ -65,6 +66,8 @@ function App() {
   const [formError, setFormError] = useState('')
   const [imageLoadFailed, setImageLoadFailed] = useState(false)
   const [lightboxItem, setLightboxItem] = useState(null)
+  const [editableImage, setEditableImage] = useState(null)
+  const [isRetryingFloorPlans, setIsRetryingFloorPlans] = useState(false)
 
   useEffect(() => {
     const handlePopState = () => {
@@ -149,6 +152,57 @@ function App() {
     return images
   }
 
+  const generateAiFloorPlans = async (answers, existingPlans = []) => {
+    const floorCount = answers.propertyType === 'departamento'
+      ? 1
+      : Math.min(3, Math.max(1, Number(answers.floors || 1)))
+    const completedFloors = new Set(existingPlans.map((item) => item.floorNumber))
+    const pendingFloors = Array.from({ length: floorCount }, (_, index) => index + 1)
+      .filter((floorNumber) => !completedFloors.has(floorNumber))
+    const requests = pendingFloors.map(async (floorNumber) => {
+      try {
+        const response = await generateFloorPlan({ ...answers, floorNumber })
+        return response?.floorPlan || null
+      } catch {
+        return null
+      }
+    })
+
+    const generatedPlans = (await Promise.all(requests)).filter(Boolean)
+    return [...existingPlans, ...generatedPlans]
+      .sort((first, second) => first.floorNumber - second.floorNumber)
+  }
+
+  const handleRetryFloorPlans = async () => {
+    if (!generatedProject || isRetryingFloorPlans) return
+
+    setIsRetryingFloorPlans(true)
+
+    try {
+      const normalizedPayload = normalizeProjectAnswers(chatAnswers)
+      const floorPlans = await generateAiFloorPlans(normalizedPayload, generatedProject.floorPlans || [])
+      setGeneratedProject((current) => current ? { ...current, floorPlans } : current)
+    } finally {
+      setIsRetryingFloorPlans(false)
+    }
+  }
+
+  const handleEditedImage = (itemId, imageUrl) => {
+    setGeneratedProject((current) => {
+      if (!current) return current
+
+      return {
+        ...current,
+        environmentGallery: current.environmentGallery.map((item) =>
+          item.id === itemId
+            ? { ...item, imageUrl, provider: 'fal-edit', edited: true }
+            : item,
+        ),
+      }
+    })
+    setEditableImage((current) => current?.id === itemId ? { ...current, imageUrl } : current)
+  }
+
   const handleGenerateFromChat = async (answers) => {
     setFormError('')
     setImageLoadFailed(false)
@@ -169,7 +223,10 @@ function App() {
         payload: normalizedPayload,
       })
 
-      const environmentGallery = await generateEnvironmentGallery(generated, normalizedPayload, masterPrompt)
+      const [environmentGallery, floorPlans] = await Promise.all([
+        generateEnvironmentGallery(generated, normalizedPayload, masterPrompt),
+        generateAiFloorPlans(normalizedPayload),
+      ])
 
       setGeneratedProject({
         ...generated,
@@ -181,6 +238,10 @@ function App() {
         renderProvider: mainRenderAsset?.provider || null,
         masterPrompt,
         environmentGallery,
+        floorPlans,
+        floorPlanCount: normalizedPayload.propertyType === 'departamento'
+          ? 1
+          : Math.min(3, Math.max(1, Number(normalizedPayload.floors || 1))),
       })
     } catch (error) {
       setGeneratedProject(null)
@@ -489,7 +550,15 @@ function App() {
               </div>
             </div>
 
-            {generatedProject?.conceptFloorPlan ? <ConceptFloorPlan plan={generatedProject.conceptFloorPlan} /> : null}
+            {generatedProject?.conceptFloorPlan ? (
+              <ConceptFloorPlan
+                aiPlans={generatedProject.floorPlans}
+                expectedCount={generatedProject.floorPlanCount}
+                isRetrying={isRetryingFloorPlans}
+                onRetry={handleRetryFloorPlans}
+                plan={generatedProject.conceptFloorPlan}
+              />
+            ) : null}
 
             {generatedProject?.environmentGallery?.length ? (
               <section className="environment-section mt-4">
@@ -504,8 +573,18 @@ function App() {
 
                   <EnvironmentCarousel
                     items={generatedProject.environmentGallery.filter((item) => item.imageUrl)}
+                    onEdit={(item) => setEditableImage(item)}
                     onOpen={(item) => setLightboxItem(item)}
                   />
+
+                  {editableImage ? (
+                    <ImageEditStudio
+                      key={editableImage.id}
+                      item={editableImage}
+                      onApply={handleEditedImage}
+                      onClose={() => setEditableImage(null)}
+                    />
+                  ) : null}
                 </div>
               </section>
             ) : null}

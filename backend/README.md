@@ -44,6 +44,36 @@ Payload esperado:
 }
 ```
 
+### Generación de planos con fal.ai
+
+```http
+POST /api/renders/floor-plan
+```
+
+Recibe los datos normalizados del proyecto y `floorNumber`. HabitatIA genera una lámina
+cenital independiente por planta con FLUX.2 Pro. Para casas se admiten hasta tres plantas;
+para departamentos se genera una planta general.
+
+### Edición conversacional de un ambiente
+
+```http
+POST /api/renders/edit
+```
+
+Payload esperado:
+
+```json
+{
+  "imageUrl": "https://.../ambiente.jpeg",
+  "instruction": "Mantené el encuadre y cambiá el piso por madera clara",
+  "title": "Living comedor"
+}
+```
+
+Cada respuesta devuelve una nueva `imageUrl`. El frontend usa esa última versión como
+entrada del siguiente mensaje para encadenar modificaciones sobre el mismo ambiente. La
+imagen de origen debe estar publicada mediante HTTPS para que fal.ai pueda accederla.
+
 ## Fallback actual
 
 Orden configurable por `.env`:

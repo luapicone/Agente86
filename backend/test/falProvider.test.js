@@ -2,8 +2,10 @@ const assert = require('node:assert/strict')
 const { afterEach, test } = require('node:test')
 
 const {
+  FAL_EDIT_ENDPOINT,
   FAL_ENDPOINT,
   buildFalPrompt,
+  editWithFal,
   generateWithFal,
 } = require('../src/services/renderProviders/falProvider')
 
@@ -67,4 +69,45 @@ test('generateWithFal calls FLUX.2 Pro and normalizes the result', async () => {
   assert.equal(result.provider, 'fal')
   assert.equal(result.imageUrl, 'https://fal.media/files/render.jpeg')
   assert.equal(result.requestId, 'request-123')
+})
+
+test('editWithFal sends the selected image to FLUX.2 Pro Edit', async () => {
+  process.env.FAL_KEY = 'test-key'
+  global.fetch = async (url, options) => {
+    assert.equal(url, FAL_EDIT_ENDPOINT)
+    assert.equal(options.headers.Authorization, 'Key test-key')
+
+    const body = JSON.parse(options.body)
+    assert.equal(body.prompt, 'Replace the floor with light oak')
+    assert.deepEqual(body.image_urls, ['https://fal.media/files/living-room.jpeg'])
+    assert.equal(body.image_size, 'auto')
+    assert.equal(body.num_images, 1)
+
+    return {
+      ok: true,
+      json: async () => ({
+        images: [{ url: 'https://fal.media/files/living-room-edited.jpeg' }],
+        request_id: 'edit-request-123',
+      }),
+    }
+  }
+
+  const result = await editWithFal({
+    prompt: 'Replace the floor with light oak',
+    imageUrl: 'https://fal.media/files/living-room.jpeg',
+    styleLabel: 'Living room edit',
+  })
+
+  assert.equal(result.provider, 'fal')
+  assert.equal(result.imageUrl, 'https://fal.media/files/living-room-edited.jpeg')
+  assert.equal(result.requestId, 'edit-request-123')
+})
+
+test('editWithFal rejects non-public image URLs', async () => {
+  process.env.FAL_KEY = 'test-key'
+
+  await assert.rejects(
+    () => editWithFal({ prompt: 'Change the floor', imageUrl: '/local-image.jpeg' }),
+    /URL HTTPS accesible/,
+  )
 })
