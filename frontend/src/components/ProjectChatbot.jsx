@@ -159,35 +159,70 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
   const progress = Math.min(100, Math.round((assistantQuestionCount / 10) * 100))
 
   return (
-    <div className="chatbot-shell shadow-sm">
+    <div className="chatbot-shell">
       <div className="chatbot-header">
-        <div>
-          <span className="section-kicker text-white-50">Asistente de proyecto</span>
+        <div className="chatbot-brand-row">
+          <div className="chatbot-identity">
+            <span className="chatbot-brand-mark" aria-hidden="true">H</span>
+            <div>
+              <strong>HabitatIA</strong>
+              <span>Asistente de proyecto</span>
+            </div>
+          </div>
+          <span className="chatbot-online-status">
+            <span aria-hidden="true"></span>
+            En línea
+          </span>
+        </div>
+
+        <div className="chatbot-heading-block">
+          <span className="chatbot-eyebrow">Diseñemos desde la conversación</span>
           <h1 className="chatbot-title">Contame tu casa ideal y HabitatIA adapta la entrevista</h1>
           <p className="chatbot-subtitle mb-0">
             No seguís un formulario fijo: la conversación profundiza solo donde hace falta.
           </p>
         </div>
+
         <div className="chatbot-progress-wrapper">
-          <span className="chatbot-progress-label">Entrevista</span>
-          <div className="progress chatbot-progress">
+          <div className="chatbot-progress-copy">
+            <span className="chatbot-progress-label">Avance de la entrevista</span>
+            <small>{assistantQuestionCount} de 10</small>
+          </div>
+          <div
+            className="progress chatbot-progress"
+            role="progressbar"
+            aria-label="Avance de la entrevista"
+            aria-valuenow={progress}
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
             <div className="progress-bar" style={{ width: `${progress}%` }}></div>
           </div>
-          <small>{assistantQuestionCount} / 10 preguntas máximas</small>
         </div>
       </div>
 
       <div className="chatbot-body">
-        <div className="chat-thread">
+        <div className="chat-thread" aria-live="polite">
           {chatMessages.map((message) => (
             <div key={message.id} className={`message ${message.role === 'assistant' ? 'message-bot' : 'message-user'}`}>
-              <div className={`message-bubble ${message.role === 'user' ? 'user-bubble' : ''}`}>{message.text}</div>
+              {message.role === 'assistant' ? <span className="message-avatar" aria-hidden="true">H</span> : null}
+              <div className="message-content">
+                <span className="message-author">{message.role === 'assistant' ? 'HabitatIA' : 'Vos'}</span>
+                <div className={`message-bubble ${message.role === 'user' ? 'user-bubble' : ''}`}>{message.text}</div>
+              </div>
             </div>
           ))}
 
           {isAssistantThinking ? (
             <div className="message message-bot current-question">
-              <div className="message-bubble message-bubble-muted">HabitatIA está pensando cómo seguir esta conversación...</div>
+              <span className="message-avatar" aria-hidden="true">H</span>
+              <div className="message-content">
+                <span className="message-author">HabitatIA</span>
+                <div className="message-bubble message-bubble-muted">
+                  <span className="chatbot-thinking-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                  <span className="visually-hidden">HabitatIA está pensando cómo seguir esta conversación...</span>
+                </div>
+              </div>
             </div>
           ) : null}
           <div ref={threadEndRef} />
@@ -195,6 +230,7 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
 
         {!isInterviewComplete ? (
           <div className="chat-input-panel">
+            <span className="chat-input-label">Tu respuesta</span>
             <form onSubmit={handleSubmit} className="chat-input-form">
               <input
                 type="text"
@@ -208,16 +244,24 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
                 }}
                 placeholder="Respondé como si estuvieras charlando con un asesor"
                 disabled={isAssistantThinking}
+                aria-label="Escribí tu respuesta"
               />
-              <button type="submit" className="btn btn-success" disabled={isAssistantThinking}>
-                Enviar
+              <button type="submit" className="chat-send-button" disabled={isAssistantThinking} aria-label="Enviar respuesta">
+                <span>Enviar</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
               </button>
             </form>
             {inputError ? <div className="chat-input-error">{inputError}</div> : null}
           </div>
         ) : (
           <div className="chat-complete-panel">
-            <button className="btn btn-success btn-lg" onClick={() => onComplete(answers)} disabled={isSubmitting}>
+            <div>
+              <span className="chat-input-label">Entrevista completa</span>
+              <strong>Ya tenemos la información necesaria para diseñar tu propuesta.</strong>
+            </div>
+            <button className="chat-send-button chat-generate-button" onClick={() => onComplete(answers)} disabled={isSubmitting}>
               {isSubmitting ? 'Generando proyecto...' : 'Generar proyecto'}
             </button>
           </div>
