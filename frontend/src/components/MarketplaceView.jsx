@@ -159,23 +159,36 @@ function MarketplaceView() {
   return (
     <main className="marketplace-page py-5">
       <div className="container">
-        <section className="result-card shadow-sm mb-4 marketplace-hero-card">
+        <section className="marketplace-hero-card mb-4">
           <div className="row g-4 align-items-center">
             <div className="col-lg-7">
-              <span className="section-kicker">Marketplace HabitatIA</span>
-              <h1 className="section-title mb-3">Conectá oferta y demanda de materiales remanentes</h1>
-              <p className="section-text mb-0">
+              <span className="marketplace-eyebrow">Marketplace HabitatIA</span>
+              <h1 className="marketplace-hero-title">Conectá oferta y demanda de materiales remanentes</h1>
+              <p className="marketplace-hero-copy mb-0">
                 Elegí si querés publicar materiales como vendedor o explorar oportunidades como comprador.
               </p>
+              <div className="marketplace-hero-meta" aria-label="Beneficios del marketplace">
+                <span>Menos desperdicio</span>
+                <span>Mejor presupuesto</span>
+                <span>Red profesional</span>
+              </div>
             </div>
             <div className="col-lg-5">
               <div className="marketplace-entry-actions">
                 <button className="marketplace-entry-card" type="button" onClick={() => setMode('buyer')}>
+                  <span className="marketplace-entry-topline">
+                    <span className="marketplace-entry-index">01</span>
+                    <span className="marketplace-entry-arrow" aria-hidden="true">↗</span>
+                  </span>
                   <span className="marketplace-entry-kicker">Comprador</span>
                   <strong>Ver marketplace</strong>
                   <small>Explorar publicaciones, filtrar por material, zona y precio.</small>
                 </button>
                 <button className="marketplace-entry-card" type="button" onClick={() => setMode('seller')}>
+                  <span className="marketplace-entry-topline">
+                    <span className="marketplace-entry-index">02</span>
+                    <span className="marketplace-entry-arrow" aria-hidden="true">↗</span>
+                  </span>
                   <span className="marketplace-entry-kicker">Vendedor</span>
                   <strong>Publicar material</strong>
                   <small>Cargar remanentes con imagen, precio, ubicación y stock disponible.</small>
@@ -186,12 +199,15 @@ function MarketplaceView() {
         </section>
 
         {mode === 'chooser' ? null : (
-          <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div className="marketplace-mode-bar mb-3">
             <div className="marketplace-mode-pill-wrap">
-              <span className="marketplace-mode-pill">Modo actual: {mode === 'buyer' ? 'Comprador' : 'Vendedor'}</span>
+              <span className="marketplace-mode-pill">
+                <span aria-hidden="true"></span>
+                Modo {mode === 'buyer' ? 'comprador' : 'vendedor'}
+              </span>
             </div>
-            <button className="btn btn-outline-light" type="button" onClick={() => setMode('chooser')}>
-              Volver a elegir
+            <button className="marketplace-text-button" type="button" onClick={() => setMode('chooser')}>
+              Cambiar modo <span aria-hidden="true">↗</span>
             </button>
           </div>
         )}
@@ -200,25 +216,25 @@ function MarketplaceView() {
           <>
             <div className="row g-4 align-items-start">
               <div className="col-xl-9">
-                <section className="result-card shadow-sm mb-4">
+                <section className="marketplace-filter-panel mb-4">
                   <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <div>
-                      <span className="section-kicker">Explorar materiales</span>
-                      <h2 className="h4 fw-bold mb-0">Marketplace de publicaciones</h2>
+                      <span className="marketplace-eyebrow">Explorar materiales</span>
+                      <h2 className="marketplace-panel-title">Publicaciones disponibles</h2>
                     </div>
                     <div className="marketplace-summary-grid compact">
-                      <div className="metric-box">
+                      <div className="marketplace-summary-item">
                         <span className="metric-label">Publicaciones activas</span>
                         <strong>{items.length}</strong>
                       </div>
-                      <div className="metric-box">
+                      <div className="marketplace-summary-item">
                         <span className="metric-label">Productos en carrito</span>
                         <strong>{cartTotals.itemCount}</strong>
                       </div>
                     </div>
                   </div>
 
-                  <form className="row g-3 align-items-end" onSubmit={handleSearch}>
+                  <form className="row g-3 align-items-end marketplace-filter-form" onSubmit={handleSearch}>
                     <div className="col-lg-4">
                       <label className="form-label">Buscar</label>
                       <div className="marketplace-search-wrap">
@@ -277,8 +293,8 @@ function MarketplaceView() {
                       <input className="form-control" name="maxPrice" type="number" value={filters.maxPrice} onChange={handleFilterChange} placeholder={`${facets.priceRange.max || 0}`} />
                     </div>
                     <div className="col-md-6 col-lg-4 d-flex gap-2">
-                      <button className="btn btn-success flex-grow-1" type="submit">Aplicar filtros</button>
-                      <button className="btn btn-outline-light flex-grow-1" type="button" onClick={handleClearFilters}>Limpiar</button>
+                      <button className="marketplace-primary-button flex-grow-1" type="submit">Aplicar filtros</button>
+                      <button className="marketplace-secondary-button flex-grow-1" type="button" onClick={handleClearFilters}>Limpiar</button>
                     </div>
                   </form>
                 </section>
@@ -286,8 +302,9 @@ function MarketplaceView() {
                 <section className="marketplace-grid-section">
                   {error ? <div className="alert alert-danger">{error}</div> : null}
                   {loading ? (
-                    <div className="result-card shadow-sm">
-                      <p className="mb-0 text-muted">Cargando publicaciones...</p>
+                    <div className="marketplace-loading-panel">
+                      <span className="marketplace-loading-dot" aria-hidden="true"></span>
+                      <p className="mb-0">Cargando publicaciones...</p>
                     </div>
                   ) : (
                     <div className="row g-4">
@@ -330,8 +347,9 @@ function MarketplaceView() {
                                   <li><strong>Ahorro por unidad:</strong> USD {savings.toLocaleString()}</li>
                                 </ul>
 
-                                <button className="btn btn-success w-100" type="button" onClick={() => addToCart(item)}>
-                                  Agregar al carrito
+                                <button className="marketplace-primary-button marketplace-product-action" type="button" onClick={() => addToCart(item)}>
+                                  <span>Agregar al carrito</span>
+                                  <span aria-hidden="true">+</span>
                                 </button>
                               </div>
                             </article>
@@ -344,12 +362,20 @@ function MarketplaceView() {
               </div>
 
               <div className="col-xl-3">
-                <aside className="result-card shadow-sm marketplace-cart-card sticky-xl-top">
-                  <span className="section-kicker">Carrito</span>
-                  <h2 className="h4 fw-bold mb-3">Tus materiales</h2>
+                <aside className="marketplace-cart-card sticky-xl-top">
+                  <div className="marketplace-cart-heading">
+                    <div>
+                      <span className="marketplace-eyebrow">Carrito</span>
+                      <h2 className="marketplace-panel-title">Tus materiales</h2>
+                    </div>
+                    <span className="marketplace-cart-count">{cartTotals.itemCount}</span>
+                  </div>
 
                   {cart.length === 0 ? (
-                    <p className="text-muted mb-0">Todavía no agregaste productos al carrito.</p>
+                    <div className="marketplace-cart-empty">
+                      <span aria-hidden="true">+</span>
+                      <p className="mb-0">Agregá publicaciones para armar tu selección de materiales.</p>
+                    </div>
                   ) : (
                     <>
                       <div className="marketplace-cart-list">
@@ -371,7 +397,7 @@ function MarketplaceView() {
                                 onChange={(event) => updateCartQuantity(item.id, event.target.value)}
                               />
                               <small className="marketplace-cart-stock">Máx. {item.stock} {item.unit}</small>
-                              <button className="btn btn-outline-light btn-sm" type="button" onClick={() => removeFromCart(item.id)}>
+                              <button className="marketplace-remove-button" type="button" onClick={() => removeFromCart(item.id)}>
                                 Quitar
                               </button>
                             </div>
@@ -388,7 +414,7 @@ function MarketplaceView() {
                           <span>Total estimado</span>
                           <strong>USD {cartTotals.total.toLocaleString()}</strong>
                         </div>
-                        <button className="btn btn-success w-100" type="button">Continuar compra</button>
+                        <button className="marketplace-primary-button w-100" type="button">Continuar compra</button>
                       </div>
                     </>
                   )}
@@ -399,18 +425,20 @@ function MarketplaceView() {
         ) : null}
 
         {mode === 'seller' ? (
-          <section className="result-card shadow-sm mb-4">
-            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <section className="marketplace-seller-panel mb-4">
+            <div className="marketplace-seller-header">
               <div>
-                <span className="section-kicker">Publicar material</span>
-                <h2 className="h4 fw-bold mb-0">Carga rápida para arquitectos y estudios</h2>
+                <span className="marketplace-eyebrow">Publicar material</span>
+                <h2 className="marketplace-seller-title">Convertí un remanente en una nueva oportunidad</h2>
+                <p>Completá los datos esenciales para que compradores y profesionales puedan encontrar tu publicación.</p>
               </div>
+              <span className="marketplace-seller-step">01 / Datos del material</span>
             </div>
 
             {error ? <div className="alert alert-danger">{error}</div> : null}
             {publishSuccess ? <div className="alert alert-success">{publishSuccess}</div> : null}
 
-            <form className="row g-3" onSubmit={handlePublish}>
+            <form className="row g-3 marketplace-seller-form" onSubmit={handlePublish}>
               <div className="col-md-4">
                 <input className="form-control" name="architect" value={form.architect} onChange={handleFormChange} placeholder="Nombre del arquitecto / estudio" required />
               </div>
@@ -448,7 +476,9 @@ function MarketplaceView() {
                 <input className="form-control" name="description" value={form.description} onChange={handleFormChange} placeholder="Descripción breve del remanente" />
               </div>
               <div className="col-12 d-grid d-md-flex justify-content-md-end">
-                <button className="btn btn-success" type="submit">Publicar artículo</button>
+                <button className="marketplace-primary-button marketplace-publish-button" type="submit">
+                  Publicar artículo <span aria-hidden="true">↗</span>
+                </button>
               </div>
             </form>
           </section>

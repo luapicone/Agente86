@@ -45,6 +45,7 @@ http://localhost:5173
 - navegación por URL entre la landing (`/`), el chat/configurador (`/configurador`) y el marketplace (`/marketplace`), con soporte para Atrás/Adelante y acceso directo gracias al rewrite SPA de Vercel
 - chat conversacional con extracción de respuestas compuestas para evitar repreguntar datos ya dichos en una misma frase
 - chat conversacional alineado visualmente con la landing: estética editorial oscura, superficies luminosas, acento esmeralda y diseño responsive
+- marketplace alineado con el mismo sistema visual de la landing y el chat en todos sus estados: selector comprador/vendedor, filtros, catálogo, carrito y formulario de publicación
 - generador de viviendas
 - integración frontend → backend
 - generación de propuesta
