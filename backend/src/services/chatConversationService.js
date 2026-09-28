@@ -237,7 +237,7 @@ function extractFamilyMembers(rawText) {
     return null
   }
 
-  if (!explicitFamilyMatch && !hasFamilyContext && value > 6) {
+  if (!explicitFamilyMatch && !hasFamilyContext) {
     return null
   }
 
@@ -299,7 +299,7 @@ function extractProjectName(rawText) {
 
   const normalized = normalizeText(trimmed)
 
-  if (trimmed.length > 40) {
+  if (trimmed.length > 40 || !/[a-záéíóúñ]/i.test(trimmed)) {
     return null
   }
 
@@ -310,15 +310,77 @@ function extractProjectName(rawText) {
   return trimmed
 }
 
+function extractContextualAnswer(questionText, rawText) {
+  const question = normalizeText(questionText)
+  const answer = normalizeText(rawText)
+  const trimmedAnswer = String(rawText || '').trim()
+  const extracted = {}
+
+  if (/\b(dormitorios?|habitaciones?|cuartos?)\b/.test(question)) {
+    extracted.bedrooms = extractBoundedNumber(rawText, ['1', '2', '3', '4'])
+  } else if (/\b(personas?|familia|integrantes?)\b/.test(question)) {
+    extracted.familyMembers = extractBoundedNumber(rawText, ['1', '2', '3', '4', '5', '6'])
+  } else if (/\b(banos?)\b/.test(question)) {
+    extracted.bathrooms = extractBoundedNumber(rawText, ['1', '2', '3'])
+  } else if (/\bmetros? cuadrados?\b/.test(question)) {
+    const squareMeters = extractNumber(rawText)
+    extracted.squareMeters = squareMeters ? String(squareMeters) : null
+  } else if (/\bpresupuesto\b/.test(question)) {
+    const budget = extractBudget(rawText) || extractNumber(rawText)
+    extracted.budget = budget ? String(budget) : null
+  } else if (/\b(nombre|identificar)\b/.test(question) && /\bproyecto\b/.test(question)) {
+    extracted.projectName = extractProjectName(rawText)
+  } else if (/\b(ciudad|zona)\b/.test(question) && trimmedAnswer) {
+    extracted.location = trimmedAnswer.slice(0, 120)
+  } else if (/\bterreno\b/.test(question) && /\b(urbano|suburbano|rural|pendiente)\b/.test(question)) {
+    if (answer.includes('pendiente') || answer.includes('desnivel')) extracted.terrainType = 'pendiente'
+    else if (answer.includes('rural') || answer.includes('campo')) extracted.terrainType = 'rural'
+    else if (answer.includes('suburb')) extracted.terrainType = 'suburbano'
+    else if (answer.includes('urban') || answer.includes('ciudad') || answer.includes('barrio')) extracted.terrainType = 'urbano'
+  } else if (/\bterreno\b/.test(question)) {
+    if (/^(si|s|claro|tenemos?|cuento|contamos)\b/.test(answer)) extracted.hasLand = 'si'
+    else if (/^(no|n|todavia no|aun no)\b/.test(answer)) extracted.hasLand = 'no'
+  } else if (/\b(una planta|piso|pisos)\b/.test(question)) {
+    extracted.floors = extractFloors(rawText)
+  } else if (/\b(costo|eficiencia|sostenibilidad)\b/.test(question)) {
+    if (/costo|barato|ahorro|presupuesto/.test(answer)) extracted.priority = 'costo'
+    else if (/eficien|mantenimiento|consumo/.test(answer)) extracted.priority = 'eficiencia'
+    else if (/sosten|ecolog|ambient|sustent/.test(answer)) extracted.priority = 'sostenibilidad'
+  } else if (/\b(terminacion|basica|intermedia|alta)\b/.test(question)) {
+    if (/alta|premium/.test(answer)) extracted.qualityLevel = 'alto'
+    else if (/media|medio|intermedia|equilibr/.test(answer)) extracted.qualityLevel = 'medio'
+    else if (/baja|bajo|basica|econom/.test(answer)) extracted.qualityLevel = 'bajo'
+  } else if (/\bclima\b/.test(question)) {
+    if (/templ/.test(answer)) extracted.climate = 'templado'
+    else if (/calido|calor|caluroso/.test(answer)) extracted.climate = 'calido'
+    else if (/frio/.test(answer)) extracted.climate = 'frio'
+    else if (/humed|humedad/.test(answer)) extracted.climate = 'humedo'
+  } else if (/\b(madera|hormigon|acero|material)\b/.test(question)) {
+    if (answer.includes('madera')) extracted.material = 'madera-reciclada'
+    else if (/hormigon|cemento/.test(answer)) extracted.material = 'hormigon-verde'
+    else if (/acero|metal/.test(answer)) extracted.material = 'acero-reciclado'
+  }
+
+  return Object.fromEntries(Object.entries(extracted).filter(([, value]) => value !== null && value !== ''))
+}
+
 function extractFallbackAnswersFromMessages(messages = [], currentAnswers = {}) {
-  const lastUserMessage = [...messages].reverse().find((message) => message?.role === 'user' && message?.text)?.text
+  const lastUserIndex = [...messages].map((message) => message?.role).lastIndexOf('user')
+  const lastUserMessage = lastUserIndex >= 0 ? messages[lastUserIndex]?.text : null
 
   if (!lastUserMessage) {
     return currentAnswers
   }
 
+  const previousAssistantMessage = messages
+    .slice(0, lastUserIndex)
+    .reverse()
+    .find((message) => message?.role === 'assistant' && message?.text)?.text
+  const contextualAnswers = extractContextualAnswer(previousAssistantMessage, lastUserMessage)
+
   const extracted = {
-    projectName: currentAnswers.projectName || extractProjectName(lastUserMessage),
+    ...contextualAnswers,
+    projectName: currentAnswers.projectName || contextualAnswers.projectName,
     familyMembers: currentAnswers.familyMembers || extractFamilyMembers(lastUserMessage),
     budget: currentAnswers.budget || extractBudget(lastUserMessage),
     hasLand: currentAnswers.hasLand || extractHasLand(lastUserMessage),
@@ -338,7 +400,23 @@ function extractFallbackAnswersFromMessages(messages = [], currentAnswers = {}) 
     extracted.floors = extractFloors(lastUserMessage)
   }
 
-  return sanitizeExtractedAnswers({ ...currentAnswers, ...extracted })
+  return sanitizeExtractedAnswers({ ...currentAnswers, ...extracted, ...contextualAnswers })
+}
+
+function extractResponseText(body) {
+  if (typeof body?.output_text === 'string' && body.output_text.trim()) {
+    return body.output_text
+  }
+
+  for (const item of body?.output || []) {
+    for (const content of item?.content || []) {
+      if (content?.type === 'output_text' && typeof content.text === 'string' && content.text.trim()) {
+        return content.text
+      }
+    }
+  }
+
+  return null
 }
 
 function getMissingFields(answers = {}) {
@@ -503,7 +581,8 @@ Genera solamente el JSON pedido.
     throw error
   }
 
-  const parsed = body?.output_text ? JSON.parse(body.output_text) : null
+  const responseText = extractResponseText(body)
+  const parsed = responseText ? JSON.parse(responseText) : null
 
   if (!parsed?.message || typeof parsed.shouldComplete !== 'boolean' || !parsed.extractedAnswers) {
     throw new Error('La respuesta del modelo no devolvio un turno valido.')

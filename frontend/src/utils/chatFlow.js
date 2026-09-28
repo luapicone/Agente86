@@ -292,21 +292,15 @@ function parseBooleanLike(rawValue) {
 function parseFamilyMembersAnswer(rawValue) {
   const normalized = normalizeText(rawValue)
   const familyMatch = normalized.match(/\bfamilia\s+de\s+(\d+|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez)\b/)
-
-  if (familyMatch) {
-    return parseFamilyMembersAnswer(familyMatch[1])
-  }
-
   const hasFamilyContext = /\b(familia|personas?|integrantes?|vivir|viviriamos|viviríamos|seriamos|seríamos)\b/.test(normalized)
-
-  const parsedNumber = parseNumberAnswer(rawValue)
+  const parsedNumber = parseNumberAnswer(familyMatch?.[1] || rawValue)
 
   if (!parsedNumber) {
     return null
   }
 
   const value = Number(parsedNumber)
-  if (!hasFamilyContext && value > 6) return null
+  if (!familyMatch && !hasFamilyContext) return null
   if (value >= 6) return '6'
   if (value >= 1 && value <= 5) return String(value)
   return null
@@ -404,9 +398,35 @@ function parseBudgetAnswer(rawValue) {
   return String(Math.round(numericValue))
 }
 
-export function extractStructuredAnswersFromText(rawValue, currentAnswers = {}) {
+export function extractStructuredAnswersFromText(rawValue, currentAnswers = {}, assistantPrompt = '') {
   const extracted = {}
   const normalized = normalizeText(rawValue)
+  const normalizedPrompt = normalizeText(assistantPrompt)
+
+  if (!currentAnswers.familyMembers && /\b(personas?|familia|integrantes?)\b/.test(normalizedPrompt)) {
+    const familyMembers = parseBoundedNumericAnswer(rawValue, ['1', '2', '3', '4', '5', '6'])
+    if (familyMembers) extracted.familyMembers = familyMembers
+  }
+
+  if (!currentAnswers.bedrooms && /\b(dormitorios?|habitaciones?|cuartos?)\b/.test(normalizedPrompt)) {
+    const bedrooms = parseBoundedNumericAnswer(rawValue, ['1', '2', '3', '4'])
+    if (bedrooms) extracted.bedrooms = bedrooms
+  }
+
+  if (!currentAnswers.bathrooms && /\b(banos?)\b/.test(normalizedPrompt)) {
+    const bathrooms = parseBoundedNumericAnswer(rawValue, ['1', '2', '3'])
+    if (bathrooms) extracted.bathrooms = bathrooms
+  }
+
+  if (!currentAnswers.squareMeters && /\bmetros? cuadrados?\b/.test(normalizedPrompt)) {
+    const squareMeters = parseNumberAnswer(rawValue)
+    if (squareMeters) extracted.squareMeters = squareMeters
+  }
+
+  if (!currentAnswers.budget && /\bpresupuesto\b/.test(normalizedPrompt)) {
+    const budget = parseBudgetAnswer(rawValue) || parseNumberAnswer(rawValue)
+    if (budget) extracted.budget = budget
+  }
 
   if (!currentAnswers.familyMembers) {
     const familyMembers = parseFamilyMembersAnswer(rawValue)

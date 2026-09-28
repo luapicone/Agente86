@@ -107,7 +107,13 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
 
     const userMessage = createMessage('user', trimmedValue)
     const nextMessages = [...chatMessages, userMessage]
-    const currentAnswers = mergeAnswers(answers, extractStructuredAnswersFromText(trimmedValue, answers))
+    const previousAssistantMessage = [...chatMessages]
+      .reverse()
+      .find((message) => message.role === 'assistant')
+    const currentAnswers = mergeAnswers(
+      answers,
+      extractStructuredAnswersFromText(trimmedValue, answers, previousAssistantMessage?.text),
+    )
     const currentQuestionCount = assistantQuestionCount
 
     setInputError('')
