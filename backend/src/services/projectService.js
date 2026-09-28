@@ -64,15 +64,16 @@ function buildProjectProposal(payload = {}) {
   const climate = payload.climate || 'templado'
   const terrainType = payload.terrainType || (payload.hasLand === 'si' ? 'urbano' : 'suburbano')
   const material = payload.material || 'hormigon-verde'
+  const materialPreference = payload.materialPreferences || null
   const sustainabilityScore = PRIORITY_SCORES[priority] || 80
   const carbonReduction = `${Math.max(18, Math.round(squareMeters * 0.35))}%`
 
   const houseExtras = []
   if (payload.propertyType === 'casa') {
-    if (hasSuiteBathroom) houseExtras.push('Dormitorio principal con baño en suite')
-    if (hasPool) houseExtras.push('Pileta')
-    if (hasGarage) houseExtras.push('Garage')
-    if (hasQuincho) houseExtras.push('Quincho')
+    if (hasSuiteBathroom) houseExtras.push(payload.suiteDetails ? `Suite: ${payload.suiteDetails}` : 'Dormitorio principal con baño en suite')
+    if (hasPool) houseExtras.push(payload.poolDetails ? `Pileta: ${payload.poolDetails}` : 'Pileta')
+    if (hasGarage) houseExtras.push(payload.garageCapacity ? `Garage para ${payload.garageCapacity} vehículo(s)` : 'Garage')
+    if (hasQuincho) houseExtras.push(payload.quinchoDetails ? `Quincho: ${payload.quinchoDetails}` : 'Quincho')
     if (hasGrill) houseExtras.push('Parrilla')
   }
 
@@ -91,7 +92,7 @@ function buildProjectProposal(payload = {}) {
     summary: `${propertyType} modular de ${squareMeters} m² pensada para ${bedrooms} dormitorio(s), ${bathrooms} baño(s), ${payload.propertyType === 'casa' ? `${floors} piso(s)` : 'tipología en edificio'} y nivel de calidad ${qualityLevel}.`,
     modularType: squareMeters >= 90 ? 'Modelo familiar expandible' : 'Modelo compacto modular',
     recommendedMaterial:
-      MATERIAL_LABELS[material] || 'Madera reciclada tratada + panelería modular',
+      materialPreference || MATERIAL_LABELS[material] || 'Madera reciclada tratada + panelería modular',
     estimatedCost,
     estimatedSavings: Math.round(estimatedCost * 0.12),
     sustainabilityScore,
@@ -102,10 +103,14 @@ function buildProjectProposal(payload = {}) {
     floors,
     qualityLevel,
     selectedFeatures: houseExtras,
-    recommendedLayout:
+    recommendedLayout: [
       bedrooms >= 3
-        ? 'Área social integrada + bloque privado + expansión futura lateral'
-        : 'Núcleo central eficiente + espacios flexibles multiuso',
+        ? 'Área social integrada + bloque privado + expansión futura lateral.'
+        : 'Núcleo central eficiente + espacios flexibles multiuso.',
+      payload.bedroomProgram ? `Dormitorios: ${payload.bedroomProgram}.` : null,
+      payload.spaceNeeds ? `Ambientes adicionales: ${payload.spaceNeeds}.` : null,
+      payload.futureNeeds ? `Previsión futura: ${payload.futureNeeds}.` : null,
+    ].filter(Boolean).join(' '),
     recommendations: [
       'Priorizar orientación solar y ventilación natural para reducir consumo energético.',
       'Incorporar materiales de baja huella de carbono y aislación térmica adecuada.',

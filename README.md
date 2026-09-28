@@ -44,6 +44,8 @@ http://localhost:5173
 - landing page visual sincronizada con la presentación comercial de HabitatIA, manteniendo el chat conversacional y el marketplace dentro de la app principal
 - navegación por URL entre la landing (`/`), el chat/configurador (`/configurador`) y el marketplace (`/marketplace`), con soporte para Atrás/Adelante y acceso directo gracias al rewrite SPA de Vercel
 - chat conversacional con extracción de respuestas compuestas para evitar repreguntar datos ya dichos en una misma frase
+- entrevista arquitectónica adaptativa: releva pisos, uso y capacidad de cada dormitorio, suites, pileta, garage, quincho/parrilla, ambientes adicionales y preferencias constructivas antes de cerrar
+- preguntas condicionales para profundizar solo en los extras elegidos y propagación del programa familiar a planos, renders, propuesta y PDF
 - chat conversacional alineado visualmente con la landing: estética editorial oscura, superficies luminosas, acento esmeralda y diseño responsive
 - marketplace alineado con el mismo sistema visual de la landing y el chat en todos sus estados: selector comprador/vendedor, filtros, catálogo, carrito y formulario de publicación
 - generador de viviendas

@@ -54,6 +54,10 @@ export function downloadProjectPdf(project, answers) {
           <p>${project.summary}</p>
           <p><strong>Tipo:</strong> ${project.propertyType}</p>
           <p><strong>Familia estimada:</strong> ${answers.familyMembers || '-'}</p>
+          <p><strong>Programa de dormitorios:</strong> ${answers.bedroomProgram || '-'}</p>
+          <p><strong>Baños en suite:</strong> ${answers.suiteDetails || (answers.hasSuiteBathroom === true || answers.hasSuiteBathroom === 'true' ? 'Sí' : 'No')}</p>
+          <p><strong>Otros ambientes:</strong> ${answers.spaceNeeds || '-'}</p>
+          <p><strong>Preferencias constructivas:</strong> ${answers.materialPreferences || '-'}</p>
           <p><strong>Terreno:</strong> ${answers.hasLand === 'si' ? 'Sí' : 'No'}</p>
           <p><strong>Urgencia:</strong> ${answers.urgency || '-'}</p>
           <p><strong>Nivel de calidad:</strong> ${answers.qualityLevel || '-'}</p>

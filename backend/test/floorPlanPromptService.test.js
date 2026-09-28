@@ -28,7 +28,11 @@ test('buildFloorPlanPrompt creates a distinct coordinated program for every floo
     bathrooms: 3,
     location: 'Córdoba, Argentina',
     hasGarage: true,
+    garageCapacity: '2',
     hasSuiteBathroom: true,
+    bedroomProgram: 'principal para dos personas y dos dormitorios para dos chicos cada uno',
+    suiteDetails: 'dormitorio principal con baño privado',
+    spaceNeeds: 'escritorio y lavadero independiente',
   }
 
   const groundFloor = buildFloorPlanPrompt(payload, 1)
@@ -37,6 +41,9 @@ test('buildFloorPlanPrompt creates a distinct coordinated program for every floo
 
   assert.match(groundFloor, /floor 1 of 3/)
   assert.match(groundFloor, /garage/)
+  assert.match(groundFloor, /2 vehicles/)
+  assert.match(groundFloor, /bedroom occupancy and use/i)
+  assert.match(groundFloor, /escritorio y lavadero independiente/i)
   assert.match(middleFloor, /3 bedrooms and 1 private bathroom/)
   assert.match(topFloor, /2 bedrooms and 1 private bathroom/)
   assert.match(topFloor, /en-suite primary bedroom/)

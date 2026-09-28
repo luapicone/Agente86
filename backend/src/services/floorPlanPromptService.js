@@ -20,11 +20,11 @@ function getFloorProgram(payload, floorNumber, floorCount) {
   const bathrooms = Math.max(1, Number(payload.bathrooms || 1))
 
   if (floorCount === 1) {
-    return `Include living-dining room, kitchen, ${bedrooms} bedrooms, ${bathrooms} bathrooms${payload.hasGarage ? ', garage' : ''}${payload.hasQuincho ? ', quincho' : ''}${payload.hasPool ? ', pool and outdoor deck' : ''}.`
+    return `Include living-dining room, kitchen, ${bedrooms} bedrooms, ${bathrooms} bathrooms${payload.hasGarage ? `, garage${payload.garageCapacity ? ` for ${payload.garageCapacity} vehicles` : ''}` : ''}${payload.hasQuincho ? `, quincho${payload.hasGrill ? ' with grill' : ''}` : ''}${payload.hasPool ? ', pool and outdoor deck' : ''}.`
   }
 
   if (floorNumber === 1) {
-    return `Ground floor program: entrance, living-dining room, kitchen, one social bathroom, stairs${payload.hasGarage ? ', garage' : ''}${payload.hasQuincho ? ', quincho with grill' : ''}${payload.hasPool ? ', pool and outdoor deck' : ''}. Prioritize fluid social circulation and garden connection.`
+    return `Ground floor program: entrance, living-dining room, kitchen, one social bathroom, stairs${payload.hasGarage ? `, garage${payload.garageCapacity ? ` for ${payload.garageCapacity} vehicles` : ''}` : ''}${payload.hasQuincho ? `, quincho${payload.hasGrill ? ' with grill' : ''}` : ''}${payload.hasPool ? ', pool and outdoor deck' : ''}. Prioritize fluid social circulation and garden connection.`
   }
 
   const privateFloorCount = floorCount - 1
@@ -56,10 +56,15 @@ function buildFloorPlanPrompt(payload = {}, floorNumber = 1) {
     `Professional architectural floor plan for a ${payload.propertyType === 'departamento' ? 'residential apartment' : 'modular sustainable house'} in ${payload.location || 'Argentina'}.`,
     `${floorLabel}, approximately ${approximateFloorArea} square meters on this level, total project area ${squareMeters} square meters.`,
     getFloorProgram(payload, floorNumber, floorCount),
+    payload.bedroomProgram ? `Bedroom occupancy and use brief: ${payload.bedroomProgram}.` : null,
+    payload.suiteDetails ? `En-suite requirements: ${payload.suiteDetails}.` : null,
+    payload.spaceNeeds ? `Additional room requirements: ${payload.spaceNeeds}.` : null,
+    payload.poolDetails ? `Pool brief: ${payload.poolDetails}.` : null,
+    payload.quinchoDetails ? `Quincho brief: ${payload.quinchoDetails}.` : null,
     'Strict orthographic top-down 2D blueprint, complete building visible and centered, coherent room adjacency, realistic wall thicknesses, doors with swing arcs, windows, stairs where applicable, furniture symbols, circulation and exterior dimensions.',
     'Clean black architectural ink on warm white paper, subtle pale green zoning accents, crisp high-resolution technical presentation, Spanish room labels, metric dimensions, title block for HabitatIA.',
     'No perspective, no axonometric view, no 3D walls, no photorealism, no exterior elevation, no people, no decorative illustration, no cropped edges, no watermark.',
-  ].join(' ')
+  ].filter(Boolean).join(' ')
 }
 
 module.exports = {

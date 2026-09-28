@@ -419,6 +419,9 @@ function App() {
                           <li>Tipo: {generatedProject.propertyType}</li>
                           {generatedProject.propertyType === 'Casa' ? <li>Pisos: {generatedProject.floors}</li> : null}
                           <li>Familia estimada: {chatAnswers.familyMembers} integrante(s)</li>
+                          {chatAnswers.bedroomProgram ? <li>Uso de dormitorios: {chatAnswers.bedroomProgram}</li> : null}
+                          {chatAnswers.spaceNeeds ? <li>Otros ambientes: {chatAnswers.spaceNeeds}</li> : null}
+                          {chatAnswers.materialPreferences ? <li>Preferencia constructiva: {chatAnswers.materialPreferences}</li> : null}
                           <li>Terreno disponible: {chatAnswers.hasLand === 'si' ? 'Sí' : 'No'}</li>
                           <li>Urgencia: {chatAnswers.urgency}</li>
                           <li>Nivel de calidad: {chatAnswers.qualityLevel}</li>

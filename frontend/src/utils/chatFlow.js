@@ -43,6 +43,13 @@ export const chatQuestions = [
     ],
   },
   {
+    key: 'bedroomProgram',
+    label: 'Uso de dormitorios',
+    question: '¿Quién usaría cada dormitorio y para cuántas personas sería?',
+    type: 'text',
+    placeholder: 'Ej: principal para 2 en suite; dos dormitorios para 2 chicos cada uno',
+  },
+  {
     key: 'bathrooms',
     label: 'Baños',
     question: '¿Cuántos baños querés que tenga?',
@@ -214,11 +221,18 @@ export const chatQuestions = [
     label: 'Parrilla',
     question: '¿Querés agregar parrilla?',
     type: 'select',
-    showIf: (answers) => answers.propertyType === 'casa',
+    showIf: (answers) => answers.propertyType === 'casa' && answers.hasQuincho === 'true',
     options: [
       { value: 'true', label: 'Sí' },
       { value: 'false', label: 'No' },
     ],
+  },
+  {
+    key: 'spaceNeeds',
+    label: 'Otros ambientes',
+    question: '¿Necesitás escritorio, lavadero, despensa, vestidor, playroom u otro espacio especial?',
+    type: 'text',
+    placeholder: 'Ej: escritorio para dos personas y lavadero independiente',
   },
   {
     key: 'extraNotes',
@@ -398,6 +412,19 @@ function parseBudgetAnswer(rawValue) {
   return String(Math.round(numericValue))
 }
 
+function parseMentionedBoolean(rawValue, terms) {
+  const normalized = normalizeText(rawValue)
+  const pattern = terms.join('|')
+
+  if (!new RegExp(`\\b(${pattern})\\b`).test(normalized)) return null
+  if (
+    new RegExp(`\\b(no|sin|ningun|ninguna)\\b.{0,24}\\b(${pattern})\\b`).test(normalized) ||
+    new RegExp(`\\b(${pattern})\\b.{0,18}\\b(no|sin)\\b`).test(normalized)
+  ) return 'false'
+
+  return 'true'
+}
+
 export function extractStructuredAnswersFromText(rawValue, currentAnswers = {}, assistantPrompt = '') {
   const extracted = {}
   const normalized = normalizeText(rawValue)
@@ -446,7 +473,7 @@ export function extractStructuredAnswersFromText(rawValue, currentAnswers = {}, 
     }
   }
 
-  if (!currentAnswers.bedrooms && /\b(dormitorio|habitacion|habitaciones|cuarto|cuartos)\b/.test(normalized)) {
+  if (!currentAnswers.bedrooms && /\b(dormitorio|dormitorios|habitacion|habitaciones|cuarto|cuartos)\b/.test(normalized)) {
     const bedrooms = parseBoundedNumericAnswer(rawValue, ['1', '2', '3', '4'])
     if (bedrooms) extracted.bedrooms = bedrooms
   }
@@ -459,6 +486,43 @@ export function extractStructuredAnswersFromText(rawValue, currentAnswers = {}, 
   if (!currentAnswers.floors && /\b(piso|pisos|planta|plantas|nivel|niveles)\b/.test(normalized)) {
     const floors = parseFloorsAnswer(rawValue)
     if (floors) extracted.floors = floors
+  }
+
+  const hasBedroomDetail =
+    /\b(dormitorio|dormitorios|habitacion|habitaciones|cuarto|cuartos)\b/.test(normalized) &&
+    /\b(principal|hijo|hijos|chico|chicos|huesped|huespedes|persona|personas|cada|cama|camas|suite|matrimonial|individual|doble)\b/.test(normalized)
+
+  if (!currentAnswers.bedroomProgram && hasBedroomDetail) extracted.bedroomProgram = rawValue.trim().slice(0, 500)
+
+  const architecturalFlags = [
+    ['hasSuiteBathroom', ['suite', 'en suite']],
+    ['hasPool', ['pileta', 'piscina']],
+    ['hasGarage', ['garage', 'garaje', 'cochera']],
+    ['hasQuincho', ['quincho']],
+    ['hasGrill', ['parrilla', 'asador']],
+  ]
+
+  architecturalFlags.forEach(([key, terms]) => {
+    if (!currentAnswers[key]) {
+      const value = parseMentionedBoolean(rawValue, terms)
+      if (value) extracted[key] = value
+    }
+  })
+
+  if (!currentAnswers.suiteDetails && extracted.hasSuiteBathroom === 'true' && /\b(principal|dormitorio|habitacion|todos?|otro|hijos?|huespedes?)\b/.test(normalized)) {
+    extracted.suiteDetails = rawValue.trim().slice(0, 500)
+  }
+  if (!currentAnswers.poolDetails && extracted.hasPool === 'true' && /\b(grande|chica|mediana|metros?|deck|solarium|patio|quincho)\b/.test(normalized)) {
+    extracted.poolDetails = rawValue.trim().slice(0, 500)
+  }
+  if (!currentAnswers.quinchoDetails && extracted.hasQuincho === 'true' && /\b(parrilla|bano|cerrado|abierto|personas?|mesa|cocina)\b/.test(normalized)) {
+    extracted.quinchoDetails = rawValue.trim().slice(0, 500)
+  }
+  if (!currentAnswers.materialPreferences && /\b(ladrillo|hormigon|madera|acero|steel frame|wood frame|bloque|bloques|materiales|tradicional|prefabricad)\b/.test(normalized)) {
+    extracted.materialPreferences = rawValue.trim().slice(0, 500)
+  }
+  if (!currentAnswers.spaceNeeds && /\b(escritorio|home office|lavadero|despensa|playroom|deposito|cocina integrada|cocina separada|vestidor)\b/.test(normalized)) {
+    extracted.spaceNeeds = rawValue.trim().slice(0, 500)
   }
 
   return extracted

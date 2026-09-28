@@ -1,16 +1,36 @@
 const QUESTION_LIMITS = {
-  softMin: 6,
-  hardMax: 10,
+  softMin: 9,
+  hardMax: 16,
 }
 
-const CORE_FIELDS = ['projectName', 'familyMembers', 'bedrooms', 'bathrooms', 'squareMeters', 'budget', 'location']
-const SECONDARY_FIELDS = ['hasLand', 'terrainType', 'priority', 'qualityLevel', 'climate', 'material', 'floors']
+const CORE_FIELDS = [
+  'projectName',
+  'familyMembers',
+  'floors',
+  'bedrooms',
+  'bedroomProgram',
+  'bathrooms',
+  'squareMeters',
+  'budget',
+  'location',
+  'hasLand',
+]
+const ARCHITECTURAL_FIELDS = [
+  'hasSuiteBathroom',
+  'hasPool',
+  'hasGarage',
+  'hasQuincho',
+  'materialPreferences',
+  'spaceNeeds',
+]
+const SECONDARY_FIELDS = ['terrainType', 'priority', 'qualityLevel', 'climate']
 
 const EMPTY_ANSWER_SHAPE = {
   projectName: null,
   propertyType: null,
   familyMembers: null,
   bedrooms: null,
+  bedroomProgram: null,
   bathrooms: null,
   squareMeters: null,
   budget: null,
@@ -24,10 +44,17 @@ const EMPTY_ANSWER_SHAPE = {
   material: null,
   floors: null,
   hasSuiteBathroom: null,
+  suiteDetails: null,
   hasPool: null,
+  poolDetails: null,
   hasGarage: null,
+  garageCapacity: null,
   hasQuincho: null,
   hasGrill: null,
+  quinchoDetails: null,
+  materialPreferences: null,
+  spaceNeeds: null,
+  futureNeeds: null,
   extraNotes: null,
 }
 
@@ -36,6 +63,7 @@ const ANSWER_FIELD_GUIDE = `
 - propertyType: fijar "casa" salvo que el usuario contradiga explicitamente el contexto.
 - familyMembers: cantidad de personas, como string numerico.
 - bedrooms: cantidad de dormitorios, como string numerico.
+- bedroomProgram: descripcion compacta de para quien es cada dormitorio, cuantas personas duermen en cada uno y usos especiales.
 - bathrooms: cantidad de banos, como string numerico.
 - squareMeters: metros cuadrados aproximados, como string numerico.
 - budget: presupuesto aproximado en USD o numero neutral sin simbolos, como string numerico.
@@ -49,6 +77,13 @@ const ANSWER_FIELD_GUIDE = `
 - material: "madera-reciclada", "hormigon-verde" o "acero-reciclado".
 - floors: "1", "2" o "3".
 - hasSuiteBathroom, hasPool, hasGarage, hasQuincho, hasGrill: "true" o "false".
+- suiteDetails: que dormitorio o dormitorios tienen bano en suite.
+- poolDetails: tamano, uso o relacion deseada de la pileta con patio y quincho.
+- garageCapacity: cantidad de vehiculos o tipo de cochera solicitado.
+- quinchoDetails: capacidad, cerramiento, bano y equipamiento esperado para el quincho.
+- materialPreferences: sistema constructivo, materiales o terminaciones que prefiere la persona, en texto libre.
+- spaceNeeds: otros ambientes importantes: escritorio, lavadero, cocina integrada, deposito, playroom u otros.
+- futureNeeds: accesibilidad, crecimiento por etapas o cambios familiares previstos.
 - extraNotes: preferencias abiertas relevantes.
 `.trim()
 
@@ -70,10 +105,14 @@ Reglas de comportamiento:
 - no preguntas el tipo de vivienda: asumimos una casa desde cero;
 - reconoces lo que la persona acaba de responder antes de avanzar;
 - si el usuario ya dio varios datos en una sola respuesta, los aprovechas y no los vuelves a preguntar;
-- priorizas comprender familia, tamano, presupuesto, terreno, ubicacion y prioridades;
-- puedes saltear detalles secundarios si ya hay base suficiente para generar una propuesta inicial;
-- intentas cerrar entre 6 y 9 preguntas del asistente cuando ya hay buen contexto;
-- nunca superas 10 preguntas del asistente;
+- priorizas comprender familia, pisos, tamano, presupuesto, terreno, ubicacion y el programa arquitectonico;
+- antes de cerrar debes conocer como se usara cada dormitorio, cuantas personas alojara y si alguno necesita bano en suite;
+- antes de cerrar debes confirmar pileta, garage y quincho; si hay quincho, confirma tambien si lleva parrilla;
+- preguntas por otros ambientes importantes y por preferencias de materiales o sistema constructivo;
+- haces preguntas condicionales: no preguntas detalles de pileta, garage o quincho cuando la persona ya dijo que no los quiere;
+- puedes reunir varios datos relacionados en una sola pregunta natural y aprovechar respuestas compuestas;
+- intentas cerrar entre 9 y 14 preguntas del asistente cuando ya hay buen contexto;
+- nunca superas ${QUESTION_LIMITS.hardMax} preguntas del asistente;
 - no prometes precision tecnica, aprobaciones municipales ni reemplazo profesional.
 
 Decision de cierre:
@@ -98,6 +137,7 @@ Debes responder SIEMPRE en JSON valido con esta forma exacta:
     "propertyType": "casa",
     "familyMembers": null,
     "bedrooms": null,
+    "bedroomProgram": null,
     "bathrooms": null,
     "squareMeters": null,
     "budget": null,
@@ -111,10 +151,17 @@ Debes responder SIEMPRE en JSON valido con esta forma exacta:
     "material": null,
     "floors": null,
     "hasSuiteBathroom": null,
+    "suiteDetails": null,
     "hasPool": null,
+    "poolDetails": null,
     "hasGarage": null,
+    "garageCapacity": null,
     "hasQuincho": null,
     "hasGrill": null,
+    "quinchoDetails": null,
+    "materialPreferences": null,
+    "spaceNeeds": null,
+    "futureNeeds": null,
     "extraNotes": null
   }
 }
@@ -310,13 +357,82 @@ function extractProjectName(rawText) {
   return trimmed
 }
 
+function extractMentionedBoolean(rawText, terms) {
+  const normalized = normalizeText(rawText)
+  const termPattern = terms.join('|')
+
+  if (!new RegExp(`\\b(${termPattern})\\b`).test(normalized)) {
+    return null
+  }
+
+  if (
+    new RegExp(`\\b(no|sin|ningun|ninguna)\\b.{0,24}\\b(${termPattern})\\b`).test(normalized) ||
+    new RegExp(`\\b(${termPattern})\\b.{0,18}\\b(no|sin)\\b`).test(normalized)
+  ) {
+    return 'false'
+  }
+
+  return 'true'
+}
+
+function hasBedroomProgramDetail(rawText) {
+  const normalized = normalizeText(rawText)
+  return (
+    /\b(dormitorio|habitacion|cuarto)s?\b/.test(normalized) &&
+    /\b(principal|hijos?|chicos?|huespedes?|personas?|cada|camas?|suite|matrimonial|individual|doble)\b/.test(normalized)
+  )
+}
+
+function extractArchitecturalAnswers(rawText, currentAnswers = {}) {
+  const normalized = normalizeText(rawText)
+  const trimmed = String(rawText || '').trim().slice(0, 500)
+  const extracted = {}
+  const suiteValue = extractMentionedBoolean(rawText, ['suite', 'en suite'])
+  const poolValue = extractMentionedBoolean(rawText, ['pileta', 'piscina'])
+  const garageValue = extractMentionedBoolean(rawText, ['garage', 'garaje', 'cochera'])
+  const quinchoValue = extractMentionedBoolean(rawText, ['quincho'])
+  const grillValue = extractMentionedBoolean(rawText, ['parrilla', 'asador'])
+
+  if (!currentAnswers.bedroomProgram && hasBedroomProgramDetail(rawText)) extracted.bedroomProgram = trimmed
+  if (!currentAnswers.hasSuiteBathroom && suiteValue) extracted.hasSuiteBathroom = suiteValue
+  if (!currentAnswers.suiteDetails && suiteValue === 'true') extracted.suiteDetails = trimmed
+  if (!currentAnswers.hasPool && poolValue) extracted.hasPool = poolValue
+  if (!currentAnswers.poolDetails && poolValue === 'true' && /\b(grande|chica|mediana|metros?|deck|solarium|patio|quincho)\b/.test(normalized)) {
+    extracted.poolDetails = trimmed
+  }
+  if (!currentAnswers.hasGarage && garageValue) extracted.hasGarage = garageValue
+  if (!currentAnswers.garageCapacity && garageValue === 'true') {
+    const capacity = normalized.match(/(?:garage|garaje|cochera).{0,24}?(\d+|uno|una|dos|tres)\s+(?:autos?|vehiculos?)/)
+    if (capacity) extracted.garageCapacity = capacity[1]
+  }
+  if (!currentAnswers.hasQuincho && quinchoValue) extracted.hasQuincho = quinchoValue
+  if (!currentAnswers.hasGrill && grillValue) extracted.hasGrill = grillValue
+  if (!currentAnswers.quinchoDetails && quinchoValue === 'true' && /\b(parrilla|bano|cerrado|abierto|personas?|mesa|cocina)\b/.test(normalized)) {
+    extracted.quinchoDetails = trimmed
+  }
+  if (!currentAnswers.materialPreferences && /\b(ladrillo|hormigon|madera|acero|steel frame|wood frame|bloques?|materiales?|construccion tradicional|prefabricad)\b/.test(normalized)) {
+    extracted.materialPreferences = trimmed
+  }
+  if (!currentAnswers.spaceNeeds && /\b(escritorio|home office|lavadero|despensa|playroom|deposito|cocina integrada|cocina separada|vestidor)\b/.test(normalized)) {
+    extracted.spaceNeeds = trimmed
+  }
+  if (!currentAnswers.futureNeeds && /\b(accesibilidad|silla de ruedas|sin escalones|ampliar|ampliacion|crecer por etapas|futuro)\b/.test(normalized)) {
+    extracted.futureNeeds = trimmed
+  }
+
+  if (quinchoValue === 'false' && !currentAnswers.hasGrill && !grillValue) extracted.hasGrill = 'false'
+  return extracted
+}
+
 function extractContextualAnswer(questionText, rawText) {
   const question = normalizeText(questionText)
   const answer = normalizeText(rawText)
   const trimmedAnswer = String(rawText || '').trim()
   const extracted = {}
 
-  if (/\b(dormitorios?|habitaciones?|cuartos?)\b/.test(question)) {
+  if (/\b(cada dormitorio|cada habitacion|quien usara|quienes usaran|cuantas personas.*dormitorio)\b/.test(question)) {
+    if (trimmedAnswer) extracted.bedroomProgram = trimmedAnswer.slice(0, 500)
+  } else if (/\b(dormitorios?|habitaciones?|cuartos?)\b/.test(question)) {
     extracted.bedrooms = extractBoundedNumber(rawText, ['1', '2', '3', '4'])
   } else if (/\b(personas?|familia|integrantes?)\b/.test(question)) {
     extracted.familyMembers = extractBoundedNumber(rawText, ['1', '2', '3', '4', '5', '6'])
@@ -342,6 +458,30 @@ function extractContextualAnswer(questionText, rawText) {
     else if (/^(no|n|todavia no|aun no)\b/.test(answer)) extracted.hasLand = 'no'
   } else if (/\b(una planta|piso|pisos)\b/.test(question)) {
     extracted.floors = extractFloors(rawText)
+  } else if (/\b(pileta|piscina)\b/.test(question)) {
+    extracted.hasPool = extractMentionedBoolean(rawText, ['pileta', 'piscina']) || (/^(si|claro|dale)\b/.test(answer) ? 'true' : /^(no|sin)\b/.test(answer) ? 'false' : null)
+    if (extracted.hasPool === 'true') extracted.poolDetails = trimmedAnswer.slice(0, 500)
+  } else if (/\b(garage|garaje|cochera)\b/.test(question)) {
+    extracted.hasGarage = extractMentionedBoolean(rawText, ['garage', 'garaje', 'cochera']) || (/^(si|claro|dale)\b/.test(answer) ? 'true' : /^(no|sin)\b/.test(answer) ? 'false' : null)
+    const garageCapacity = /\b(autos?|vehiculos?)\b/.test(answer) ? extractNumber(rawText) : null
+    if (garageCapacity) extracted.garageCapacity = String(garageCapacity)
+  } else if (/\bquincho\b/.test(question)) {
+    extracted.hasQuincho = extractMentionedBoolean(rawText, ['quincho']) || (/^(si|claro|dale)\b/.test(answer) ? 'true' : /^(no|sin)\b/.test(answer) ? 'false' : null)
+    extracted.hasGrill = extractMentionedBoolean(rawText, ['parrilla', 'asador'])
+    if (extracted.hasQuincho === 'true') extracted.quinchoDetails = trimmedAnswer.slice(0, 500)
+  } else if (/\b(parrilla|asador)\b/.test(question)) {
+    extracted.hasGrill = extractMentionedBoolean(rawText, ['parrilla', 'asador']) || (/^(si|claro|dale)\b/.test(answer) ? 'true' : /^(no|sin)\b/.test(answer) ? 'false' : null)
+  } else if (/\b(que dormitorio|que habitacion|cuales dormitorios|cuales habitaciones)\b/.test(question) && /\bsuite\b/.test(question)) {
+    extracted.suiteDetails = trimmedAnswer.slice(0, 500)
+  } else if (/\b(suite|bano privado)\b/.test(question)) {
+    extracted.hasSuiteBathroom = extractMentionedBoolean(rawText, ['suite', 'bano privado']) || (/^(si|claro|dale)\b/.test(answer) ? 'true' : /^(no|sin)\b/.test(answer) ? 'false' : null)
+    if (extracted.hasSuiteBathroom === 'true' && /\b(principal|dormitorio|habitacion|todos?|otro|hijos?|huespedes?)\b/.test(answer)) {
+      extracted.suiteDetails = trimmedAnswer.slice(0, 500)
+    }
+  } else if (/\b(otros ambientes|espacios adicionales|lavadero|escritorio)\b/.test(question)) {
+    extracted.spaceNeeds = trimmedAnswer.slice(0, 500)
+  } else if (/\b(sistema constructivo|materiales|terminaciones)\b/.test(question)) {
+    extracted.materialPreferences = trimmedAnswer.slice(0, 500)
   } else if (/\b(costo|eficiencia|sostenibilidad)\b/.test(question)) {
     if (/costo|barato|ahorro|presupuesto/.test(answer)) extracted.priority = 'costo'
     else if (/eficien|mantenimiento|consumo/.test(answer)) extracted.priority = 'eficiencia'
@@ -377,6 +517,7 @@ function extractFallbackAnswersFromMessages(messages = [], currentAnswers = {}) 
     .reverse()
     .find((message) => message?.role === 'assistant' && message?.text)?.text
   const contextualAnswers = extractContextualAnswer(previousAssistantMessage, lastUserMessage)
+  const architecturalAnswers = extractArchitecturalAnswers(lastUserMessage, currentAnswers)
 
   const extracted = {
     ...contextualAnswers,
@@ -384,11 +525,12 @@ function extractFallbackAnswersFromMessages(messages = [], currentAnswers = {}) 
     familyMembers: currentAnswers.familyMembers || extractFamilyMembers(lastUserMessage),
     budget: currentAnswers.budget || extractBudget(lastUserMessage),
     hasLand: currentAnswers.hasLand || extractHasLand(lastUserMessage),
+    ...architecturalAnswers,
   }
 
   const normalized = normalizeText(lastUserMessage)
 
-  if (!currentAnswers.bedrooms && /\b(dormitorio|habitacion|habitaciones|cuarto|cuartos)\b/.test(normalized)) {
+  if (!currentAnswers.bedrooms && /\b(dormitorio|dormitorios|habitacion|habitaciones|cuarto|cuartos)\b/.test(normalized)) {
     extracted.bedrooms = extractBoundedNumber(lastUserMessage, ['1', '2', '3', '4'])
   }
 
@@ -400,7 +542,7 @@ function extractFallbackAnswersFromMessages(messages = [], currentAnswers = {}) 
     extracted.floors = extractFloors(lastUserMessage)
   }
 
-  return sanitizeExtractedAnswers({ ...currentAnswers, ...extracted, ...contextualAnswers })
+  return sanitizeExtractedAnswers({ ...currentAnswers, ...extracted, ...contextualAnswers, ...architecturalAnswers })
 }
 
 function extractResponseText(body) {
@@ -420,11 +562,22 @@ function extractResponseText(body) {
 }
 
 function getMissingFields(answers = {}) {
+  const criticalMissingFields = getCriticalMissingFields(answers)
   const normalized = { ...answers, propertyType: 'casa' }
   const terrainRelevant = normalized.hasLand === 'si'
   const secondaryFields = terrainRelevant ? SECONDARY_FIELDS : SECONDARY_FIELDS.filter((field) => field !== 'terrainType')
 
-  return [...CORE_FIELDS, ...secondaryFields].filter((field) => !normalized[field])
+  return [...criticalMissingFields, ...secondaryFields.filter((field) => !normalized[field])]
+}
+
+function getCriticalMissingFields(answers = {}) {
+  const normalized = { ...answers, propertyType: 'casa' }
+  const conditionalFields = []
+
+  if (normalized.hasSuiteBathroom === 'true') conditionalFields.push('suiteDetails')
+  if (normalized.hasQuincho === 'true') conditionalFields.push('hasGrill')
+
+  return [...CORE_FIELDS, ...ARCHITECTURAL_FIELDS, ...conditionalFields].filter((field) => !normalized[field])
 }
 
 function buildFallbackQuestion(answers = {}, assistantQuestionCount = 0) {
@@ -456,6 +609,12 @@ function buildFallbackQuestion(answers = {}, assistantQuestionCount = 0) {
       return { message: 'Para dimensionarla bien, ¿cuántas personas van a vivir en la casa?', shouldComplete: false }
     case 'bedrooms':
       return { message: '¿Cuántos dormitorios te imaginás como punto de partida?', shouldComplete: false }
+    case 'bedroomProgram':
+      return {
+        message:
+          'Para distribuirlos bien, contame quién usaría cada dormitorio, para cuántas personas sería y si alguno necesita una función especial.',
+        shouldComplete: false,
+      }
     case 'bathrooms':
       return { message: '¿Y cuántos baños te gustaría resolver desde la etapa inicial?', shouldComplete: false }
     case 'squareMeters':
@@ -478,6 +637,39 @@ function buildFallbackQuestion(answers = {}, assistantQuestionCount = 0) {
       return { message: 'Si tenés una preferencia, ¿te inclinás más por madera, hormigón o acero como base constructiva?', shouldComplete: false }
     case 'floors':
       return { message: '¿La pensás en una planta o con más de un piso?', shouldComplete: false }
+    case 'hasSuiteBathroom':
+      return {
+        message: '¿Querés que el dormitorio principal —o algún otro— tenga baño en suite?',
+        shouldComplete: false,
+      }
+    case 'suiteDetails':
+      return {
+        message: '¿Qué dormitorio o dormitorios querés resolver en suite?',
+        shouldComplete: false,
+      }
+    case 'hasPool':
+      return { message: '¿Querés incorporar pileta? Si sí, contame brevemente cómo te la imaginás.', shouldComplete: false }
+    case 'hasGarage':
+      return { message: '¿Necesitás garage o cochera? ¿Para cuántos vehículos?', shouldComplete: false }
+    case 'hasQuincho':
+      return {
+        message: '¿Querés sumar quincho? Si lo imaginás, contame también si sería abierto o cerrado y para cuántas personas.',
+        shouldComplete: false,
+      }
+    case 'hasGrill':
+      return { message: 'Como querés quincho, ¿lo incluimos con parrilla?', shouldComplete: false }
+    case 'materialPreferences':
+      return {
+        message:
+          '¿Preferís algún sistema constructivo o material —tradicional, ladrillo, hormigón, madera, steel frame— o querés que te recomiende según clima y presupuesto?',
+        shouldComplete: false,
+      }
+    case 'spaceNeeds':
+      return {
+        message:
+          'Además de los ambientes básicos, ¿necesitás escritorio, lavadero, despensa, vestidor, playroom u otro espacio importante?',
+        shouldComplete: false,
+      }
     default:
       if (assistantQuestionCount >= QUESTION_LIMITS.softMin && missing.length <= 2) {
         return {
@@ -588,10 +780,18 @@ Genera solamente el JSON pedido.
     throw new Error('La respuesta del modelo no devolvio un turno valido.')
   }
 
+  const extractedAnswers = sanitizeExtractedAnswers(parsed.extractedAnswers)
+  const mergedAnswers = sanitizeExtractedAnswers({ ...answers, ...extractedAnswers })
+  const criticalMissingFields = getCriticalMissingFields(mergedAnswers)
+  const canClose = criticalMissingFields.length === 0 || assistantQuestionCount >= QUESTION_LIMITS.hardMax
+  const fallbackTurn = parsed.shouldComplete && !canClose
+    ? buildFallbackQuestion(mergedAnswers, assistantQuestionCount)
+    : null
+
   return {
-    message: parsed.message,
-    shouldComplete: parsed.shouldComplete,
-    extractedAnswers: sanitizeExtractedAnswers(parsed.extractedAnswers),
+    message: fallbackTurn?.message || parsed.message,
+    shouldComplete: fallbackTurn ? false : parsed.shouldComplete,
+    extractedAnswers,
     model,
     usedFallback: false,
   }
@@ -618,5 +818,7 @@ async function generateConversationalTurn(payload = {}) {
 }
 
 module.exports = {
+  extractFallbackAnswersFromMessages,
   generateConversationalTurn,
+  getMissingFields,
 }

@@ -156,7 +156,8 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
     }
   }
 
-  const progress = Math.min(100, Math.round((assistantQuestionCount / 10) * 100))
+  const interviewQuestionLimit = 16
+  const progress = Math.min(100, Math.round((assistantQuestionCount / interviewQuestionLimit) * 100))
 
   return (
     <div className="chatbot-shell">
@@ -186,7 +187,7 @@ function ProjectChatbot({ initialAnswers, onComplete, isSubmitting }) {
         <div className="chatbot-progress-wrapper">
           <div className="chatbot-progress-copy">
             <span className="chatbot-progress-label">Avance de la entrevista</span>
-            <small>{assistantQuestionCount} de 10</small>
+            <small>{assistantQuestionCount} de hasta {interviewQuestionLimit}</small>
           </div>
           <div
             className="progress chatbot-progress"

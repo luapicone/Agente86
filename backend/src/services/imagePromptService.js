@@ -42,6 +42,12 @@ function buildExtraHouseFeatures(payload = {}) {
     parseBooleanFlag(payload.hasGarage) ? 'covered garage for vehicles' : null,
     parseBooleanFlag(payload.hasQuincho) ? 'quincho / covered social barbecue area' : null,
     parseBooleanFlag(payload.hasGrill) ? 'dedicated outdoor grill area' : null,
+    payload.bedroomProgram ? `bedroom use program: ${payload.bedroomProgram}` : null,
+    payload.suiteDetails ? `en-suite brief: ${payload.suiteDetails}` : null,
+    payload.poolDetails ? `pool brief: ${payload.poolDetails}` : null,
+    payload.garageCapacity ? `parking capacity: ${payload.garageCapacity} vehicles` : null,
+    payload.quinchoDetails ? `quincho brief: ${payload.quinchoDetails}` : null,
+    payload.spaceNeeds ? `additional spaces: ${payload.spaceNeeds}` : null,
   ].filter(Boolean)
 
   return extras.join(', ')
@@ -51,7 +57,7 @@ function buildImagePrompt(payload = {}, projectData = {}) {
   const squareMeters = Number(payload.squareMeters || 0)
   const bedrooms = Number(payload.bedrooms || 0)
   const bathrooms = Number(payload.bathrooms || 0)
-  const material = MATERIAL_DESCRIPTIONS[payload.material] || 'sustainable modular construction'
+  const material = payload.materialPreferences || MATERIAL_DESCRIPTIONS[payload.material] || 'sustainable modular construction'
   const priority = PRIORITY_DESCRIPTIONS[payload.priority] || 'focused on sustainable living'
   const climate = CLIMATE_DESCRIPTIONS[payload.climate] || 'temperate climate with natural lighting'
   const propertyType = payload.propertyType === 'departamento' ? 'apartment' : 'house'
