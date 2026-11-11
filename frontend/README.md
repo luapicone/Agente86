@@ -1,4 +1,27 @@
-# React + Vite
+# HabitatIA Frontend
+
+Aplicación React + Vite de HabitatIA. El configurador usa un cuestionario fijo en
+`src/utils/chatFlow.js`: no consulta OpenAI/Codex y no depende de servicios externos para
+decidir la siguiente pregunta. Las respuestas se envían al backend únicamente al generar
+la propuesta.
+
+## Scripts
+
+```bash
+npm run dev
+npm run lint
+npm run build
+npm test
+```
+
+## Cuestionario
+
+- Las preguntas mantienen un orden único y cada campo se solicita una sola vez.
+- `terrainType` aparece solo cuando la persona ya cuenta con terreno.
+- `hasGrill` aparece solo cuando se eligió incluir quincho.
+- La definición de preguntas es la única fuente de verdad del avance y del historial visual.
+
+## Base técnica
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
